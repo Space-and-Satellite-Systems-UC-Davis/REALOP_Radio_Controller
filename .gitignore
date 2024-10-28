@@ -17,6 +17,7 @@ release
 
 # Prerequisites
 *.d
+.DS*
 
 # Object files
 *.o
