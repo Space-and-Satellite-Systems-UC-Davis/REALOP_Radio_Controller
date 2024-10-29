@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <print_scan.h>
-#include <stm32l476xx.h>
+#include <stm32l431xx.h>
 
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
@@ -16,10 +16,10 @@ int main(void)
 //  RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
 #
-    gpio_mode(GPIOA, 9, 2, 0, 3, 0);
-    gpio_af(GPIOA, 9, 7);
-    gpio_mode(GPIOA, 10, 2, 0, 3, 0);  // Alternate Function, Push-Pull, Very High Speed, No Pull
-    gpio_af(GPIOA, 10, 7);  // Alternate function 7 (AF7) for USART1_RX
+//    gpio_mode(GPIOA, 9, 2, 0, 3, 0);
+//    gpio_af(GPIOA, 9, 7);
+//    gpio_mode(GPIOA, 10, 2, 0, 3, 0);  // Alternate Function, Push-Pull, Very High Speed, No Pull
+//    gpio_af(GPIOA, 10, 7);  // Alternate function 7 (AF7) for USART1_RX
 
 
 

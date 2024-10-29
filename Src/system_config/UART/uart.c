@@ -52,6 +52,16 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 /************************ GPIO INITIALIZATION HELPERS ************************/
 
 void usart1_gpio_init() {
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
+	while (GPIOA->OTYPER == 0xFFFFFFFF);
+
+	// configure the USART Pins to Alternate Function mode
+	GPIOA->MODER &= ~(GPIO_MODER_MODE9_Msk | GPIO_MODER_MODE10_Msk);
+	GPIOA->MODER |= (GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1);
+
+	// configure each pin to AF7
+	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFSEL9_Msk | GPIO_AFRH_AFSEL10_Msk);
+	GPIOA->AFR[1] |= (7U << GPIO_AFRH_AFSEL9_Pos) | (7U << GPIO_AFRH_AFSEL10_Pos);
 	return;
 }
 void usart2_gpio_init() {
@@ -107,7 +117,8 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
-			uart_8bit_1stop(USART3, baud_rate, true);
+			uart_8bit_1stop(USART1, baud_rate, true);
+			NVIC_EnableIRQ(USART1_IRQn);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
