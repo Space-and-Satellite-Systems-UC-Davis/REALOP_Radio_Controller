@@ -26,11 +26,12 @@
  * @returns None
  */
 void init_platform() {
+	SCB->CPACR |= 0x00F00000;
 	init_coreClocks();
 
 	// init intercomm
 	// init radio
-
+	spi_config(SPI1);
 	led_init();
 	printer_init();
 	systick_init();
