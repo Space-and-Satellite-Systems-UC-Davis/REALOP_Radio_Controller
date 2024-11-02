@@ -71,7 +71,7 @@ void spi_disable(SPI_TypeDef *spi, GPIO_TypeDef *cs_port, int cs_pin) {
 	uint8_t temp;
 	while(spi->SR & SPI_SR_FRLVL){
 		// Wait till all data is received
-		temp = SPI2->DR;
+		temp = SPI1->DR;
 	}
 }
 
@@ -90,7 +90,7 @@ void spi1_config() {
 		| SPI_CR1_SSI				// (CS is controlled by software)
 		| SPI_CR1_MSTR;
 	// CR2
-	SPI2->CR2 |=
+	SPI1->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
 		| 7U << SPI_CR2_DS_Pos; // Transfer Data Length is 1 Byte
 	spi_enable(SPI1);
