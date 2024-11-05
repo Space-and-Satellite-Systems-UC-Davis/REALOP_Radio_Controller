@@ -36,12 +36,22 @@ typedef struct _rx_fifo USART_ReceiverBuffer;
 
 //USART_ReceiverBuffer USART1_RxBuffer;
 
-USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
-	USART_ReceiverBuffer *rxbuff = NULL;
+USART_ReceiverBuffer USART1_RxBuffer;
+USART_ReceiverBuffer LPUART1_RxBuffer;
 
 //	if (bus == USART1) {
 //		rxbuff = &USART1_RxBuffer;
 //	}
+
+USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
+	USART_ReceiverBuffer *rxbuff = NULL;
+
+
+	if (bus == USART1) {
+		rxbuff = &USART1_RxBuffer;
+	} else if (bus == LPUART1) {
+		rxbuff = &LPUART1_RxBuffer;
+	}
 
 	return rxbuff;
 }
@@ -53,7 +63,8 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 
 void usart1_gpio_init() {
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-	while (GPIOA->OTYPER == 0xFFFFFFFF);
+//	while (GPIOA->OTYPER == 0xFFFFFFFF);
+
 
 	// configure the USART Pins to Alternate Function mode
 	GPIOA->MODER &= ~(GPIO_MODER_MODE9_Msk | GPIO_MODER_MODE10_Msk);
@@ -108,7 +119,9 @@ void uart_8bit_1stop(USART_TypeDef *bus, int baud_rate, bool rts_cts_control) {
 
 	// Enable Interrupts
 	bus->CR1 |= USART_CR1_RXNEIE;	// Receiver Interrupt
+	bus->CR1 |= USART_CR1_TE; // Enable Transmitter
 //	bus->CR1 |= USART_CR1_RTOIE;	// Timeout Interrupt
+	for (volatile int i = 0; i < 1000; i++);
 }
 
 
@@ -118,7 +131,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
 			uart_8bit_1stop(USART1, baud_rate, true);
-			NVIC_EnableIRQ(USART1_IRQn);
+// NVIC_EnableIRQ(USART1_IRQn);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -144,7 +157,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 
 void usart_transmitChar(USART_TypeDef *bus, char c) {
 	// Enable UART3 and Transmitter
-	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
+//	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Place the character in the Data Register
 	bus->TDR = c;
@@ -163,6 +176,7 @@ void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register
 		bus->TDR = message[i];
+		bus->ISR &= ~USART_ISR_TC;
 	}
 
 	// Wait for the Transfer to be completed by monitoring the TC flag

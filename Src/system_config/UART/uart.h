@@ -34,6 +34,8 @@ bool usart_init(USART_TypeDef *bus, int baud_rate);
  */
 void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
 
+void usart_transmitChar(USART_TypeDef *bus, char c);
+
 /*
  * Returns the status of the USART reciever's FIFO buffer
  *

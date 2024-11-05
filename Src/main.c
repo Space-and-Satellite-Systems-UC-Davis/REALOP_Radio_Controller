@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <print_scan.h>
-#include <stm32l431xx.h>
+#include "UART/uart.h"
 
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
@@ -9,30 +9,11 @@
 
 int main(void)
 {
-    /* Loop forever */
-    printMsg("Hello");
-    delay_ms(100);
-//  RCC->AHB1ENR |= RCC_AHB2ENR_GPIOBEN;
-//  RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-
-#
-//    gpio_mode(GPIOA, 9, 2, 0, 3, 0);
-//    gpio_af(GPIOA, 9, 7);
-//    gpio_mode(GPIOA, 10, 2, 0, 3, 0);  // Alternate Function, Push-Pull, Very High Speed, No Pull
-//    gpio_af(GPIOA, 10, 7);  // Alternate function 7 (AF7) for USART1_RX
+    usart_init(USART1, 9600);
 
 
-
-
-    if (!usart_init(USART1, 9600)) {
-            // Handle error: Initialization failed
-            while (1);  // Infinite loop to signal failure
-        }
-    while(1){
-
+    while (1) {
         usart_transmitChar(USART1, 'a');
-
-
-
+        for (volatile int i = 0; i < 100000; i++); // Delay to slow down transmission
     }
 }
