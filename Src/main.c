@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <print_scan.h>
-#include "UART/uart.h"
+#include "platform_init.h"
+
+
 
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
@@ -9,11 +11,12 @@
 
 int main(void)
 {
+    init_platform();
     usart_init(USART1, 9600);
 
 
     while (1) {
         usart_transmitChar(USART1, 'a');
-        for (volatile int i = 0; i < 100000; i++); // Delay to slow down transmission
+        nop(1000);
     }
 }
