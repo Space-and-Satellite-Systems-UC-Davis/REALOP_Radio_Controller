@@ -88,7 +88,8 @@ void spi1_config() {
 		 5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
-		| SPI_CR1_MSTR;
+		| SPI_CR1_MSTR
+		| SPI_CR1_CPHA;
 	// CR2
 	SPI1->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
