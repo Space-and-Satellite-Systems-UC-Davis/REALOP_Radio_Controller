@@ -2,9 +2,9 @@
 
 void received_State_of_Radio_Request(){
     int arr[1];
-    int numberOfBytesToReceive[1]
-    int size = 0
-    int count = 0
+    int numberOfBytesToReceive[1];
+    int size = 0;
+    int count = 0;
 
     // Receives T.
     while (size != 1) {
@@ -16,8 +16,8 @@ void received_State_of_Radio_Request(){
     }
 
     // Receives number of bytes to receive. 
-    count = 0
-    size = 0
+    count = 0;
+    size = 0;
     while (size != 1) {
         size = usart_receiveBytes(USART1, numberOfBytesToReceive, 1);
         count++;
@@ -26,6 +26,7 @@ void received_State_of_Radio_Request(){
         }
     }
 
+    // how do I make sure that whatever information is received is returned to the original function? should i just use a pointer?
     usart_transmitChar(USART1, 'A');
 
     int receivedBytes[numberOfBytesToReceive[0]];
@@ -38,6 +39,38 @@ void received_State_of_Radio_Request(){
 
 
 void received_Transfer_GroundStation_Request(){
+    int check_size  = 0;
+    int check_count = 0;
+    int receiveArray[1];
+    while (check_size != 1)
+    {
+        check_size = usart_recieveBytes(USART1, receiveArray, 1);
+        count++;
+        if (count > 1000) {                
+            break;                         
+        }
+    }
+    int lengthOfMessage = receiveArray[0];
+
+
+    check_count = 0
+    check_size = 0
+    while (check_size != 1)
+    {
+        check_size = usart_recieveBytes(USART1, receiveArray, 1);
+        count++;
+        if (count > 1000) {                
+            break;                         
+        }
+    }
+    int repetitionOfMessage = receiveArray[0];
+    
+
+    // while im receiving this message x times, am i just making sure that im receiving the right amount of data, 
+    //or am i checking like every byte that comes in against the bytes in the array
+    // that i already have
+
+    
     
 }
 
