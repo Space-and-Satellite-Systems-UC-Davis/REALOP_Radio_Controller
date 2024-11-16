@@ -165,6 +165,7 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 
 		// read the reception line until it's empty
 		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
+			int am_here = 342;
 			if (reception == NULL) {
 				spi->DR;
 			} else {
