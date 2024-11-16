@@ -70,7 +70,28 @@ void received_Transfer_GroundStation_Request(){
     //or am i checking like every byte that comes in against the bytes in the array
     // that i already have
 
-    
+    return
     
 }
 
+
+void received_State_of_Radio_Request(){
+    //  how do i get the state of the Radio, no radio.c in the loggers branch
+
+    int size = 0;
+    int arr[1];
+    char state = 't' // default value for now
+    // receives back acknowledgement to stop
+    while (size == 0)
+    {
+        usart_transmitChar(USART1, state)
+        // continue sending until receie an A, check everytime i transmit
+        size = usart_recieveBytes(USART1, arr, 1);
+    }
+    return
+
+    
+
+
+
+}
