@@ -1,6 +1,6 @@
 #include <uart.h>
 
-void received_Transfer_RadioMemory_Request();
+int* transferToRadioRequest();
 
 void received_Transfer_GroundStation_Request();
 
