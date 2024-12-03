@@ -1,7 +1,45 @@
 #include "Intercomm.h"
 #include "radio.h"
 
+enum class State{
+    Idle,
+    TransferToRadio,
+    TransferToGroundStation
+} 
 
+State current_state = State::Idle;
+
+void handleTransferToRadio(){
+    current_state = State::TransferToRadio;
+    int* receivedBytes = transferToRadioRequest();
+    current_state = State::Idle;
+    if (receivedBytes) { 
+        delete[] receivedBytes; 
+    }
+}
+
+void handlereceived_Transfer_GroundStation_Request(){
+    current_state = State::TransferToGroundStation;
+    received_Transfer_GroundStation_Request();
+    current_state = State::Idle;
+}
+
+void handleIdle(char input) {
+    // Transition based on input
+    switch (input) {
+        case 't': // Transfer to Ground Station
+            currentState = State::TransferToGroundStation;
+            break;
+        case 'T': // Transfer to Radio
+            currentState = State::TransferToRadio;
+            break;
+        case 'r': // Get Radio State
+            received_State_of_Radio_Request();
+            break;
+        default:
+            break;
+    }
+}
 // received Request for PFC to send data to Radio MCU
 int* transferToRadioRequest(){
     int arr[1];
@@ -19,25 +57,25 @@ int* transferToRadioRequest(){
     // }
 
     // Receives number of bytes to receive. 
-    count = 0;
-    size = 0;
     while (size != 1) {
         size = usart_receiveBytes(USART1, numberOfBytesToReceive, 1);
         count++;
         if (count > 1000) {                
-            break;                         
+            return nullptr;                         
         }
     }
 
-    // how do I make sure that whatever information is received is returned to the original function? should i just use a pointer?
     usart_transmitChar(USART1, 'A');
 
-    int receivedBytes[numberOfBytesToReceive[0]];
+    int bytesToReceive = numberOfBytesToReceive[0]
+    if (bytesToReceive <= 0 || bytesToReceive > 1024) { // don't know what max size is supposed to be.
+        return nullptr;
+    }
+    int* receivedBytes = new int[bytesToReceive];
     int number_received = usart_recieveBytes(USART1, receivedBytes, numberOfBytesToReceive[0]);
-
     usart_transmitBytes(USART1, number_received);
     usart_transmitChar(USART1, 'A');
-    return receivedBytes;
+    return receivedBytes; // will cause a memory leak if not cleared.
 }
 
 // Rad
@@ -48,8 +86,8 @@ void received_Transfer_GroundStation_Request(){
     while (check_size != 1)
     {
         check_size = usart_recieveBytes(USART1, receiveArray, 1);
-        count++;
-        if (count > 1000) {                
+        check_count++;
+        if (check_count > 1000) {                
             break;                         
         }
     }
@@ -61,14 +99,13 @@ void received_Transfer_GroundStation_Request(){
     while (check_size != 1)
     {
         check_size = usart_recieveBytes(USART1, receiveArray, 1);
-        count++;
-        if (count > 1000) {                
+        check_count++;
+        if (check_count > 1000) {                
             break;                         
         }
     }
     int repetitionOfMessage = receiveArray[0];
     
-
     // while im receiving this message x times, am i just making sure that im receiving the right amount of data, 
     //or am i checking like every byte that comes in against the bytes in the array
     // that i already have
@@ -80,44 +117,53 @@ void received_Transfer_GroundStation_Request(){
 
 void received_State_of_Radio_Request(){
     //  how do i get the state of the Radio, no radio.c in the loggers branch
-
-    int size = 0;
-    char arr[1];
-    char state = 't'; // default value for now
-    // receives back acknowledgement to stop
-    int count = 0;
+    char state;
+    switch (current_state)
+    {
+    case State::Idle:
+        state = 'o';
+        break;
+    case State::TransferToGroundStation:
+        state = 't';
+        break;
+    case State::TransferToRadio:
+        state = 'T';
+        break;  
+    default:
+        return;
+    }
     while (size == 0)
     {
+        count = 0;
         usart_transmitChar(USART1, state);
         // continue sending until receie an A, check everytime i transmit
         size = usart_recieveBytes(USART1, arr, 1);
         if (count  > 1000){break;}
     }
-    return;
 }
 
 int main(){
-    char current_state;
-    int i = 0;
     char arr[1]; // im receiving a character here right?
-
-    // how is the state switch going to work how can i reenter the main functino 
-    // whle another function is running and send a state
-    while (i < 2000);
+    while (1)
     {
-        size = usart_recieveBytes(USART1, arr, 1)
-        i++;
-        if (size > 0):
-        break;
-    }
-    if (arr[0] == 't'){
-        current_state = 't';
-        received_Transfer_GroundStation_Request();
-        current_state = 'o';
-    }
-    elif (arr[0] == 'R'){
+        size = usart_recieveBytes(USART1, arr, 1);
+        if (size > 0){
+            handleIdle(arr[0]); // only acts if receives something
+            switch (current_state)
+            {
+            case State::TransferToGroundStation:
+                handlereceived_Transfer_GroundStation_Request();
+                break;
+            case State::TransferToGroundStation:
+                handlereceived_Transfer_GroundStation_Request();
+            default:
+                break;
+            }
+            
+        }
         
     }
-
     
+    // how is the state switch going to work how can i reenter the main functino 
+    // whle another function is running and send a state 
 }
