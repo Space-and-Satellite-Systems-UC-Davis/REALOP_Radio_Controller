@@ -1,5 +1,6 @@
 #include <stdint.h>
-#include <print_scan.h>
+#include "print_scan.h"
+#include "UART/pcp.h"
 #include "platform_init.h"
 
 
@@ -14,9 +15,23 @@ int main(void)
     init_platform();
     usart_init(USART1, 9600);
 
+    PCPDevice* pcp;
+    make_pcpdev(pcp, USART1);
 
     while (1) {
-        usart_transmitChar(USART1, 'a');
-        nop(1000);
+        char buffer[1];
+		size = pcp_receive(pcp, buffer);
+		//If received a character. NOT HANDLING ERROR FROM pcp_receive (-1)
+		if (size > 0) {
+			handleIdle(buffer[0]);
+
+			//HERE BE DRAGONS
+
+		}
+
+        // how is the state switch going to work how can i reenter the main functino
+        // whle another function is running and send a state
+
+        nop(1000); //Is nop necessary ?
     }
 }

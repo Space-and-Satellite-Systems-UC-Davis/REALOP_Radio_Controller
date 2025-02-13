@@ -2,6 +2,7 @@
 
 #include "Intercomm.h"
 #include "radio.h"
+#include "UART/pcp.h"
 
 typedef enum State {
     Idle = 'o',
@@ -16,8 +17,8 @@ State current_state = Idle;
 void handleIdle(char input) {
     // Transition based on input
     switch (input) {
-        case TransferToGroundStation: // Transfer to Ground Station
-        case TransferToRadio: // Transfer to Radio
+        case TransferToGroundStation:
+        case TransferToRadio:
             currentState = input;
             break;
         case RXactive: // Get Radio State
@@ -62,23 +63,26 @@ int* transferToRadioRequest(){
 
     // Receives number of bytes to receive. 
     while (size != 1) {
-        size = usart_receiveBytes(USART1, numberOfBytesToReceive, 1);
+        size = pcp_receive(pcp, numberOfBytesToReceive);
         count++;
         if (count > 1000) {                
             return nullptr;                         
         }
     }
 
-    usart_transmitChar(USART1, 'A');
+    //Bit janky. Maybe a wrapper for sending one char ?
+    char ack_payload[1];
+    ack_payload[0] = 'A';
+    pcp_transmit(pcp, ack_payload);
 
     int bytesToReceive = numberOfBytesToReceive[0];
     if (bytesToReceive <= 0 || bytesToReceive > 1024) { // don't know what max size is supposed to be.
         return nullptr;
     }
     int* receivedBytes = &bytesToReceive;
-    int number_received = usart_recieveBytes(USART1, receivedBytes, numberOfBytesToReceive[0]);
-    usart_transmitBytes(USART1, number_received);
-    usart_transmitChar(USART1, 'A');
+    int number_received = pcp_receive(pcp, receivedBytes);
+    usart_transmitBytes(USART1, number_received); //TODO: ????????????
+    pcp_transmit(pcp, ack_payload);
     return receivedBytes; // will cause a memory leak if not cleared.
 }
 
@@ -90,7 +94,7 @@ void received_Transfer_GroundStation_Request(){
     int receiveArray[1];
     while (check_size != 1)
     {
-        check_size = usart_recieveBytes(USART1, receiveArray, 1);
+        check_size = pcp_receive(pcp, receiveArray);
         check_count++;
         if (check_count > 1000) {                
             break;                         
@@ -103,7 +107,7 @@ void received_Transfer_GroundStation_Request(){
     check_size = 0;
     while (check_size != 1)
     {
-        check_size = usart_recieveBytes(USART1, receiveArray, 1);
+        check_size = pcp_receive(pcp, receiveArray);
         check_count++;
         if (check_count > 1000) {                
             break;                         
@@ -121,53 +125,19 @@ void received_Transfer_GroundStation_Request(){
 
 
 void received_State_of_Radio_Request(){
-    //  how do i get the state of the Radio, no radio.c in the loggers branch
-//    char state;
-//    switch (current_state)
-//    {
-//    case State::Idle:
-//        state = 'o';
-//        break;
-//    case State::TransferToGroundStation:
-//        state = 't';
-//        break;
-//    case State::TransferToRadio:
-//        state = 'T';
-//        break;
-//    default:
-//        return;
-//    }
-    while (size == 0)
-    {
-        count = 0;
-        usart_transmitChar(USART1, current_state);
-        // continue sending until receie an A, check everytime i transmit
-        size = usart_recieveBytes(USART1, arr, 1);
-        if (count  > 1000){break;}
-    }
-}
+	int count = 0;
+    char response[1];
+    while (response[0] != Acknowledge) {
 
-int main(){
-    char arr[1]; // im receiving a character here right?
-    while (1)
-    {
-        size = usart_recieveBytes(USART1, arr, 1);
-        if (size > 0){
-            handleIdle(arr[0]); // only acts if receives something
-            switch (current_state) {
-            case TransferToGroundStation:
-                handlereceived_Transfer_GroundStation_Request();
-                break;
-            case TransferToGroundStation:
-                handlereceived_Transfer_GroundStation_Request();
-            default:
-                break;
-            }
-            
-        }
-        
+        char payload[1];
+        payload[0] = current_state;
+        pcp_transmit(pcp, payload);
+
+        // continue sending until receive an A, check everytime i transmit
+        pcp_receive(pcp, response);
+
+        count++;
+
+        if (count  > 1000){break;} //rudimentary timeout, maybe replace later
     }
-    
-    // how is the state switch going to work how can i reenter the main functino 
-    // whle another function is running and send a state 
 }
