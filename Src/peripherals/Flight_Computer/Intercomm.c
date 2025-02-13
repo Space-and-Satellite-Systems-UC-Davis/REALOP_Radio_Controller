@@ -4,41 +4,65 @@
 #include "radio.h"
 #include "UART/pcp.h"
 
-typedef enum MessageIn {
-    Idle = 'o',
-    TransferToRadio = 'T',
-    TransferToGroundStation = 't',
+typedef enum MessageType {
+    TransmittingData = 'T', //TransferToRadio
+    ReadyForTransmission = 't', //TransferToGroundStation
 	ReturnState = 'R',
 	Acknowledge = 'A',
 };
 
 typedef enum State {
     Idle = 'o',
-    TransferToGroundStation = 't',
-	ReturnState = 'R',
-	Acknowledge = 'A',
+    TXactive = 't',
+	RXactive = 'r',
 };
 
 State current_state = Idle;
 
 //Primary function from which everything else here is called
-void handleInput(char input) {
+void handleInput(PCPDevice *dev, char input) {
 	switch (input) {
-	case TransferToRadio:
-		//
-		break;
+		case TransmittingData: listenToTX(dev); break;
+		case ReadyForTransmission: prepareToRX(dev); break;
+		case ReturnState: sendState(dev); break;
 	}
-	case TransferToGroundStation:
-		//
-		break;
 }
 
-//Do not need to remember 'A' is acknowledgment. Didn't fit enums
-void sendAck(PCPDevice *dev) {
-    char ack_payload[1];
-    ack_payload[0] = 'A';
-    pcp_transmit(pcp, ack_payload);
+//Should really be merged with pcp.c
+int sendChar(PCPDevice *dev, char ch) {
+    char payload[1];
+    payload[0] = ch;
+    pcp_transmit(dev, payload);
 }
+
+void sendState(PCPDevice *dev) {
+    char payload[1];
+    payload[0] = current_state;
+    pcp_transmit(dev, payload);
+
+	int count = 0;
+    char response[1];
+    while (response[0] != Acknowledge) {
+        sendChar(dev, current_state);
+
+        // continue sending until receive an A, check everytime i transmit
+        pcp_receive(dev, response);
+
+        count++;
+
+        if (count  > 1000){break;} //rudimentary timeout, maybe replace later
+    }
+}
+
+void prepareToRX(PCPDevice *dev) {
+
+}
+
+void listenToTX(PCPDevice *dev) {
+
+}
+
+
 
 void handleIdle(char input) {
     // Transition based on input
@@ -99,7 +123,7 @@ int* transferToRadioRequest(){
     sendAck(pcp);
 
     int bytesToReceive = numberOfBytesToReceive[0];
-    if (bytesToReceive <= 0 || bytesToReceive > 1024) { // don't know what max size is supposed to be.
+    if (bytesToReceive <= 0 || bytesToReceive > 1024) { // What is max size?.
         return nullptr;
     }
     int* receivedBytes = &bytesToReceive;
@@ -138,7 +162,8 @@ void received_Transfer_GroundStation_Request(){
     }
     int repetitionOfMessage = receiveArray[0];
     
-    // while im receiving this message x times, am i just making sure that im receiving the right amount of data, 
+    // while im receiving this message x times, am i just making sure that im
+    // receiving the right amount of data,
     // or am i checking like every byte that comes in against the bytes in the array
     // that i already have
 
