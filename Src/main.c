@@ -20,12 +20,13 @@ int main(void)
 
     while (1) {
         char buffer[1];
-		size = pcp_receive(pcp, buffer);
+		int size = pcp_receive(pcp, buffer);
 		//If received a character. NOT HANDLING ERROR FROM pcp_receive (-1)
 		if (size > 0) {
-			handleIdle(buffer[0]);
+
 
 			//HERE BE DRAGONS
+			//handleIdle(buffer[0]);
 
 		}
 

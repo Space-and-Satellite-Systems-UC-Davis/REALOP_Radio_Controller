@@ -4,15 +4,41 @@
 #include "radio.h"
 #include "UART/pcp.h"
 
-typedef enum State {
+typedef enum MessageIn {
     Idle = 'o',
     TransferToRadio = 'T',
     TransferToGroundStation = 't',
-	RXactive = 'r',
+	ReturnState = 'R',
+	Acknowledge = 'A',
+};
+
+typedef enum State {
+    Idle = 'o',
+    TransferToGroundStation = 't',
+	ReturnState = 'R',
 	Acknowledge = 'A',
 };
 
 State current_state = Idle;
+
+//Primary function from which everything else here is called
+void handleInput(char input) {
+	switch (input) {
+	case TransferToRadio:
+		//
+		break;
+	}
+	case TransferToGroundStation:
+		//
+		break;
+}
+
+//Do not need to remember 'A' is acknowledgment. Didn't fit enums
+void sendAck(PCPDevice *dev) {
+    char ack_payload[1];
+    ack_payload[0] = 'A';
+    pcp_transmit(pcp, ack_payload);
+}
 
 void handleIdle(char input) {
     // Transition based on input
@@ -70,10 +96,7 @@ int* transferToRadioRequest(){
         }
     }
 
-    //Bit janky. Maybe a wrapper for sending one char ?
-    char ack_payload[1];
-    ack_payload[0] = 'A';
-    pcp_transmit(pcp, ack_payload);
+    sendAck(pcp);
 
     int bytesToReceive = numberOfBytesToReceive[0];
     if (bytesToReceive <= 0 || bytesToReceive > 1024) { // don't know what max size is supposed to be.
@@ -82,7 +105,7 @@ int* transferToRadioRequest(){
     int* receivedBytes = &bytesToReceive;
     int number_received = pcp_receive(pcp, receivedBytes);
     usart_transmitBytes(USART1, number_received); //TODO: ????????????
-    pcp_transmit(pcp, ack_payload);
+    sendAck(pcp);
     return receivedBytes; // will cause a memory leak if not cleared.
 }
 
