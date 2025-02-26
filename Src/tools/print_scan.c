@@ -27,5 +27,6 @@ int printMsg(const char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	usart_transmitBytes(ConsoleUART, buff);
+	//PASSING WRONG SIGN
+	usart_transmitBytes(ConsoleUART, (uint8_t)buff, 128);
 }

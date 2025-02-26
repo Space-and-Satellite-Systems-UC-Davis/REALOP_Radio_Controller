@@ -140,17 +140,16 @@ void usart_transmitChar(USART_TypeDef *bus, char c) {
 	while(!(bus->ISR & USART_ISR_TC));
 }
 
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]) {
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes) {
 	// Enable UART3 and Transmitter
 	bus->CR1 |= USART_CR1_UE | USART_CR1_TE;
 
 	// Transfer each character one at a time
-	for (int i = 0; i < (int)strlen(message); i++){
+	for (int i = 0; i < nbytes; i++){
 		// wait until Data register is empty
 		while (!(bus->ISR & USART_ISR_TXE));
 		// Place the character in the Data Register
 		bus->TDR = message[i];
-		bus->ISR &= ~USART_ISR_TC;
 	}
 
 	// Wait for the Transfer to be completed by monitoring the TC flag
@@ -168,7 +167,7 @@ bool usart_recieverTimedOut(USART_ReceiverBuffer *rx) {
 	}
 }
 
-bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
+bool usart_receiveBufferNotEmpty(USART_TypeDef *bus) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;
@@ -177,7 +176,7 @@ bool usart_recieveBufferNotEmpty(USART_TypeDef *bus) {
 	return (rxbuff->front != rxbuff->rear);
 }
 
-int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
+int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 	USART_ReceiverBuffer *rxbuff = uart_revisionBusDistinguisher(bus);
 	if (rxbuff == NULL) {
 		return false;

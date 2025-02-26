@@ -32,7 +32,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate);
  *
  * @returns None
  */
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
 
 void usart_transmitChar(USART_TypeDef *bus, char c);
 
@@ -42,8 +42,7 @@ void usart_transmitChar(USART_TypeDef *bus, char c);
  * @param None
  * @returns Whether the buffer has
  */
-bool usart_recieveBufferNotEmpty();
-
+bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
 /*
  * Utilizes the USART hardware receiver to get `size` number of bytes from a FIFO buffer.
  * Will wait for more bytes in case enough aren't available.

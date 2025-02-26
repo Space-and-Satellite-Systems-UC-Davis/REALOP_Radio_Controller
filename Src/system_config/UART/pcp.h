@@ -16,7 +16,7 @@
 #define SYSTEM_CONFIG_UART_PCP_H_
 
 #include <globals.h>
-#include <stm32l476xx.h>
+#include <stm32l431xx.h>
 #include <UART/uart.h>
 #include <stdarg.h>
 #include <Timers/timers.h>

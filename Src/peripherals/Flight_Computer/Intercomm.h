@@ -1,11 +1,18 @@
-#include <uart.h>
+#include "UART/pcp.h"
 
-int* transferToRadioRequest();
+void sendState(PCPDevice *dev);
 
-void received_Transfer_GroundStation_Request();
+void prepareToRX(PCPDevice *dev);
 
-void received_State_of_Radio_Request();
+void listenToTX(PCPDevice *dev);
 
+//OLD
+//int* transferToRadioRequest();
+//
+//void received_Transfer_GroundStation_Request();
+//
+//void received_State_of_Radio_Request();
+//
 
 
 

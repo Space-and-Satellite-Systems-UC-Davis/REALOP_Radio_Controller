@@ -32,12 +32,13 @@ bool radio_waitForAcknowledgement(uint64_t initialTime) {
 	return true;
 }
 
-/**
- * Generic function to send a string over RADIO_USART
- */
-void radio_sendMsg(char* message, ...) {
-	usart_transmitBytes(RADIO_USART, message);
-}
+//Temporarily commented out for old use of usart_transmitBytes
+///**
+// * Generic function to send a string over RADIO_USART
+// */
+//void radio_sendMsg(char* message, ...) {
+//	usart_transmitBytes(RADIO_USART, message);
+//}
 
 /**
  * Sends 1 byte over RADIO_USART
