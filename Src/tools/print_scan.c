@@ -1,9 +1,9 @@
 /*
  * print_scan.c
  *
- * 	- August 17, 2024
+ * 	- May 11, 2023 (Creation)
  * 		Author : Darsh
- * 		Log    : Copied from IntelliSat, modified for the Radio Controller
+ * 		Log    : Created the printMsg function
  */
 
 
@@ -13,7 +13,7 @@
 #include "print_scan.h"
 #include <UART/uart.h>
 
-#define ConsoleUART 	USART1
+#define ConsoleUART 	USART1 //NOT SURE OF
 #define UART_BAUDRATE	9600
 
 void printer_init() {
@@ -27,6 +27,21 @@ int printMsg(const char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	//PASSING WRONG SIGN
-	usart_transmitBytes(ConsoleUART, (uint8_t)buff, 128);
+	usart_transmitStr(ConsoleUART, buff);
+}
+
+int debugMsg(const char *message, ...) {
+	char buff[128];
+
+	va_list args;
+	va_start(args, message);
+	vsprintf(buff,message,args);
+
+    int now = getSysTime();
+    uint8_t str[64];
+    sprintf((char*)str, "%8d", now);
+    usart_transmitStr(ConsoleUART, (uint8_t*)"\n");
+    usart_transmitStr(ConsoleUART, str);
+    usart_transmitStr(ConsoleUART, (uint8_t*)":");
+    usart_transmitStr(ConsoleUART, (uint8_t*)buff);
 }
