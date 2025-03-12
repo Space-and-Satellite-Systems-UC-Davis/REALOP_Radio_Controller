@@ -112,7 +112,6 @@ void usart1_gpio_init() {
 	return;
 
 //	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-//	wait_with_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
 //
 //
 //	// configure the USART Pins to Alternate Function mode
