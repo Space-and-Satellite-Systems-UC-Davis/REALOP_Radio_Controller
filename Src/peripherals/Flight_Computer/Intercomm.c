@@ -17,70 +17,66 @@ typedef enum {
 } State;
 
 State current_state = Idle;
-int packet_length = 0;
-int n_packets = 0;
+
+//Length of chunks being sent in bytes
+//Later adjust to account for PCP overhead
+const size_t CHUNK_LENGTH = 128;
 
 //Primary function from which everything else here is called
 void handleInput(PCPDevice *dev, char input) {
 	switch (input) {
-		case TransmittingData: listenToTX(dev); break;
-		case PrepareForTransmission: prepareToRX(dev); break;
-		case ReturnState: sendState(dev); break;
+		case DownloadData: receiveData(dev); break;
+		case UploadData: uploadData(dev); break;
+		case TransferToGround: transferToGround(dev); break;
+		case SendState: sendState(dev); break;
 	}
 }
 
-//Should really be merged with pcp.c
-int sendChar(PCPDevice *dev, char ch) {
-    uint8_t payload[1];
-    payload[0] = ch;
+//this is a function FOR NOW. See if needed to retransmit often.
+int sendChunk(PCPDevice *dev, uint8_t chunk[]) {
     int response = pcp_transmit(dev, payload, 1);
 
     return response;
 }
 
-//Should really be merged with pcp.c
-uint8_t receiveByte(PCPDevice *dev) {
-    uint8_t payload[1];
-    pcp_receive(dev, payload);
-    return payload[0];
+//Probably won't stay a function
+uint8_t* receiveChunk(PCPDevice *dev) {
+	uint8_t received_chunk[CHUNK_LENGTH];
+    pcp_read(dev, received_chunk);
+
+    return received_chunk;
+}
+
+
+void downloadData(PCPDevice *dev) {
+
+}
+
+void uploadData(PCPDevice *dev) {
+
+}
+
+void transferToGround(PCPDevice *dev) {
+
 }
 
 void sendState(PCPDevice *dev) {
-	sendChar(dev, current_state);
+	uint8_t state_chunk[CHUNK_LENGTH];
+	state_chunk[0] = current_state;
 
-	int count = 0;
-    uint8_t response[1];
-    while (response[0] != Acknowledge) {
-        sendChar(dev, current_state);
-
-        // continue sending until receive an A, check everytime i transmit
-        pcp_receive(dev, response);
-
-        count++;
-
-        if (count  > 1000){break;} //rudimentary timeout, maybe replace later
-    }
+	sendChunk(dev, state_chunk);
 }
-
-void prepareToRX(PCPDevice *dev) {
-	current_state = RXactive;
-
-	packet_length = receiveByte(dev);
-	n_packets = receiveByte(dev);
-
-	sendChar(dev, Acknowledge);
-}
-
-void listenToTX(PCPDevice *dev) {
-//	int numBytes = pcp_receive(dev);
-//	sendChar(dev, Acknowledge);
-
-	//RECEIVE DATA HERE
-}
-
 
 
 //Old code
+//void prepareToRX(PCPDevice *dev) {
+//	current_state = RXactive;
+//
+//	packet_length = receiveByte(dev);
+//	n_packets = receiveByte(dev);
+//
+//	sendChar(dev, Acknowledge);
+//}
 //void handleIdle(char input) {
 //    // Transition based on input
 //    switch (input) {

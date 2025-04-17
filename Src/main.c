@@ -11,8 +11,7 @@
 //    init_platform();
 //    usart_init(USART1, 9600);
 //
-//    PCPDevice pcp;
-//	make_pcpdev(&pcp, USART1);
+
 //
 //	pcp_transmit(&pcp , "Z", 2);
 //
@@ -32,8 +31,12 @@ int main(void) {
     init_platform();
     usart_init(USART1, 9600);
 
+	PCPDevice pcp;
+	make_pcpdev(&pcp, USART1);
+
     while(1) {
-    	nop(1000);
+    	handleInput(&pcp, 'S');
+    	nop(10000);
     }
 }
 
