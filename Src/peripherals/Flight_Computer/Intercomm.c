@@ -1,82 +1,82 @@
-////This file was written in cpp before ??
-//
-//#include "Intercomm.h"
-//#include "Radio/radio.h"
-//
-//typedef enum {
-//    TransmittingData = 'T', //TransferToRadio
-//    PrepareForTransmission = 't', //TransferToGroundStation
-//	ReturnState = 'R',
-//	Acknowledge = 'A',
-//} MessageType;
-//
-//typedef enum {
-//    Idle = 'o',
-//    TXactive = 't',
-//	RXactive = 'r',
-//} State;
-//
-//State current_state = Idle;
-//int packet_length = 0;
-//int n_packets = 0;
-//
-////Primary function from which everything else here is called
-//void handleInput(PCPDevice *dev, char input) {
-//	switch (input) {
-//		case TransmittingData: listenToTX(dev); break;
-//		case PrepareForTransmission: prepareToRX(dev); break;
-//		case ReturnState: sendState(dev); break;
-//	}
-//}
-//
-////Should really be merged with pcp.c
-//int sendChar(PCPDevice *dev, char ch) {
-//    uint8_t payload[1];
-//    payload[0] = ch;
-//    int response = pcp_transmit(dev, payload, 1);
-//
-//    return response;
-//}
-//
-////Should really be merged with pcp.c
-//uint8_t receiveByte(PCPDevice *dev) {
-//    uint8_t payload[1];
-//    pcp_receive(dev, payload);
-//    return payload[0];
-//}
-//
-//void sendState(PCPDevice *dev) {
-//	sendChar(dev, current_state);
-//
-//	int count = 0;
-//    uint8_t response[1];
-//    while (response[0] != Acknowledge) {
-//        sendChar(dev, current_state);
-//
-//        // continue sending until receive an A, check everytime i transmit
-//        pcp_receive(dev, response);
-//
-//        count++;
-//
-//        if (count  > 1000){break;} //rudimentary timeout, maybe replace later
-//    }
-//}
-//
-//void prepareToRX(PCPDevice *dev) {
-//	current_state = RXactive;
-//
-//	packet_length = receiveByte(dev);
-//	n_packets = receiveByte(dev);
-//
+//This file was written in cpp before ??
+
+#include "Intercomm.h"
+#include "Radio/radio.h"
+
+typedef enum {
+    DownloadData = 'D', //Receive data from PFC
+    UploadData = 'U', //Transfer data to PFC
+	TransferToGround = 't', //Transfer data to ground station
+	SendState = 's', //Send state to PFC
+} MessageType;
+
+typedef enum {
+    TXactive = 't', //Busy tranceiving data to ground station
+	RXactive = 'r', //Busy receiving data from ground station
+    Idle = 'o', //Not busy
+} State;
+
+State current_state = Idle;
+int packet_length = 0;
+int n_packets = 0;
+
+//Primary function from which everything else here is called
+void handleInput(PCPDevice *dev, char input) {
+	switch (input) {
+		case TransmittingData: listenToTX(dev); break;
+		case PrepareForTransmission: prepareToRX(dev); break;
+		case ReturnState: sendState(dev); break;
+	}
+}
+
+//Should really be merged with pcp.c
+int sendChar(PCPDevice *dev, char ch) {
+    uint8_t payload[1];
+    payload[0] = ch;
+    int response = pcp_transmit(dev, payload, 1);
+
+    return response;
+}
+
+//Should really be merged with pcp.c
+uint8_t receiveByte(PCPDevice *dev) {
+    uint8_t payload[1];
+    pcp_receive(dev, payload);
+    return payload[0];
+}
+
+void sendState(PCPDevice *dev) {
+	sendChar(dev, current_state);
+
+	int count = 0;
+    uint8_t response[1];
+    while (response[0] != Acknowledge) {
+        sendChar(dev, current_state);
+
+        // continue sending until receive an A, check everytime i transmit
+        pcp_receive(dev, response);
+
+        count++;
+
+        if (count  > 1000){break;} //rudimentary timeout, maybe replace later
+    }
+}
+
+void prepareToRX(PCPDevice *dev) {
+	current_state = RXactive;
+
+	packet_length = receiveByte(dev);
+	n_packets = receiveByte(dev);
+
+	sendChar(dev, Acknowledge);
+}
+
+void listenToTX(PCPDevice *dev) {
+//	int numBytes = pcp_receive(dev);
 //	sendChar(dev, Acknowledge);
-//}
-//
-//void listenToTX(PCPDevice *dev) {
-////	int numBytes = pcp_receive(dev);
-////	sendChar(dev, Acknowledge);
-//
-//	//RECEIVE DATA HERE
-//}
+
+	//RECEIVE DATA HERE
+}
 
 
 

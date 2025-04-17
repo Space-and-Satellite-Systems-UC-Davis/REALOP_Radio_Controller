@@ -5,23 +5,43 @@
 //#include "Timers/timers.h"
 #include "platform_init.h"
 
-int main(void)
-{
+
+//int main(void)
+//{
+//    init_platform();
+//    usart_init(USART1, 9600);
+//
+//    PCPDevice pcp;
+//	make_pcpdev(&pcp, USART1);
+//
+//	pcp_transmit(&pcp , "Z", 2);
+//
+//	uint8_t buffer[2] = {111, 222};
+//    while(1) {
+////    	int result = pcp_read(&pcp, buffer);
+//
+////		usart_transmitStr(USART1, "Z");
+//    	nop(1000);
+//
+//    	pcp_retransmit(&pcp);
+//    }
+//}
+
+
+int main(void) {
     init_platform();
     usart_init(USART1, 9600);
 
-    // PCPDevice* pcp = NULL;
-    // make_pcpdev(pcp, USART1);
-
-//    nop(1000);
-
     while(1) {
-    	//pcp_transmit(pcp, "H", 1);
-    	usart_transmitStr(USART1, "Z");
-	nop(1000);
-
-//		test[0] = 'B';
-//    	usart_transmitBytes(USART1, test, 1);
-//		nop(10000);
+    	nop(1000);
     }
 }
+
+//
+//int main(void) {
+//    init_platform();
+//
+//    void (*testFunc)();
+//    testFunc = getTestFunction(2);
+//    testFunc();
+//}
