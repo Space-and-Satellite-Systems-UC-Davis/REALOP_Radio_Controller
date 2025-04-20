@@ -3,7 +3,8 @@
 
 #include "AX5043.h"
 
-
+/**
+Very high level overview os steps to follow
 void radio_process(){
 	// radio_reset
 	radio_write(0x02, 0x80); // reset
@@ -31,6 +32,7 @@ void radio_process(){
 
 	radio_tx_packet
 }
+*/
 
 void radio_init() {
     spi_config(UHF_SPI);
