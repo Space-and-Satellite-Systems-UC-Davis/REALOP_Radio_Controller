@@ -1,4 +1,4 @@
-#include "AX5043.h"
+#include "../AX5043.h"
 
 void ax5043_uhf_set_registers(void) ;
 void ax5043_uhf_set_registers_tx(void);

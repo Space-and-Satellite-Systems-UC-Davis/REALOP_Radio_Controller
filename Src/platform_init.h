@@ -9,6 +9,8 @@
 #ifndef REALOP1_PLATFORM_INIT_H
 #define REALOP1_PLATFORM_INIT_H
 
+#include "Radio/AX5043.h"
+
 #include <globals.h>
 
 #include <core_config.h>
@@ -33,7 +35,6 @@ void init_platform() {
 
 
 	gpio_init();
-	uhf_init();
 
 
 	// init intercomm
@@ -41,6 +42,7 @@ void init_platform() {
 	spi_config(SPI1);
 	led_init();
 	
+	uhf_init();
 
 	printer_init();
 	systick_init();

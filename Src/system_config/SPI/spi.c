@@ -88,12 +88,18 @@ void spi1_config() {
 		 5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
 		| SPI_CR1_SSM				// (CS is controlled by software)
 		| SPI_CR1_SSI				// (CS is controlled by software)
-		| SPI_CR1_MSTR
-		| SPI_CR1_CPHA;
+		| SPI_CR1_MSTR;
 	// CR2
+//	SPI1->CR2 |=
+//		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
+//		| 7U << SPI_CR2_DS_Pos; // Transfer Data Length is 1 Byte
+
 	SPI1->CR2 |=
 		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
-		| 7U << SPI_CR2_DS_Pos; // Transfer Data Length is 1 Byte
+		| 7U << SPI_CR2_DS_Pos // Transfer Data Length is 1 Byte
+		| SPI_CR2_RXNEIE
+		| SPI_CR2_TXEIE;
+
 	spi_enable(SPI1);
 
 }
@@ -142,7 +148,6 @@ void spi_config(SPI_TypeDef *spi) {
 
 /***************************** SPI COMMUNICATION *****************************/
 void spi_startCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
-
 	gpio_low(cs_port, cs_pin);
 }
 void spi_stopCommunication(GPIO_TypeDef *cs_port, int cs_pin) {
@@ -163,16 +168,24 @@ bool spi_transmitReceive(SPI_TypeDef* spi, uint8_t* transmission, uint8_t *recep
 		}
 		while(!(spi->SR & SPI_SR_TXE));
 
+		// Wait wile RX fifo is empty'
+		// Otherwise, get funly behavior
+		// Maybe RXFifo is not filled instantly after TC fifo empties, and immediately checking
+		// RXNE register returns 0, skipping the read step
+		while(!(spi->SR & SPI_SR_RXNE));
+
 		// read the reception line until it's empty
 		while (spi->SR & SPI_SR_RXNE) {	// RXNE = RX Not Empty
-			int am_here = 342;
+			int am_here = 344;
 			if (reception == NULL) {
 				spi->DR;
 			} else {
 				*reception = spi->DR;
+//				uint8_t test = spi->DR;
 				reception++;
 			}
 		}
 	}
 	return true;
 }
+

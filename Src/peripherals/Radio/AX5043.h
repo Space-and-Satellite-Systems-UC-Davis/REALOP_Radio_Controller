@@ -1,3 +1,6 @@
+#ifndef AX5043_H
+#define AX5043_H
+
 #include "globals.h"
 #include "stm32l431xx.h"
 #include <SPI/spi.h>
@@ -300,6 +303,12 @@
 
 void radio_init();
 
-void radio_spiWriteReg(void *address, uint8_t data);
+void uhf_init();
+
 int radio_autorange(int carrierHz, int xtalHz);
-uint8_t radio_spiReadReg(uint16_t address);
+
+
+void ax5043_write8(uint8_t address, uint8_t data);
+uint8_t ax5043_read8(uint32_t address);
+
+#endif
