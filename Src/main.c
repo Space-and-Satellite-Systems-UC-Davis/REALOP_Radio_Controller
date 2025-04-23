@@ -4,6 +4,7 @@
 #include "UART/uart.h"
 //#include "Timers/timers.h"
 #include "platform_init.h"
+#include "Flight_Computer/Intercomm.h"
 
 
 //int main(void)
@@ -34,9 +35,11 @@ int main(void) {
 	PCPDevice pcp;
 	make_pcpdev(&pcp, USART1);
 
+	handleInput(&pcp, 's');
+
     while(1) {
-    	handleInput(&pcp, 'S');
-    	nop(10000);
+    	pcp_retransmit(&pcp);
+    	nop(50000000);
     }
 }
 

@@ -2,6 +2,7 @@
 
 #include "Intercomm.h"
 #include "Radio/radio.h"
+#include "UART/pcp.h"
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
@@ -20,34 +21,15 @@ State current_state = Idle;
 
 //Length of chunks being sent in bytes
 //Later adjust to account for PCP overhead
-const size_t CHUNK_LENGTH = 128;
+const size_t CHUNK_LENGTH = 8;
 
-//Primary function from which everything else here is called
-void handleInput(PCPDevice *dev, char input) {
-	switch (input) {
-		case DownloadData: receiveData(dev); break;
-		case UploadData: uploadData(dev); break;
-		case TransferToGround: transferToGround(dev); break;
-		case SendState: sendState(dev); break;
-	}
-}
 
 //this is a function FOR NOW. See if needed to retransmit often.
 int sendChunk(PCPDevice *dev, uint8_t chunk[]) {
-    int response = pcp_transmit(dev, payload, 1);
+    int response = pcp_transmit(dev, chunk, CHUNK_LENGTH);
 
     return response;
 }
-
-//Probably won't stay a function
-uint8_t* receiveChunk(PCPDevice *dev) {
-	uint8_t received_chunk[CHUNK_LENGTH];
-    pcp_read(dev, received_chunk);
-
-    return received_chunk;
-}
-
-
 void downloadData(PCPDevice *dev) {
 
 }
@@ -66,6 +48,19 @@ void sendState(PCPDevice *dev) {
 
 	sendChunk(dev, state_chunk);
 }
+
+//Primary function from which everything else here is called
+void handleInput(PCPDevice *dev, char input) {
+	switch (input) {
+		case DownloadData: downloadData(dev); break;
+		case UploadData: uploadData(dev); break;
+		case SendState: sendState(dev); break;
+		case TransferToGround: transferToGround(dev); break;
+	}
+}
+
+
+
 
 
 //Old code
