@@ -12,8 +12,6 @@ int main(void)
 {
     /* Loop forever */
     init_platform();
-    uint8_t instruction = 0x001;
-    uint8_t datah, datal;
 
     while(true) {
     	blinky();
@@ -32,8 +30,14 @@ bool test_radio_reads_simple() {
 	retval = ax5043_read8(AX5043_SCRATCH);
 	if (retval == 0b11000101) fails |= (1 << 1);
 
+	ax5043_write8(AX5043_SCRATCH, 0xAA);
+
+	retval = ax5043_read8(AX5043_SCRATCH);
+	if (retval == 0xAA) fails |= (1 << 2);
+
+
 	retval = ax5043_read8(AX5043_LPOSCREF0);
-	if (retval == 0b10101000) fails |= (1 << 2);
+	if (retval == 0b10101000) fails |= (1 << 3);
 
 	uint32_t wait = 33;
 
