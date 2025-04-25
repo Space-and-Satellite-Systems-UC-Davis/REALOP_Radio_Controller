@@ -46,20 +46,65 @@ bool radio_autorange(int carrierHz, int xtalHz) {
 	
     ax5043_write8(AX5043_PLLRANGINGA, AX5043_PLLRANGINGA_VCORA);
 
-    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY | 0b11 << 5); //Not sure if i need to do the shifting but the normal reset value has REFEN and XOEN on
+    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY | AX5043_PWRMODE_DEFAULTVALUES); //Not sure if i need to do the shifting but the normal reset value has REFEN and XOEN on
     while(!ax5043_read8(AX5043_XTALSTATUS)); //Wait for crystal to be ready 
     
 	ax5043_write8(AX5043_PLLRANGINGA, ax5043_read8(AX5043_PLLRANGINGA) | AX5043_PLLRANGINGA_RNGSTART); // start ranging 
 	
     while(!(ax5043_read8(AX5043_PLLRANGINGA) & (AX5043_PLLRANGINGA_RNGSTART))); //Wait for RNGSTART to read 0 indicating it is done
 
-    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | 0b11 << 5);
+    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES);
 
     if (ax5043_read8(AX5043_PLLRANGINGA) & AX5043_PLLRANGINGA_RNGERR) {
         return false; //Indicates an error in auto ranging, try again
     }
 
     return true;
+}
+
+void radio_transmit(int numBytes, uint8_t* bytesToSend) {
+    
+    int bytesSent = 0;
+    int pktStartIndex = 0;
+    int packetSize = numBytes + 3; //Adding three bytes for Header Byte, Length Byte, and Flag Byte
+
+    bool multiplePackets = false;
+
+    //Calculate if there isnt enough space in FIFO 
+    int differenceInBytes = 256 - (ax5043_read8(AX5043_FIFOCOUNT1) << 8 | ax5043_read8(AX5043_FIFOCOUNT0)) - (packetSize);
+
+    if (differenceInBytes < 0) { //Check if there is enough space for one send in FIFO
+        packetSize = numBytes - differenceInBytes;
+        multiplePackets = true;
+    }
+
+    while (bytesSent < numBytes) {
+
+        //TODO: Calculate PacketSize here
+
+        ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES);
+        while(!(ax5043_read8(AX5043_POWSTAT) & AX5043_POWSTAT_SVMODEM)); //Waiting for Modem to be ready
+        ax5043_write8(AX5043_FIFODATA, 0xE1); //Header byte indicating DATA command
+        ax5043_write8(AX5043_FIFODATA, packetSize - 1);
+
+        if (multiplePackets) {
+            ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_PKTSTART);
+        } else {
+            ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND);
+        }
+
+        for (int i = pktStartIndex; i < packetSize - 3; i++) {
+            ax5043_write8(AX5043_FIFODATA, bytesToSend[i]);
+        }
+
+        ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT);
+
+        bytesSent += packetSize - 3;
+
+        while(ax5043_read8(AX5043_RADIOSTATE)); //Wait for RadioState to show IDLE
+
+    } 
+
 }
 
 
