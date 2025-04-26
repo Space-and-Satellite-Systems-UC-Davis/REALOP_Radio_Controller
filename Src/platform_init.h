@@ -39,11 +39,8 @@ void init_platform() {
 
 	// init intercomm
 	// init radio
-	spi_config(SPI1);
 	led_init();
 	
-	uhf_init();
-
 	printer_init();
 	systick_init();
 }

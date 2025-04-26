@@ -10,6 +10,8 @@
 #define UHF_SPI_CS SPI1_CS
 #define UHF_SPI SPI1
 
+#define AX5043_MAX_FIFO_SIZE 256
+
 #define AX5043_PWRMODE_RST (1 << 7) 
 
 #define AX5043_PWRMODE_DEFAULTVALUES (0b11 << 5)
@@ -37,14 +39,14 @@
 #define AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS 0b000011
 #define AX5043_FIFOCMD_ASK_COHERENT 0b000001
 
-
+#define AX5043_FIFODATA_DATA_COMMAND 0xE1
 
 
 #define AX5043_POWSTAT_SVMODEM (1 << 1)
 
-#define AX5043_CARRIER_HZ 435750000
+#define AX5043_CARRIER_HZ 435
 #define AX5043_XTAL_HZ 26
-#define AX5043_PLLRANGINGA_VCORA 0 //TODO: Get this value
+#define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
 #define AX5043_PLLRANGINGA_RNGERR (1 << 5)
 
@@ -337,8 +339,9 @@ void radio_init();
 
 void uhf_init();
 
-int radio_autorange(int carrierHz, int xtalHz);
+bool radio_autorange(int carrierHz, int xtalHz);
 
+void radio_transmit(int numBytes, uint8_t *bytesToSend);
 
 void ax5043_write8(uint8_t address, uint8_t data);
 uint8_t ax5043_read8(uint32_t address);

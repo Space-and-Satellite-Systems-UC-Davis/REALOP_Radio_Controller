@@ -13,11 +13,13 @@ int main(void)
     /* Loop forever */
     init_platform();
 
-    while(true) {
-    	blinky();
-    	nop(1000);
-    	bool success = test_radio_reads_simple();
-    }
+
+	radio_init();
+    // while(true) {
+    // 	blinky();
+    // 	nop(1000);
+    // 	bool success = test_radio_reads_simple();
+    // }
 
 }
 
