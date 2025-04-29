@@ -6,28 +6,6 @@
 #include "platform_init.h"
 #include "Flight_Computer/Intercomm.h"
 
-
-//int main(void)
-//{
-//    init_platform();
-//    usart_init(USART1, 9600);
-//
-
-//
-//	pcp_transmit(&pcp , "Z", 2);
-//
-//	uint8_t buffer[2] = {111, 222};
-//    while(1) {
-////    	int result = pcp_read(&pcp, buffer);
-//
-////		usart_transmitStr(USART1, "Z");
-//    	nop(1000);
-//
-//    	pcp_retransmit(&pcp);
-//    }
-//}
-
-
 int main(void) {
     init_platform();
     usart_init(USART1, 9600);
@@ -40,15 +18,5 @@ int main(void) {
     	if (pcp_read(&pcp, chunk) != -1) {
     		handleInput(&pcp, chunk[0]);
     	}
-//    	nop(50000000);
     }
 }
-
-//
-//int main(void) {
-//    init_platform();
-//
-//    void (*testFunc)();
-//    testFunc = getTestFunction(2);
-//    testFunc();
-//}
