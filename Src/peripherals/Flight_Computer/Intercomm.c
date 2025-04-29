@@ -1,8 +1,6 @@
 //This file was written in cpp before ??
 
 #include "Intercomm.h"
-#include "Radio/radio.h"
-#include "UART/pcp.h"
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
@@ -58,9 +56,6 @@ void handleInput(PCPDevice *dev, char input) {
 		case TransferToGround: transferToGround(dev); break;
 	}
 }
-
-
-
 
 
 //Old code

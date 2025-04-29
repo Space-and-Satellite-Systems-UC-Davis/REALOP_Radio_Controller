@@ -35,11 +35,12 @@ int main(void) {
 	PCPDevice pcp;
 	make_pcpdev(&pcp, USART1);
 
-	handleInput(&pcp, 's');
-
+	uint8_t chunk[8] = {'1', '2', '3', '4'};
     while(1) {
-    	pcp_retransmit(&pcp);
-    	nop(50000000);
+    	if (pcp_read(&pcp, chunk) != -1) {
+    		handleInput(&pcp, chunk[0]);
+    	}
+//    	nop(50000000);
     }
 }
 
