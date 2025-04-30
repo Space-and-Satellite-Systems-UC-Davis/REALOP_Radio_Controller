@@ -5,8 +5,8 @@
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
     UploadData = 'U', //Transfer data to PFC
-	TransferToGround = 't', //Transfer data to ground station
 	SendState = 's', //Send state to PFC
+	TransferToGround = 'T', //Transfer data to ground station
 } MessageType;
 
 typedef enum {
@@ -36,8 +36,15 @@ void uploadData(PCPDevice *dev) {
 
 }
 
-void transferToGround(PCPDevice *dev) {
+void transferToGround(PCPDevice *dev, uint8_t chunk[]) {
+	current_state = TXactive;
 
+	uint8_t n_chunks = chunk[1];
+
+	//HERE BE DRAGONS
+	//Whenever ground communication is written it will go here
+		//Send n_chunks of radio memory to ground
+		//May change based on ground comm interface
 }
 
 void sendState(PCPDevice *dev) {
@@ -48,11 +55,12 @@ void sendState(PCPDevice *dev) {
 }
 
 //Primary function from which everything else here is called
-void handleInput(PCPDevice *dev, char input) {
-	switch (input) {
+void handleInput(PCPDevice *dev, uint8_t chunk[]) {
+	//Character command must be the first char
+	switch (chunk[0]) {
 		case DownloadData: downloadData(dev); break;
 		case UploadData: uploadData(dev); break;
 		case SendState: sendState(dev); break;
-		case TransferToGround: transferToGround(dev); break;
+		case TransferToGround: transferToGround(dev, chunk); break;
 	}
 }

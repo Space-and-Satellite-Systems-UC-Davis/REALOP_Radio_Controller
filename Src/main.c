@@ -16,7 +16,7 @@ int main(void) {
 	uint8_t chunk[8] = {'1', '2', '3', '4'};
     while(1) {
     	if (pcp_read(&pcp, chunk) != -1) {
-    		handleInput(&pcp, chunk[0]);
+    		handleInput(&pcp, chunk);
     	}
     }
 }
