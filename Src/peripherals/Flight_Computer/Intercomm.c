@@ -31,12 +31,14 @@ State current_state = Idle;
 const size_t CHUNK_LENGTH = 8;
 
 
-//this is a function FOR NOW. See if needed to retransmit often.
-int sendChunk(PCPDevice *dev, uint8_t chunk[]) {
-    int response = pcp_transmit(dev, chunk, CHUNK_LENGTH);
-
-    return response;
+//Initializes an all-zero chunk of CHUNK_LENGTH size
+//Otherwise you might send a chunk with random numbers
+void initEmptyChunk(uint8_t chunk[]) {
+	for (size_t i = 0; i < CHUNK_LENGTH; i++) {
+		chunk[i] = 0;
+	}
 }
+
 void downloadData(PCPDevice *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
 
@@ -60,20 +62,29 @@ void downloadData(PCPDevice *dev, uint8_t chunk[]) {
 
 void uploadData(PCPDevice *dev) {
 	uint8_t first_chunk[CHUNK_LENGTH];
-	const uint8_t n_chunks = 1; //Number of chunks that will be sent
+	initEmptyChunk(first_chunk);
 
-	first_chunk[0] = Unflagged; //No actual upload flags were made yet
-	first_chunk[1] = n_chunks;
+	const uint8_t n_chunks = 1;
 
-	pcp_transmit(dev, first_chunk);
+	first_chunk[0] = 'U'; // Tell PFC this is an upload request
+	first_chunk[1] = n_chunks; //How many more chunks it should expect
+	first_chunk[2] = Unflagged; //No actual upload flags were made yet
 
+	pcp_transmit(dev, first_chunk, CHUNK_LENGTH);
 
 	for (int i = 0; i < n_chunks; i++) {
-		uint8_t chunk[CHUNK_LENGTH] = {'R', 'A', 'T', 'S'};
+		nop(1000);
+
+		uint8_t chunk[CHUNK_LENGTH];
+		initEmptyChunk(chunk);
+
 		//HERE BE DRAGONS
 		//Once memory access is implemented, the radio would retrieve memory and put it here
+		chunk[0]='R';
+		chunk[1]='A';
+		chunk[2]='T';
 
-		pcp_transmit(dev, chunk);
+		pcp_transmit(dev, chunk, CHUNK_LENGTH);
 	}
 }
 
@@ -104,9 +115,11 @@ void transferToGround(PCPDevice *dev, uint8_t chunk[]) {
 
 void sendState(PCPDevice *dev) {
 	uint8_t state_chunk[CHUNK_LENGTH];
+	initEmptyChunk(state_chunk);
+
 	state_chunk[0] = current_state;
 
-	sendChunk(dev, state_chunk);
+	pcp_transmit(dev, state_chunk, CHUNK_LENGTH);
 }
 
 //Primary function from which everything else here is called

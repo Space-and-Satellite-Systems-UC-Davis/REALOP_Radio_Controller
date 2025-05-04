@@ -3,16 +3,15 @@
 #include "Radio/radio.h"
 #include "UART/pcp.h"
 
-//this is a function FOR NOW. See if needed to retransmit often.
-int sendChunk(PCPDevice *dev, uint8_t chunk[]);
+uint8_t* getEmptyChunk(size_t size);
 
 void downloadData(PCPDevice *dev, uint8_t chunk[]);
 
 void uploadData(PCPDevice *dev);
 
-void transferToGround(PCPDevice *dev, uint8_t chunk[]);
-
 void sendState(PCPDevice *dev);
+
+void transferToGround(PCPDevice *dev, uint8_t chunk[]);
 
 //Primary function from which everything else here is called
 void handleInput(PCPDevice *dev, uint8_t chunk[]);

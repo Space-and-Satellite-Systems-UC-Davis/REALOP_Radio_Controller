@@ -11,12 +11,13 @@ int main(void) {
     init_platform();
     usart_init(USART1, 9600);
 
-	const int CHUNK_LENGTH = 8;
+	const size_t CHUNK_LENGTH = 8;
+	const int WAIT_INTERVAL = 5; //Time between upload requests
 
 	PCPDevice pcp;
 	make_pcpdev(&pcp, USART1);
 
-	uint8_t chunk[8] = {'1', '2', '3', '4'};
+	uint8_t chunk[CHUNK_LENGTH];
 
 	uint64_t start_time = getSysTime();
     while(1) {
@@ -26,8 +27,9 @@ int main(void) {
     		handleInput(&pcp, chunk);
     	}
 
-    	if (getSysTime() > (start_time + (1000*10))) { //10 seconds
+    	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) { //5 seconds
     		uploadData(&pcp);
+    		start_time = getSysTime();
     	}
     }
 }
