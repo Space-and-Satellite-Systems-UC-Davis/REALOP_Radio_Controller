@@ -12,6 +12,12 @@ typedef enum {
 	TransferToGround = 'T', //Transfer data to ground station
 } MessageType;
 
+//Tells PFC what type of data is being sent
+//For future flags, try to keep them lowercase and don't step on other enums
+typedef enum {
+    Unflagged = 'u', //No upload flags were designed yet
+} UploadFlag;
+
 typedef enum {
     TXactive = 't', //Busy tranceiving data to ground station
 	RXactive = 'r', //Busy receiving data from ground station
@@ -53,7 +59,22 @@ void downloadData(PCPDevice *dev, uint8_t chunk[]) {
 }
 
 void uploadData(PCPDevice *dev) {
+	uint8_t first_chunk[CHUNK_LENGTH];
+	const uint8_t n_chunks = 1; //Number of chunks that will be sent
 
+	first_chunk[0] = Unflagged; //No actual upload flags were made yet
+	first_chunk[1] = n_chunks;
+
+	pcp_transmit(dev, first_chunk);
+
+
+	for (int i = 0; i < n_chunks; i++) {
+		uint8_t chunk[CHUNK_LENGTH] = {'R', 'A', 'T', 'S'};
+		//HERE BE DRAGONS
+		//Once memory access is implemented, the radio would retrieve memory and put it here
+
+		pcp_transmit(dev, chunk);
+	}
 }
 
 void transferToGround(PCPDevice *dev, uint8_t chunk[]) {

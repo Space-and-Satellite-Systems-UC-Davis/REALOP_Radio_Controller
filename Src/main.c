@@ -2,7 +2,7 @@
 //#include "print_scan.h"
 #include "UART/pcp.h"
 #include "UART/uart.h"
-//#include "Timers/timers.h"
+#include "Timers/timers.h"
 #include "platform_init.h"
 #include "Flight_Computer/Intercomm.h"
 
@@ -18,11 +18,16 @@ int main(void) {
 
 	uint8_t chunk[8] = {'1', '2', '3', '4'};
 
+	uint64_t start_time = getSysTime();
     while(1) {
     	nop(1);
     	int read_status = pcp_read(&pcp, chunk);
     	if (read_status != -1) {
     		handleInput(&pcp, chunk);
+    	}
+
+    	if (getSysTime() > (start_time + (1000*10))) { //10 seconds
+    		uploadData(&pcp);
     	}
     }
 }
