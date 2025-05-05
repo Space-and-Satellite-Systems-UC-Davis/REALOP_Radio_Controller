@@ -23,10 +23,8 @@ void downloadData(PCPDevice *dev, uint8_t chunk[]) {
 	for (int i = 0; i < n_chunks; i++) {
 		int read_status = pcp_read(dev, chunk);
 		if (read_status != -1) {
-			//ECHO
-			//for (int j = 0; j < CHUNK_LENGTH; j++) {
-			//	usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
-			//}
+			// // ECHO
+			//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
 
 			//HERE BE DRAGONS
 			//Whenever radio memory is finished, put these chunks into memory
