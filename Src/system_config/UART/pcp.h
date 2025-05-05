@@ -17,7 +17,7 @@
 
 
 #include <globals.h>
-#include <stm32l431xx.h>
+#include <stm32l431xx.h> //has to be different from PFC
 #include <UART/uart.h>
 #include <stdarg.h>
 #include <Timers/timers.h>
