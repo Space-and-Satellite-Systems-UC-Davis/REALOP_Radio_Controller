@@ -256,6 +256,42 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 
 }
 
+uint8_t* radio_receive(){
+
+	//Set Wake up frequency in WAKEUPFREQ1 and WAKEUPFREQ0
+	ax5043_write8(AX5043_WAKEUP0, 0);  //??????????????????????? idk number yet
+	ax5043_write8(AX5043_WAKEUP1, 0);
+
+	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY); // Enable IRQ pin interrupt in IRQMASK0 register in IRQMFIFONOTEMPTY
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX | AX5043_PWRMODE_DEFAULTVALUES); // Set PWRMODE register to WORRX
+
+	while(!(ax5043_read8(AX5043_IRQREQUEST0) | AX5043_IRQM_FIFONOTEMPTY)); //wait until fifo is not empty
+
+	
+	uint8_t data[257]; //max of 256 bytes + first byte stores length
+	bool isWhole = false;
+	data[0] = 0; //if no data is read, length should be 0
+	if(ax5043_read8(AX5043_FIFOCOUNT0)){ //if fifocount is not equal to 0
+		//read from fifo data
+		uint8_t header = ax5043_read8(AX5043_FIFODATA);
+		uint8_t length = ax5043_read8(AX5043_FIFODATA);
+		uint8_t flags = ax5043_read8(AX5043_FIFODATA); // read flags
+		if(flags & (AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND)){
+			isWhole = true; //check if package is full...what should i do with this data
+		}
+		data[0] = length - 1; //set the first byte to the length of data
+
+		for(uint8_t i = 1; i<=length; i++){ //read length - 1 times
+			data[i] = ax5043_read8(AX5043_FIFODATA);
+		}
+	}
+
+
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES); //set pwm to power down
+	return data;
+	
+
+}
 
 
 uint8_t ax5043_read8(uint32_t address) {

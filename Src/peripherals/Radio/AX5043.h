@@ -50,6 +50,8 @@
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
 #define AX5043_PLLRANGINGA_RNGERR (1 << 5)
 
+#define AX5043_IRQM_FIFONOTEMPTY (1<<0)
+
 #define AX5043_SILICONREVISION   0x0000 /* Silicon Revision */
 #define AX5043_SCRATCH           0x0001 /* Scratch */
 #define AX5043_PWRMODE           0x0002 /* Power Mode */
@@ -342,6 +344,7 @@ void uhf_init();
 bool radio_autorange(int carrierHz, int xtalHz);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend);
+void radio_receive();
 
 void ax5043_write8(uint8_t address, uint8_t data);
 uint8_t ax5043_read8(uint32_t address);
