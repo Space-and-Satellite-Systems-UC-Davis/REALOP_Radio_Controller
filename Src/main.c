@@ -11,8 +11,10 @@ int main(void) {
     init_platform();
     usart_init(USART1, 9600);
 
-	const size_t CHUNK_LENGTH = 8;
-	const int WAIT_INTERVAL = 5; //Time between upload requests
+    //Length of chunks being sent in bytes between PFC, Radio, and Ground
+    const int CHUNK_LENGTH = 8;
+    //Time between upload requests in seconds
+    const int WAIT_INTERVAL = 5;
 
 	PCPDevice pcp;
 	make_pcpdev(&pcp, USART1);
@@ -27,7 +29,7 @@ int main(void) {
     		handleInput(&pcp, chunk);
     	}
 
-    	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) { //5 seconds
+    	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) {
     		uploadData(&pcp);
     		start_time = getSysTime();
     	}
