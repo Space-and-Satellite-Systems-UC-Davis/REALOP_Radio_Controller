@@ -52,6 +52,13 @@
 
 #define AX5043_IRQM_FIFONOTEMPTY (1<<0)
 
+#define PACKAGE_FULL     1
+#define PACKAGE_START    2
+#define PACKAGE_END      3
+#define PACKAGE_MIDDLE   4
+
+#define WAKEUP_FREQUENCY 100 //in ms
+
 #define AX5043_SILICONREVISION   0x0000 /* Silicon Revision */
 #define AX5043_SCRATCH           0x0001 /* Scratch */
 #define AX5043_PWRMODE           0x0002 /* Power Mode */
@@ -344,7 +351,15 @@ void uhf_init();
 bool radio_autorange(int carrierHz, int xtalHz);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend);
-void radio_receive();
+/**
+ * Inputs received data into an array
+ * 
+ * @param data the array to store the data in, should be 257 ints long
+ * 
+ * @returns the state of the package, if it is a whole package, only front, only back, or neither the start nor end
+ * uses PACKAGE_FULL, PACKAGE_START, PACKAGE_END, PACKAGE_MIDDLE 
+ */
+int radio_receive(uint8_t data[]);
 
 void ax5043_write8(uint8_t address, uint8_t data);
 uint8_t ax5043_read8(uint32_t address);

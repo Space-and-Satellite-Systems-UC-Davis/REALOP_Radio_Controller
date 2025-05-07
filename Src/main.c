@@ -15,6 +15,8 @@ int main(void)
 
 
 	radio_init();
+	uint8_t arr[275];
+	radio_receive(&arr);
     // while(true) {
     // 	blinky();
     // 	nop(1000);

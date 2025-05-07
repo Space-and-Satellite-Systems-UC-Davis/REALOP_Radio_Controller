@@ -256,20 +256,23 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 
 }
 
-uint8_t* radio_receive(){
+int radio_receive(uint8_t data[]){
 
 	//Set Wake up frequency in WAKEUPFREQ1 and WAKEUPFREQ0
-	ax5043_write8(AX5043_WAKEUP0, 0);  //??????????????????????? idk number yet
-	ax5043_write8(AX5043_WAKEUP1, 0);
+	//wakeup should be at 640Hz
+	//each tick is 1/640 = 0.0015625s = 1.5625s
+	uint16_t wakeup = WAKEUP_FREQUENCY / 1.5625; 
+	uint8_t wakeup1 = wakeup >> 8;
+	uint8_t wakeup0 =  (wakeup1 << 8) & wakeup;
+	ax5043_write8(AX5043_WAKEUP0, wakeup0);  
+	ax5043_write8(AX5043_WAKEUP1, wakeup1);
 
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY); // Enable IRQ pin interrupt in IRQMASK0 register in IRQMFIFONOTEMPTY
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX | AX5043_PWRMODE_DEFAULTVALUES); // Set PWRMODE register to WORRX
 
-	while(!(ax5043_read8(AX5043_IRQREQUEST0) | AX5043_IRQM_FIFONOTEMPTY)); //wait until fifo is not empty
+	//while(!(ax5043_read8(AX5043_IRQREQUEST0) | AX5043_IRQM_FIFONOTEMPTY)); //wait until fifo is not empty
 
-	
-	uint8_t data[257]; //max of 256 bytes + first byte stores length
-	bool isWhole = false;
+	int isWhole = PACKAGE_MIDDLE;
 	data[0] = 0; //if no data is read, length should be 0
 	if(ax5043_read8(AX5043_FIFOCOUNT0)){ //if fifocount is not equal to 0
 		//read from fifo data
@@ -277,7 +280,11 @@ uint8_t* radio_receive(){
 		uint8_t length = ax5043_read8(AX5043_FIFODATA);
 		uint8_t flags = ax5043_read8(AX5043_FIFODATA); // read flags
 		if(flags & (AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND)){
-			isWhole = true; //check if package is full...what should i do with this data
+			isWhole = PACKAGE_FULL; //check if package is full...what should i do with this data
+		} else if(flags & AX5043_TX_FLAGS_PKTSTART){
+			isWhole = PACKAGE_START; //start of package but not back
+		} else if(flags & AX5043_TX_FLAGS_PKTEND){
+			isWhole = PACKAGE_END; //ends package, no front
 		}
 		data[0] = length - 1; //set the first byte to the length of data
 
@@ -288,7 +295,8 @@ uint8_t* radio_receive(){
 
 
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES); //set pwm to power down
-	return data;
+	
+	return isWhole;
 	
 
 }
