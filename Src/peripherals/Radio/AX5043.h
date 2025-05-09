@@ -57,7 +57,7 @@
 #define PACKAGE_END      3
 #define PACKAGE_MIDDLE   4
 
-#define WAKEUP_FREQUENCY 100 //in ms
+#define WAKEUP_FREQUENCY 200 //in ms
 
 #define AX5043_SILICONREVISION   0x0000 /* Silicon Revision */
 #define AX5043_SCRATCH           0x0001 /* Scratch */

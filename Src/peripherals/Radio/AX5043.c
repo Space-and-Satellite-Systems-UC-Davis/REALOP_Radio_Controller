@@ -8,104 +8,102 @@ void radio_init() {
 
 void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_MODULATION     ,                              			0x08);
-	ax5043_write8(AX5043_ENCODING       ,                              			0x01);
-	ax5043_write8(AX5043_FRAMING        ,                              			0x06);
+	ax5043_write8(AX5043_ENCODING       ,                              			0x00);
+	ax5043_write8(AX5043_FRAMING        ,                              			0x64);
 	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01);
 	ax5043_write8(AX5043_PINFUNCDCLK    ,                              			0x01);
 	ax5043_write8(AX5043_PINFUNCDATA    ,                              			0x01);
-	ax5043_write8(AX5043_PINFUNCANTSEL  ,                              			0x00);
+	ax5043_write8(AX5043_PINFUNCANTSEL  ,                              			0x01);
 	ax5043_write8(AX5043_PINFUNCPWRAMP  ,                              			0x07);
 	ax5043_write8(AX5043_WAKEUPXOEARLY  ,                              			0x01);
-	ax5043_write8(AX5043_IFFREQ1        ,                              			0x03);
-	ax5043_write8(AX5043_IFFREQ0        ,                              			0xF0);
-	ax5043_write8(AX5043_DECIMATION     ,                              			0x0A);
+	ax5043_write8(AX5043_IFFREQ1        ,                              			0x15);
+	ax5043_write8(AX5043_IFFREQ0        ,                              			0xFA);
+	ax5043_write8(AX5043_DECIMATION     ,                              			0x01);
 	ax5043_write8(AX5043_RXDATARATE2    ,                              			0x00);
-	ax5043_write8(AX5043_RXDATARATE1    ,                              			0x41);
+	ax5043_write8(AX5043_RXDATARATE1    ,                              			0x34);
 	ax5043_write8(AX5043_RXDATARATE0    ,                              			0x00);
 	ax5043_write8(AX5043_MAXDROFFSET2   ,                              			0x00);
 	ax5043_write8(AX5043_MAXDROFFSET1   ,                              			0x00);
 	ax5043_write8(AX5043_MAXDROFFSET0   ,                              			0x00);
 	ax5043_write8(AX5043_MAXRFOFFSET2   ,                              			0x80);
-	ax5043_write8(AX5043_MAXRFOFFSET1   ,                              			0x04);
-	ax5043_write8(AX5043_MAXRFOFFSET0   ,                              			0x9C);
+	ax5043_write8(AX5043_MAXRFOFFSET1   ,                              			0xEC);
+	ax5043_write8(AX5043_MAXRFOFFSET0   ,                              			0x4F);
 	ax5043_write8(AX5043_FSKDMAX1       ,                              			0x00);
 	ax5043_write8(AX5043_FSKDMAX0       ,                              			0xA6);
 	ax5043_write8(AX5043_FSKDMIN1       ,                              			0xFF);
 	ax5043_write8(AX5043_FSKDMIN0       ,                              			0x5A);
 	ax5043_write8(AX5043_AMPLFILTER     ,                              			0x00);
 	ax5043_write8(AX5043_RXPARAMSETS    ,                              			0xF4);
-	ax5043_write8(AX5043_AGCGAIN0       ,                              			0xB4);
+	ax5043_write8(AX5043_AGCGAIN0       ,                              			0x73);
 	ax5043_write8(AX5043_AGCTARGET0     ,                              			0x84);
-	ax5043_write8(AX5043_TIMEGAIN0      ,                              			0x89);
-	ax5043_write8(AX5043_DRGAIN0        ,                              			0x83);
+	ax5043_write8(AX5043_TIMEGAIN0      ,                              			0xD8);
+	ax5043_write8(AX5043_DRGAIN0        ,                              			0xD2);
 	ax5043_write8(AX5043_PHASEGAIN0     ,                              			0xC3);
 	ax5043_write8(AX5043_FREQUENCYGAINA0,                              			0x0F);
 	ax5043_write8(AX5043_FREQUENCYGAINB0,                              			0x1F);
-	ax5043_write8(AX5043_FREQUENCYGAINC0,                              			0x07);
-	ax5043_write8(AX5043_FREQUENCYGAIND0,                              			0x07);
+	ax5043_write8(AX5043_FREQUENCYGAINC0,                              			0x04);
+	ax5043_write8(AX5043_FREQUENCYGAIND0,                              			0x04);
 	ax5043_write8(AX5043_AMPLITUDEGAIN0 ,                              			0x06);
 	ax5043_write8(AX5043_FREQDEV10      ,                              			0x00);
 	ax5043_write8(AX5043_FREQDEV00      ,                              			0x00);
 	ax5043_write8(AX5043_BBOFFSRES0     ,                              			0x00);
-	ax5043_write8(AX5043_AGCGAIN1       ,                              			0xB4);
+	ax5043_write8(AX5043_AGCGAIN1       ,                              			0x73);
 	ax5043_write8(AX5043_AGCTARGET1     ,                              			0x84);
 	ax5043_write8(AX5043_AGCAHYST1      ,                              			0x00);
 	ax5043_write8(AX5043_AGCMINMAX1     ,                              			0x00);
-	ax5043_write8(AX5043_TIMEGAIN1      ,                              			0x87);
-	ax5043_write8(AX5043_DRGAIN1        ,                              			0x82);
+	ax5043_write8(AX5043_TIMEGAIN1      ,                              			0xD6);
+	ax5043_write8(AX5043_DRGAIN1        ,                              			0xD1);
 	ax5043_write8(AX5043_PHASEGAIN1     ,                              			0xC3);
 	ax5043_write8(AX5043_FREQUENCYGAINA1,                              			0x0F);
 	ax5043_write8(AX5043_FREQUENCYGAINB1,                              			0x1F);
-	ax5043_write8(AX5043_FREQUENCYGAINC1,                              			0x07);
-	ax5043_write8(AX5043_FREQUENCYGAIND1,                              			0x07);
+	ax5043_write8(AX5043_FREQUENCYGAINC1,                              			0x04);
+	ax5043_write8(AX5043_FREQUENCYGAIND1,                              			0x04);
 	ax5043_write8(AX5043_AMPLITUDEGAIN1 ,                              			0x06);
 	ax5043_write8(AX5043_FREQDEV11      ,                              			0x00);
-	ax5043_write8(AX5043_FREQDEV01      ,                              			0x3C);
+	ax5043_write8(AX5043_FREQDEV01      ,                              			0x32);
 	ax5043_write8(AX5043_FOURFSK1       ,                              			0x16);
 	ax5043_write8(AX5043_BBOFFSRES1     ,                              			0x00);
 	ax5043_write8(AX5043_AGCGAIN3       ,                              			0xFF);
 	ax5043_write8(AX5043_AGCTARGET3     ,                              			0x84);
 	ax5043_write8(AX5043_AGCAHYST3      ,                              			0x00);
 	ax5043_write8(AX5043_AGCMINMAX3     ,                              			0x00);
-	ax5043_write8(AX5043_TIMEGAIN3      ,                              			0x86);
-	ax5043_write8(AX5043_DRGAIN3        ,                              			0x81);
+	ax5043_write8(AX5043_TIMEGAIN3      ,                              			0xD5);
+	ax5043_write8(AX5043_DRGAIN3        ,                              			0xD0);
 	ax5043_write8(AX5043_PHASEGAIN3     ,                              			0xC3);
 	ax5043_write8(AX5043_FREQUENCYGAINA3,                              			0x0F);
 	ax5043_write8(AX5043_FREQUENCYGAINB3,                              			0x1F);
-	ax5043_write8(AX5043_FREQUENCYGAINC3,                              			0x0B);
-	ax5043_write8(AX5043_FREQUENCYGAIND3,                              			0x0B);
+	ax5043_write8(AX5043_FREQUENCYGAINC3,                              			0x08);
+	ax5043_write8(AX5043_FREQUENCYGAIND3,                              			0x08);
 	ax5043_write8(AX5043_AMPLITUDEGAIN3 ,                              			0x06);
 	ax5043_write8(AX5043_FREQDEV13      ,                              			0x00);
-	ax5043_write8(AX5043_FREQDEV03      ,                              			0x3C);
+	ax5043_write8(AX5043_FREQDEV03      ,                              			0x32);
 	ax5043_write8(AX5043_FOURFSK3       ,                              			0x16);
 	ax5043_write8(AX5043_BBOFFSRES3     ,                              			0x00);
-	ax5043_write8(AX5043_MODCFGF        ,                              			0x00);
+	ax5043_write8(AX5043_MODCFGF        ,                              			0x03);
 	ax5043_write8(AX5043_FSKDEV2        ,                              			0x00);
-	ax5043_write8(AX5043_FSKDEV1        ,                              			0x08);
-	ax5043_write8(AX5043_FSKDEV0        ,                              			0x67);
+	ax5043_write8(AX5043_FSKDEV1        ,                              			0x4E);
+	ax5043_write8(AX5043_FSKDEV0        ,                              			0xC5);
 	ax5043_write8(AX5043_MODCFGA        ,                              			0x05);
-	ax5043_write8(AX5043_TXRATE2        ,                              			0x00);
-	ax5043_write8(AX5043_TXRATE1        ,                              			0x19);
-	ax5043_write8(AX5043_TXRATE0        ,                              			0x35);
-	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x0F);
-	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0xFF);
-	ax5043_write8(AX5043_PLLVCOI        ,                              			0x96);
+	ax5043_write8(AX5043_TXRATE2        ,                              			0x01);
+	ax5043_write8(AX5043_TXRATE1        ,                              			0x3B);
+	ax5043_write8(AX5043_TXRATE0        ,                              			0x14);
+	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x07);
+	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0x00);
+	ax5043_write8(AX5043_PLLVCOI        ,                              			0x98);
 	ax5043_write8(AX5043_PLLRNGCLK      ,                              			0x04);
-	ax5043_write8(AX5043_BBTUNE         ,                              			0x0F);
+	ax5043_write8(AX5043_BBTUNE         ,                              			0x01);
 	ax5043_write8(AX5043_BBOFFSCAP      ,                              			0x77);
 	ax5043_write8(AX5043_PKTADDRCFG     ,                              			0x00);
 	ax5043_write8(AX5043_PKTLENCFG      ,                              			0x00);
-	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x08);
+	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x09);
 	ax5043_write8(AX5043_PKTMAXLEN      ,                              			0xC8);
 	ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAA);
 	ax5043_write8(AX5043_MATCH0PAT2     ,                              			0xCC);
 	ax5043_write8(AX5043_MATCH0PAT1     ,                              			0xAA);
 	ax5043_write8(AX5043_MATCH0PAT0     ,                              			0xCC);
-	ax5043_write8(AX5043_MATCH0LEN      ,                              			0x9F);
-	ax5043_write8(AX5043_MATCH0MAX      ,                              			0x1F);
 	ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55);
 	ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55);
-	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A);
+	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x0A);
 	ax5043_write8(AX5043_MATCH1MAX      ,                              			0x0A);
 	ax5043_write8(AX5043_TMGTXBOOST     ,                              			0x3E);
 	ax5043_write8(AX5043_TMGTXSETTLE    ,                              			0x31);
@@ -114,8 +112,8 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_TMGRXOFFSACQ   ,                              			0x00);
 	ax5043_write8(AX5043_TMGRXCOARSEAGC ,                              			0x7F);
 	ax5043_write8(AX5043_TMGRXRSSI      ,                              			0x03);
-	ax5043_write8(AX5043_TMGRXPREAMBLE2 ,                              			0x35);
-	ax5043_write8(AX5043_RSSIABSTHR     ,                              			0xE3);
+	ax5043_write8(AX5043_TMGRXPREAMBLE2 ,                              			0x17);
+	ax5043_write8(AX5043_RSSIABSTHR     ,                              			0xEB);
 	ax5043_write8(AX5043_BGNDRSSITHR    ,                              			0x00);
 	ax5043_write8(AX5043_PKTCHUNKSIZE   ,                              			0x0D);
 	ax5043_write8(AX5043_PKTACCEPTFLAGS ,                              			0x20);
@@ -130,10 +128,9 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_0xF22          ,                              			0xFF);
 	ax5043_write8(AX5043_0xF23          ,                              			0x84);
 	ax5043_write8(AX5043_0xF26          ,                              			0x98);
-	ax5043_write8(AX5043_0xF34          ,                              			0x08);
+	ax5043_write8(AX5043_0xF34          ,                              			0x28);
 	ax5043_write8(AX5043_0xF35          ,                              			0x11);
 	ax5043_write8(AX5043_0xF44          ,                              			0x25);
-
 }
 
 void uhf_init() {
@@ -183,9 +180,11 @@ bool radio_autorange(int carrierHz, int xtalHz) {
 
     while(!ax5043_read8(AX5043_XTALSTATUS)); //Wait for crystal to be ready 
     
+    printRegister = ax5043_read8(AX5043_PLLRANGINGA);
+
 	ax5043_write8(AX5043_PLLRANGINGA, ax5043_read8(AX5043_PLLRANGINGA) | AX5043_PLLRANGINGA_RNGSTART); // start ranging 
 
-    printRegister = ax5043_read8(AX5043_PLLRANGINGA);
+    //printRegister = ax5043_read8(AX5043_PLLRANGINGA);
 
     while((ax5043_read8(AX5043_PLLRANGINGA) & (AX5043_PLLRANGINGA_RNGSTART))); //Wait for RNGSTART to read 0 indicating it is done
 
@@ -194,7 +193,7 @@ bool radio_autorange(int carrierHz, int xtalHz) {
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES);
 
     if (ax5043_read8(AX5043_PLLRANGINGA) & AX5043_PLLRANGINGA_RNGERR) {
-        return false; //Indicates an error in auto ranging, try again
+    	return false; //Indicates an error in auto ranging, try again
     }
 
     return true;
@@ -263,20 +262,20 @@ int radio_receive(uint8_t data[]){
 	//each tick is 1/640 = 0.0015625s = 1.5625s
 	uint16_t wakeup = WAKEUP_FREQUENCY / 1.5625; 
 	uint8_t wakeup1 = wakeup >> 8;
-	uint8_t wakeup0 =  (wakeup1 << 8) & wakeup;
+	uint8_t wakeup0 =  ~(wakeup1 << 8) & wakeup;
 	ax5043_write8(AX5043_WAKEUP0, wakeup0);  
 	ax5043_write8(AX5043_WAKEUP1, wakeup1);
 
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY); // Enable IRQ pin interrupt in IRQMASK0 register in IRQMFIFONOTEMPTY
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX | AX5043_PWRMODE_DEFAULTVALUES); // Set PWRMODE register to WORRX
 
-	//while(!(ax5043_read8(AX5043_IRQREQUEST0) | AX5043_IRQM_FIFONOTEMPTY)); //wait until fifo is not empty
+	while(!(ax5043_read8(AX5043_IRQREQUEST0) & AX5043_IRQM_FIFONOTEMPTY)); //wait until fifo is not empty
 
 	int isWhole = PACKAGE_MIDDLE;
 	data[0] = 0; //if no data is read, length should be 0
-	if(ax5043_read8(AX5043_FIFOCOUNT0)){ //if fifocount is not equal to 0
+
+	if(ax5043_read8(AX5043_FIFOCOUNT0) && ax5043_read8(AX5043_FIFODATA) == AX5043_FIFODATA_DATA_COMMAND){ //if fifocount is not equal to 0
 		//read from fifo data
-		uint8_t header = ax5043_read8(AX5043_FIFODATA);
 		uint8_t length = ax5043_read8(AX5043_FIFODATA);
 		uint8_t flags = ax5043_read8(AX5043_FIFODATA); // read flags
 		if(flags & (AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND)){
@@ -298,7 +297,6 @@ int radio_receive(uint8_t data[]){
 	
 	return isWhole;
 	
-
 }
 
 

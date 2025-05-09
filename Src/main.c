@@ -15,8 +15,11 @@ int main(void)
 
 
 	radio_init();
-	uint8_t arr[275];
-	radio_receive(&arr);
+	uint8_t arr[100];
+	for(uint8_t i = 0; i<100; i++){
+		arr[i]  =i;
+	}
+	radio_transmit(100, &arr);
     // while(true) {
     // 	blinky();
     // 	nop(1000);
