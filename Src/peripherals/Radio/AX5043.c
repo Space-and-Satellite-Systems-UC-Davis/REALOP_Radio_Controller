@@ -151,7 +151,7 @@ void uhf_init() {
     while(!gpio_read(GPIOA, 6)); //Wait for MISO to go HIGH 
 
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_RST); //Turn on RST bit
-	nop(1000);
+  	nop(1000);
     ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES); //Turn off RST bit
 
     uhf_programParametersFromRadioLab(); //TODO: Get those parameters
@@ -177,7 +177,6 @@ bool radio_autorange(float carrierHz, int xtalHz) {
 	ax5043_write8(AX5043_FREQA1, (freqa >> 8) & 0xFF);
 	ax5043_write8(AX5043_FREQA2, (freqa >> 16) & 0xFF);
 	ax5043_write8(AX5043_FREQA3, (freqa >> 24) & 0xFF);
-
 	
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY | AX5043_PWRMODE_DEFAULTVALUES); // Set to STANDBY
 	gpio_high(GPIOC, 9); //Enable clock for crystal
@@ -258,6 +257,28 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
     } 
 
 }
+ 
+bool radio_receive(packet_t* received_packet) {
+	
+	if (ax5043_read8(AX5043_FIFOCOUNT0) > 0) {
+		uint8_t header = ax5043_read8(AX5043_FIFODATA);
+		uint8_t length = ax5043_read8(AX5043_FIFODATA);
+		uint8_t flags = ax5043_read8(AX5043_FIFODATA);
+		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
+		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
+		received_packet->length = length - 1;
+		
+		for (int i = 0; i < length - 1; i++) {
+			if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command 
+				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA);
+			}
+		}
+		
+		return true;
+	}
+
+	return false; 
+} 
 
  
 bool radio_receive(packet_t* received_packet) {
