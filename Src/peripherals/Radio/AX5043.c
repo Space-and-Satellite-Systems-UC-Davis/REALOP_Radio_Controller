@@ -195,7 +195,7 @@ bool radio_autorange(float carrierHz, int xtalHz) {
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES);
 
 	gpio_low(GPIOC, 9); //Enable clock for crystal
-	
+
     if (ax5043_read8(AX5043_PLLRANGINGA) & AX5043_PLLRANGINGA_RNGERR) {
     	return false; //Indicates an error in auto ranging, try again
     }
@@ -259,50 +259,28 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 
 }
 
-int radio_receive(uint8_t data[]){
-
-	//Set Wake up frequency in WAKEUPFREQ1 and WAKEUPFREQ0
-	//wakeup should be at 640Hz
-	//each tick is 1/640 = 0.0015625s = 1.5625s
-	uint16_t wakeup = WAKEUP_FREQUENCY / 1.5625; 
-	uint8_t wakeup1 = wakeup >> 8;
-	uint8_t wakeup0 =  ~(wakeup1 << 8) & wakeup;
-	ax5043_write8(AX5043_WAKEUP0, wakeup0);  
-	ax5043_write8(AX5043_WAKEUP1, wakeup1);
-
-	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY); // Enable IRQ pin interrupt in IRQMASK0 register in IRQMFIFONOTEMPTY
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX | AX5043_PWRMODE_DEFAULTVALUES); // Set PWRMODE register to WORRX
-
-	while(!(ax5043_read8(AX5043_IRQREQUEST0) & AX5043_IRQM_FIFONOTEMPTY)); //wait until fifo is not empty
-
-	int isWhole = PACKAGE_MIDDLE;
-	data[0] = 0; //if no data is read, length should be 0
-
-	if(ax5043_read8(AX5043_FIFOCOUNT0) && ax5043_read8(AX5043_FIFODATA) == AX5043_FIFODATA_DATA_COMMAND){ //if fifocount is not equal to 0
-		//read from fifo data
+ 
+bool radio_receive(packet_t* received_packet) {
+	
+	if (ax5043_read8(AX5043_FIFOCOUNT0) > 0) {
+		uint8_t header = ax5043_read8(AX5043_FIFODATA);
 		uint8_t length = ax5043_read8(AX5043_FIFODATA);
-		uint8_t flags = ax5043_read8(AX5043_FIFODATA); // read flags
-		if(flags & (AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND)){
-			isWhole = PACKAGE_FULL; //check if package is full...what should i do with this data
-		} else if(flags & AX5043_TX_FLAGS_PKTSTART){
-			isWhole = PACKAGE_START; //start of package but not back
-		} else if(flags & AX5043_TX_FLAGS_PKTEND){
-			isWhole = PACKAGE_END; //ends package, no front
+		uint8_t flags = ax5043_read8(AX5043_FIFODATA);
+		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
+		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
+		received_packet->length = length - 1;
+		
+		for (int i = 0; i < length - 1; i++) {
+			if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command 
+				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA);
+			}
 		}
-		data[0] = length - 1; //set the first byte to the length of data
-
-		for(uint8_t i = 1; i<=length; i++){ //read length - 1 times
-			data[i] = ax5043_read8(AX5043_FIFODATA);
-		}
+		
+		return true;
 	}
 
-
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES); //set pwm to power down
-	
-	return isWhole;
-	
-}
-
+	return false; 
+} 
 
 uint8_t ax5043_read8(uint32_t address) {
     uint8_t addr[2];

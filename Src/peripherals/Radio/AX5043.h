@@ -351,17 +351,17 @@ void uhf_init();
 bool radio_autorange(float carrierHz, int xtalHz);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend);
-/**
- * Inputs received data into an array
- * 
- * @param data the array to store the data in, should be 257 ints long
- * 
- * @returns the state of the package, if it is a whole package, only front, only back, or neither the start nor end
- * uses PACKAGE_FULL, PACKAGE_START, PACKAGE_END, PACKAGE_MIDDLE 
- */
-int radio_receive(uint8_t data[]);
+
+typedef struct PACKET_STRUCT {
+    int pkt[256];
+    int length;
+    int isPacketStart;
+    int isPacketEnd;
+} packet_t;
+
 
 void ax5043_write8(uint8_t address, uint8_t data);
+bool radio_receive(packet_t *received_packet);
 uint8_t ax5043_read8(uint32_t address);
 
 #endif
