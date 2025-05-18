@@ -26,13 +26,14 @@
  * @returns None
  */
 void init_platform() {
+	SCB->CPACR|= 0x00F00000; // Enable the Floating-Point Unit for full access
 	init_coreClocks();
 
 	// init intercomm
 	// init radio
 
 	led_init();
-	printer_init();
+	// printer_init();
 	systick_init();
 }
 
