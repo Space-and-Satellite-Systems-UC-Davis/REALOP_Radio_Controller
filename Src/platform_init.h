@@ -58,6 +58,12 @@ static void gpio_init() {
 
 	GPIOA->MODER &= ~GPIO_MODER_MODE8_Msk;	// vhf (rad1) 3v3 enable
 	GPIOA->MODER |=  GPIO_MODER_MODE8_0;
+
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+	while(GPIOC->OTYPER == 0xFFFFFFFF);
+	GPIOC->MODER &= ~GPIO_MODER_MODE9_Msk;	//crystal v2v8 enable
+	GPIOC->MODER |=  GPIO_MODER_MODE9_0;
+
 }
 
 #endif // REALOP1_PLATFORM_INIT_H

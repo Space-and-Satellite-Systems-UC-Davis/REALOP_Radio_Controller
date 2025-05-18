@@ -44,11 +44,20 @@
 
 #define AX5043_POWSTAT_SVMODEM (1 << 1)
 
-#define AX5043_CARRIER_HZ 435
+#define AX5043_CARRIER_HZ 435.775
 #define AX5043_XTAL_HZ 26
 #define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
 #define AX5043_PLLRANGINGA_RNGERR (1 << 5)
+
+#define AX5043_IRQM_FIFONOTEMPTY (1<<0)
+
+#define PACKAGE_FULL     1
+#define PACKAGE_START    2
+#define PACKAGE_END      3
+#define PACKAGE_MIDDLE   4
+
+#define WAKEUP_FREQUENCY 200 //in ms
 
 #define AX5043_SILICONREVISION   0x0000 /* Silicon Revision */
 #define AX5043_SCRATCH           0x0001 /* Scratch */
@@ -339,13 +348,12 @@ void radio_init();
 
 void uhf_init();
 
-bool radio_autorange(int carrierHz, int xtalHz);
+bool radio_autorange(float carrierHz, int xtalHz);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend);
 
-bool radio_receive();
-
 void ax5043_write8(uint8_t address, uint8_t data);
+bool radio_receive(packet_t *received_packet);
 uint8_t ax5043_read8(uint32_t address);
 
 typedef struct PACKET_STRUCT {
