@@ -44,7 +44,7 @@
 
 #define AX5043_POWSTAT_SVMODEM (1 << 1)
 
-#define AX5043_CARRIER_HZ 435
+#define AX5043_CARRIER_HZ 435.775
 #define AX5043_XTAL_HZ 26
 #define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
@@ -348,7 +348,7 @@ void radio_init();
 
 void uhf_init();
 
-bool radio_autorange(int carrierHz, int xtalHz);
+bool radio_autorange(float carrierHz, int xtalHz);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend);
 /**

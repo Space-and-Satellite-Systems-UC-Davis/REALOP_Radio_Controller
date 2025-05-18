@@ -9,7 +9,7 @@ void radio_init() {
 void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_MODULATION     ,                              			0x08);
 	ax5043_write8(AX5043_ENCODING       ,                              			0x00);
-	ax5043_write8(AX5043_FRAMING        ,                              			0x64);
+	ax5043_write8(AX5043_FRAMING        ,                              			0x24);
 	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01);
 	ax5043_write8(AX5043_PINFUNCDCLK    ,                              			0x01);
 	ax5043_write8(AX5043_PINFUNCDATA    ,                              			0x01);
@@ -26,8 +26,8 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_MAXDROFFSET1   ,                              			0x00);
 	ax5043_write8(AX5043_MAXDROFFSET0   ,                              			0x00);
 	ax5043_write8(AX5043_MAXRFOFFSET2   ,                              			0x80);
-	ax5043_write8(AX5043_MAXRFOFFSET1   ,                              			0xEC);
-	ax5043_write8(AX5043_MAXRFOFFSET0   ,                              			0x4F);
+	ax5043_write8(AX5043_MAXRFOFFSET1   ,                              			0x03);
+	ax5043_write8(AX5043_MAXRFOFFSET0   ,                              			0x4D);
 	ax5043_write8(AX5043_FSKDMAX1       ,                              			0x00);
 	ax5043_write8(AX5043_FSKDMAX0       ,                              			0xA6);
 	ax5043_write8(AX5043_FSKDMIN1       ,                              			0xFF);
@@ -83,19 +83,20 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_FSKDEV2        ,                              			0x00);
 	ax5043_write8(AX5043_FSKDEV1        ,                              			0x4E);
 	ax5043_write8(AX5043_FSKDEV0        ,                              			0xC5);
+
 	ax5043_write8(AX5043_MODCFGA        ,                              			0x05);
 	ax5043_write8(AX5043_TXRATE2        ,                              			0x01);
 	ax5043_write8(AX5043_TXRATE1        ,                              			0x3B);
 	ax5043_write8(AX5043_TXRATE0        ,                              			0x14);
-	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x07);
-	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0x00);
+	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x0F);
+	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0xFF);
 	ax5043_write8(AX5043_PLLVCOI        ,                              			0x98);
 	ax5043_write8(AX5043_PLLRNGCLK      ,                              			0x04);
 	ax5043_write8(AX5043_BBTUNE         ,                              			0x01);
 	ax5043_write8(AX5043_BBOFFSCAP      ,                              			0x77);
-	ax5043_write8(AX5043_PKTADDRCFG     ,                              			0x00);
-	ax5043_write8(AX5043_PKTLENCFG      ,                              			0x00);
-	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x09);
+	ax5043_write8(AX5043_PKTADDRCFG     ,                              			0x01);
+	ax5043_write8(AX5043_PKTLENCFG      ,                              			0x80);
+	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x00);
 	ax5043_write8(AX5043_PKTMAXLEN      ,                              			0xC8);
 	ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAA);
 	ax5043_write8(AX5043_MATCH0PAT2     ,                              			0xCC);
@@ -103,12 +104,13 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_MATCH0PAT0     ,                              			0xCC);
 	ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55);
 	ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55);
-	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x0A);
+	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A);
 	ax5043_write8(AX5043_MATCH1MAX      ,                              			0x0A);
 	ax5043_write8(AX5043_TMGTXBOOST     ,                              			0x3E);
 	ax5043_write8(AX5043_TMGTXSETTLE    ,                              			0x31);
 	ax5043_write8(AX5043_TMGRXBOOST     ,                              			0x3E);
 	ax5043_write8(AX5043_TMGRXSETTLE    ,                              			0x31);
+
 	ax5043_write8(AX5043_TMGRXOFFSACQ   ,                              			0x00);
 	ax5043_write8(AX5043_TMGRXCOARSEAGC ,                              			0x7F);
 	ax5043_write8(AX5043_TMGRXRSSI      ,                              			0x03);
@@ -117,10 +119,11 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_BGNDRSSITHR    ,                              			0x00);
 	ax5043_write8(AX5043_PKTCHUNKSIZE   ,                              			0x0D);
 	ax5043_write8(AX5043_PKTACCEPTFLAGS ,                              			0x20);
-	ax5043_write8(AX5043_DACVALUE1      ,                              			0x00);
-	ax5043_write8(AX5043_DACVALUE0      ,                              			0x00);
+	//ax5043_write8(AX5043_DACVALUE1      ,                              			0x00);// Also sucks ass
+	// ax5043_write8(AX5043_DACVALUE0      ,                              			0x00); //Sucks ass, will break everything
 	ax5043_write8(AX5043_DACCONFIG      ,                              			0x00);
 	ax5043_write8(AX5043_REF            ,                              			0x03);
+	
 	ax5043_write8(AX5043_XTALOSC        ,                              			0x04);
 	ax5043_write8(AX5043_XTALAMPL       ,                              			0x00);
 	ax5043_write8(AX5043_0xF1C          ,                              			0x07);
@@ -131,28 +134,29 @@ void uhf_programParametersFromRadioLab() {
 	ax5043_write8(AX5043_0xF34          ,                              			0x28);
 	ax5043_write8(AX5043_0xF35          ,                              			0x11);
 	ax5043_write8(AX5043_0xF44          ,                              			0x25);
+	ax5043_write8(AX5043_PLLVCODIV      ,                              			0x04);
+	
 }
 
 void uhf_init() {
+
     gpio_low(GPIOB, 9); // Disable power to UHF Transceiver 
     nop(10000000);
     gpio_high(GPIOB, 9); // Enable power to UHF Transceiver
     //power cycle the chip to clear previous auto ranges
     nop(10000000);
+
     spi_startCommunication(UHF_SPI_CS);
 
     while(!gpio_read(GPIOA, 6)); //Wait for MISO to go HIGH 
 
-    uint8_t initialValueOfPWRMODE = ax5043_read8(AX5043_PWRMODE);
-
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_RST); //Turn on RST bit
-    nop(50);
-    ax5043_write8(AX5043_PWRMODE, !AX5043_PWRMODE_RST | initialValueOfPWRMODE); //Turn off RST bit
-
-    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | initialValueOfPWRMODE);
+	nop(1000);
+    ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES); //Turn off RST bit
 
     uhf_programParametersFromRadioLab(); //TODO: Get those parameters
-
+	
+	
     int failCount = 0;
     while(!radio_autorange(AX5043_CARRIER_HZ, AX5043_XTAL_HZ)) {
         if (failCount > 3) {
@@ -163,28 +167,26 @@ void uhf_init() {
 
 }
 
-bool radio_autorange(int carrierHz, int xtalHz) {
+bool radio_autorange(float carrierHz, int xtalHz) {
+	
     uint8_t printRegister = 0;
 
-	int freqa = ((uint_fast64_t)(carrierHz)<<24)/xtalHz | 1;
+	 uint64_t freqa = (uint64_t)(carrierHz / xtalHz * (1<<24) +.5) |1;
+
 	ax5043_write8(AX5043_FREQA0, (freqa >> 0) & 0xFF);
 	ax5043_write8(AX5043_FREQA1, (freqa >> 8) & 0xFF);
 	ax5043_write8(AX5043_FREQA2, (freqa >> 16) & 0xFF);
 	ax5043_write8(AX5043_FREQA3, (freqa >> 24) & 0xFF);
+
 	
-    ax5043_write8(AX5043_PLLRANGINGA, AX5043_PLLRANGINGA_VCORA);
+    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY | AX5043_PWRMODE_DEFAULTVALUES); // Set to STANDBY
+	gpio_high(GPIOC, 9); //Enable clock for crystal
 
-    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY | AX5043_PWRMODE_DEFAULTVALUES); //Not sure if i need to do the shifting but the normal reset value has REFEN and XOEN on
-
-    printRegister = ax5043_read8(AX5043_PWRMODE);
-
-    while(!ax5043_read8(AX5043_XTALSTATUS)); //Wait for crystal to be ready 
+	while(!ax5043_read8(AX5043_XTALSTATUS)); //Wait for crystal to be ready
     
-    printRegister = ax5043_read8(AX5043_PLLRANGINGA);
+	ax5043_write8(AX5043_PLLRANGINGA, AX5043_PLLRANGINGA_VCORA | AX5043_PLLRANGINGA_RNGSTART); // start ranging 
 
-	ax5043_write8(AX5043_PLLRANGINGA, ax5043_read8(AX5043_PLLRANGINGA) | AX5043_PLLRANGINGA_RNGSTART); // start ranging 
-
-    //printRegister = ax5043_read8(AX5043_PLLRANGINGA);
+	while (!(ax5043_read8(AX5043_IRQREQUEST1) & 0x10)); // Check for Error
 
     while((ax5043_read8(AX5043_PLLRANGINGA) & (AX5043_PLLRANGINGA_RNGSTART))); //Wait for RNGSTART to read 0 indicating it is done
 
@@ -192,6 +194,8 @@ bool radio_autorange(int carrierHz, int xtalHz) {
 
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES);
 
+	gpio_low(GPIOC, 9); //Enable clock for crystal
+	
     if (ax5043_read8(AX5043_PLLRANGINGA) & AX5043_PLLRANGINGA_RNGERR) {
     	return false; //Indicates an error in auto ranging, try again
     }
