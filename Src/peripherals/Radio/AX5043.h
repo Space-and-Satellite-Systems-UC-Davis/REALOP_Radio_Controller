@@ -348,6 +348,13 @@ void radio_init();
 
 void uhf_init();
 
+typedef struct PACKET_STRUCT {
+    int pkt[256];
+    int length;
+    int isPacketStart;
+    int isPacketEnd;
+} packet_t;
+
 bool radio_autorange(float carrierHz, int xtalHz);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend);
@@ -356,11 +363,5 @@ void ax5043_write8(uint8_t address, uint8_t data);
 bool radio_receive(packet_t *received_packet);
 uint8_t ax5043_read8(uint32_t address);
 
-typedef struct PACKET_STRUCT {
-    int pkt[256];
-    int length;
-    int isPacketStart;
-    int isPacketEnd;
-} packet_t;
 
 #endif

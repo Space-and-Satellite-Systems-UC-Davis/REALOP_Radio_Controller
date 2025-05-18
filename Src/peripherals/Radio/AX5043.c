@@ -258,28 +258,6 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 
 }
  
-bool radio_receive(packet_t* received_packet) {
-	
-	if (ax5043_read8(AX5043_FIFOCOUNT0) > 0) {
-		uint8_t header = ax5043_read8(AX5043_FIFODATA);
-		uint8_t length = ax5043_read8(AX5043_FIFODATA);
-		uint8_t flags = ax5043_read8(AX5043_FIFODATA);
-		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
-		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
-		received_packet->length = length - 1;
-		
-		for (int i = 0; i < length - 1; i++) {
-			if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command 
-				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA);
-			}
-		}
-		
-		return true;
-	}
-
-	return false; 
-} 
-
  
 bool radio_receive(packet_t* received_packet) {
 	
