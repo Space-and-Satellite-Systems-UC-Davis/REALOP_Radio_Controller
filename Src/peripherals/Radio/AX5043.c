@@ -138,6 +138,36 @@ void uhf_programParametersFromRadioLab() {
 	
 }
 
+
+void ax5043_set_registers_tx(void)
+{
+	ax5043_write8(AX5043_PLLLOOP        ,                              			0x09);
+	ax5043_write8(AX5043_PLLCPI         ,                              			0x02);
+	ax5043_write8(AX5043_PLLVCODIV      ,                              			0x24);
+	ax5043_write8(AX5043_XTALCAP        ,                              			0x00);
+	ax5043_write8(AX5043_0xF00          ,                              			0x0F);
+	ax5043_write8(AX5043_0xF18          ,                              			0x06);
+}
+
+
+void ax5043_set_registers_rx(void) 
+{
+	ax5043_write8(AX5043_PLLLOOP        ,                              			0x09);
+	ax5043_write8(AX5043_PLLCPI         ,                              			0x01);
+	ax5043_write8(AX5043_PLLVCODIV      ,                              			0x24);
+	ax5043_write8(AX5043_XTALCAP        ,                              			0x00);
+	ax5043_write8(AX5043_0xF00          ,                              			0x0F);
+	ax5043_write8(AX5043_0xF18          ,                              			0x02);
+}
+
+
+void ax5043_set_registers_rxwor(void)
+{
+	ax5043_write8(AX5043_TMGRXAGC,                 0x00);
+	ax5043_write8(AX5043_TMGRXPREAMBLE1,           0x19);
+	ax5043_write8(AX5043_PKTMISCFLAGS,             0x03);
+}
+
 void uhf_init() {
 
     gpio_low(GPIOB, 9); // Disable power to UHF Transceiver 
