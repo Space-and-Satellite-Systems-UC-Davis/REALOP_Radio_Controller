@@ -7,7 +7,7 @@ void radio_init() {
 }
 
 void uhf_programParametersFromRadioLab() {
-	ax5043_write8(AX5043_MODULATION     ,                              			0x08);
+	ax5043_write8(AX5043_MODULATION     ,                              			0x07);
 	ax5043_write8(AX5043_ENCODING       ,                              			0x00);
 	ax5043_write8(AX5043_FRAMING        ,                              			0x24);
 	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01);
@@ -147,6 +147,7 @@ void ax5043_set_registers_tx(void)
 	ax5043_write8(AX5043_XTALCAP        ,                              			0x00);
 	ax5043_write8(AX5043_0xF00          ,                              			0x0F);
 	ax5043_write8(AX5043_0xF18          ,                              			0x06);
+	ax5043_write8(AX5043_MODCFGF        ,										0x02); //Gaussian BT of 0.3
 }
 
 
@@ -198,6 +199,8 @@ void uhf_init() {
 }
 
 bool radio_autorange(float carrierHz, int xtalHz) {
+
+	//int dac = ax5043_read8(AX5043_DACVALUE1) << 8 + ax5043_read8(AX5043_DACVALUE0) ;
 	
     uint8_t printRegister = 0;
 
@@ -223,7 +226,7 @@ bool radio_autorange(float carrierHz, int xtalHz) {
 
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES);
 
-	gpio_low(GPIOC, 9); //Enable clock for crystal
+	gpio_low(GPIOC, 9); //Disable clock for crystal
 
     if (ax5043_read8(AX5043_PLLRANGINGA) & AX5043_PLLRANGINGA_RNGERR) {
     	return false; //Indicates an error in auto ranging, try again
@@ -242,6 +245,13 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
     
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES);
     while(!(ax5043_read8(AX5043_POWSTAT) & AX5043_POWSTAT_SVMODEM)); //Waiting for Modem to be ready
+	gpio_high(GPIOC, 9); //enable tcxo
+
+	//write preamble to fifo
+	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND);
+	ax5043_write(AX5043_FIFODATA, 1<<5 | 1<<3); //no crc and bypass framing + encoding
+	ax5043_write8(AX5043_FIFODATA, 4); //32 bits
+	ax5043_write8(AX5043_FIFODATA, 0xAA);
 
     while (bytesSent < numBytes) {
         
@@ -268,12 +278,22 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
             flags |= AX5043_TX_FLAGS_PKTEND;
         }
 
+		if(numBytes % 8 != 0){ //if not a multiple of eight, need the residue flag set
+			flags |= AX5043_TX_FLAGS_RESIDUE;
+		}
+
         ax5043_write8(AX5043_FIFODATA, flags);
 
 
         for (; pktCurrentIndex < packetSize - 3; pktCurrentIndex++) {
             ax5043_write8(AX5043_FIFODATA, bytesToSend[pktCurrentIndex]);
         }
+
+
+		//check if crytal is running
+		while(!ax5043_read8(AX5043_XTALSTATUS));
+
+
 
         ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT);
 
@@ -284,7 +304,10 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 
         while(ax5043_read8(AX5043_RADIOSTATE)); //Wait for RadioState to show IDLE
 
-    } 
+    }
+	
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN);//set to powerdowm
+	gpio_low(GPIOC, 9); //disable txco
 
 }
  
