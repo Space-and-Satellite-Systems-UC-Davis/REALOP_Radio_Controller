@@ -247,62 +247,67 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
     while(!(ax5043_read8(AX5043_POWSTAT) & AX5043_POWSTAT_SVMODEM)); //Waiting for Modem to be ready
 	gpio_high(GPIOC, 9); //enable tcxo
 
-	//write preamble to fifo
-	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND);
-	ax5043_write(AX5043_FIFODATA, 1<<5 | 1<<3); //no crc and bypass framing + encoding
-	ax5043_write8(AX5043_FIFODATA, 4); //32 bits
-	ax5043_write8(AX5043_FIFODATA, 0xAA);
 
     while (bytesSent < numBytes) {
-        
         spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1) << 8) | ax5043_read8(AX5043_FIFOFREE0); 
 
-        if (spaceLeftInFIFO > numBytes + 3 - bytesSent) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
-            packetSize = numBytes + 3 - bytesSent;
-        } else {
-            packetSize = spaceLeftInFIFO;
-        }
+		if(spaceLeftInFIFO >= 4){//if there isn't enough space for preamble, skip
+			//write preamble to fifo
+			ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND);
+			ax5043_write(AX5043_FIFODATA, 1<<5 | 1<<3); //no crc and bypass framing + encoding
+			ax5043_write8(AX5043_FIFODATA, 4); //32 bits
+			ax5043_write8(AX5043_FIFODATA, 0xAA);
+			
+			spaceLeftInFIFO -= 4; //subtract the four preamble bytes
+
+			if (spaceLeftInFIFO > numBytes + 3 - bytesSent) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
+				packetSize = numBytes + 3 - bytesSent;
+			} else {
+				packetSize = spaceLeftInFIFO;
+			}
 
 
-        ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND); //Header byte indicating DATA command
-        ax5043_write8(AX5043_FIFODATA, packetSize - 2); //Subtracting two to account for header and length byte 
+			ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND); //Header byte indicating DATA command
+			ax5043_write8(AX5043_FIFODATA, packetSize - 2); //Subtracting two to account for header and length byte 
 
-        uint8_t flags = 0;
+			uint8_t flags = 0;
 
-        if (pktCurrentIndex == 0) {
-            flags |= AX5043_TX_FLAGS_PKTSTART;
-        }
+			if (pktCurrentIndex == 0) {
+				flags |= AX5043_TX_FLAGS_PKTSTART;
+			}
 
-        //If the amount of bytes about to be sent is equal or more than numBytes than must have end of packet
-        if (pktCurrentIndex + packetSize - 3 >= numBytes) { 
-            flags |= AX5043_TX_FLAGS_PKTEND;
-        }
+			//If the amount of bytes about to be sent is equal or more than numBytes than must have end of packet
+			if (pktCurrentIndex + packetSize - 3 >= numBytes) { 
+				flags |= AX5043_TX_FLAGS_PKTEND;
+			}
 
-		if(numBytes % 8 != 0){ //if not a multiple of eight, need the residue flag set
-			flags |= AX5043_TX_FLAGS_RESIDUE;
+			if(numBytes % 8 != 0){ //if not a multiple of eight, need the residue flag set
+				flags |= AX5043_TX_FLAGS_RESIDUE;
+			}
+
+			ax5043_write8(AX5043_FIFODATA, flags);
+
+
+			for (; pktCurrentIndex < packetSize - 3; pktCurrentIndex++) {
+				ax5043_write8(AX5043_FIFODATA, bytesToSend[pktCurrentIndex]);
+			}
+
+
+			//check if crytal is running
+			while(!ax5043_read8(AX5043_XTALSTATUS));
+
+
+
+			ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT);
+
+			//Wait for transmitting to be active by making sure it changes from IDLE and that FIFO is being filled
+			while(!ax5043_read8(AX5043_RADIOSTATE) && ((ax5043_read8(AX5043_FIFOFREE1) << 8) | ax5043_read8(AX5043_FIFOFREE0) < 10));
+
+			bytesSent += packetSize - 3;
+
+			while(ax5043_read8(AX5043_RADIOSTATE)); //Wait for RadioState to show IDLE
+
 		}
-
-        ax5043_write8(AX5043_FIFODATA, flags);
-
-
-        for (; pktCurrentIndex < packetSize - 3; pktCurrentIndex++) {
-            ax5043_write8(AX5043_FIFODATA, bytesToSend[pktCurrentIndex]);
-        }
-
-
-		//check if crytal is running
-		while(!ax5043_read8(AX5043_XTALSTATUS));
-
-
-
-        ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT);
-
-        //Wait for transmitting to be active by making sure it changes from IDLE and that FIFO is being filled
-        while(!ax5043_read8(AX5043_RADIOSTATE) && ((ax5043_read8(AX5043_FIFOFREE1) << 8) | ax5043_read8(AX5043_FIFOFREE0) < 10));
-
-        bytesSent += packetSize - 3;
-
-        while(ax5043_read8(AX5043_RADIOSTATE)); //Wait for RadioState to show IDLE
 
     }
 	
