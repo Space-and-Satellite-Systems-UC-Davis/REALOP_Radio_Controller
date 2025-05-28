@@ -19,7 +19,18 @@ int main(void)
 	for(uint8_t i = 0; i<100; i++){
 		arr[i]  =i;
 	}
-	radio_transmit(100, &arr);
+	while(1){
+		radio_transmit(100, &arr);
+		nop(10000);
+	}
+	
+	packet_t* recieved;
+	for(int i = 0; i<256; i++){
+		recieved->pkt[i] = 0;
+	}
+	while(1){
+		radio_receive(recieved);
+	}
     // while(true) {
     // 	blinky();
     // 	nop(1000);

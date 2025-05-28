@@ -45,6 +45,8 @@
 
 #define AX5043_POWSTAT_SVMODEM (1 << 1)
 
+#define AX5043_PKTMISCFLAGS_WORPKT 1<<4
+
 #define AX5043_CARRIER_HZ 435.775
 #define AX5043_XTAL_HZ 26
 #define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
@@ -363,6 +365,7 @@ void radio_transmit(int numBytes, uint8_t *bytesToSend);
 void ax5043_write8(uint8_t address, uint8_t data);
 bool radio_receive(packet_t *received_packet);
 uint8_t ax5043_read8(uint32_t address);
+void wor_config(int ms);
 
 
 #endif

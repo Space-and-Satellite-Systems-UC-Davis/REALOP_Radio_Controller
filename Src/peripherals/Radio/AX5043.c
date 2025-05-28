@@ -186,7 +186,7 @@ void uhf_init() {
     ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES); //Turn off RST bit
 
     uhf_programParametersFromRadioLab(); //TODO: Get those parameters
-	
+	wor_config(WAKEUP_FREQUENCY);
 	
     int failCount = 0;
     while(!radio_autorange(AX5043_CARRIER_HZ, AX5043_XTAL_HZ)) {
@@ -195,6 +195,30 @@ void uhf_init() {
         }
         failCount++;
     }
+
+	//wor_config(WAKEUP_FREQUENCY);
+
+}
+
+void wor_config(int ms){
+	//check frequency of low power oscillator
+	int oscillator = (ax5043_read8(AX5043_LPOSCCONFIG) >> 1) & 1;
+	if(oscillator){
+		oscillator = 10240; //10.24kHz
+	}else{
+		oscillator = 640; //640Hz
+	}
+	//get value to put in wakeupfreq, which is # of oscillator cycles
+	//frequency * period = # cycles
+	uint16_t freq = ms * 1000 * oscillator; 
+	ax5043_write8(AX5043_WAKEUPFREQ0, freq & 0xFF);
+	ax5043_write8(AX5043_WAKEUPFREQ1, freq >> 8);
+
+	//make sure receiver still on after waking up if packet received to read
+	ax5043_write8(AX5043_PKTMISCFLAGS, AX5043_PKTMISCFLAGS_WORPKT);
+
+	//enable irq interrupt
+	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY);
 
 }
 
@@ -254,7 +278,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 		if(spaceLeftInFIFO >= 4){//if there isn't enough space for preamble, skip
 			//write preamble to fifo
 			ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND);
-			ax5043_write(AX5043_FIFODATA, 1<<5 | 1<<3); //no crc and bypass framing + encoding
+			ax5043_write8(AX5043_FIFODATA, 1<<5 | 1<<3); //no crc and bypass framing + encoding
 			ax5043_write8(AX5043_FIFODATA, 4); //32 bits
 			ax5043_write8(AX5043_FIFODATA, 0xAA);
 			
@@ -305,7 +329,9 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 
 			bytesSent += packetSize - 3;
 
-			while(ax5043_read8(AX5043_RADIOSTATE)); //Wait for RadioState to show IDLE
+			while(ax5043_read8(AX5043_RADIOSTATE)){
+				int radiostate = ax5043_read8(AX5043_RADIOSTATE); //Wait for RadioState to show IDLE
+			}
 
 		}
 
@@ -320,6 +346,10 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend) {
 bool radio_receive(packet_t* received_packet) {
 	
 	if (ax5043_read8(AX5043_FIFOCOUNT0) > 0) {
+
+		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX); //worrx for wor and fullrx for regular
+		gpio_high(GPIOC, 9);
+
 		uint8_t header = ax5043_read8(AX5043_FIFODATA);
 		uint8_t length = ax5043_read8(AX5043_FIFODATA);
 		uint8_t flags = ax5043_read8(AX5043_FIFODATA);
@@ -332,6 +362,9 @@ bool radio_receive(packet_t* received_packet) {
 				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA);
 			}
 		}
+
+		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN);
+		gpio_low(GPIOC, 9);
 		
 		return true;
 	}
