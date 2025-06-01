@@ -12,24 +12,23 @@ int main(void)
 {
     /* Loop forever */
     init_platform();
-
-
 	radio_init();
-	uint8_t arr[100];
-	for(uint8_t i = 0; i<100; i++){
-		arr[i]  =i;
-	}
-	while(1){
-		radio_transmit(100, &arr);
+	uint8_t arr[300];
+//	for(uint8_t i = 0; i<25; i++){
+//		arr[i]  =i;
+//	}
+	// while(1){
+		//tx_simple(SPI1);
+		radio_transmit(300, arr, SPI1);
 		nop(10000);
-	}
+	// }
 	
 	packet_t* recieved;
 	for(int i = 0; i<256; i++){
 		recieved->pkt[i] = 0;
 	}
 	while(1){
-		radio_receive(recieved);
+		//radio_receive(recieved);
 	}
     // while(true) {
     // 	blinky();
@@ -40,21 +39,22 @@ int main(void)
 }
 
 bool test_radio_reads_simple() {
+	gpio_high(GPIOA, 8); // Enable power to UHF Transceiver
 	uint32_t fails = 0;
 
-	uint8_t retval = ax5043_read8(AX5043_SILICONREVISION);
+	uint8_t retval = ax5043_read8(AX5043_SILICONREVISION, VHF_SPI);
 	if (retval == 0b01010001) fails |= (1 << 0);
 
-	retval = ax5043_read8(AX5043_SCRATCH);
+	retval = ax5043_read8(AX5043_SCRATCH, VHF_SPI);
 	if (retval == 0b11000101) fails |= (1 << 1);
 
-	ax5043_write8(AX5043_SCRATCH, 0xAA);
+	ax5043_write8(AX5043_SCRATCH, 0xAA, VHF_SPI);
 
-	retval = ax5043_read8(AX5043_SCRATCH);
+	retval = ax5043_read8(AX5043_SCRATCH, VHF_SPI);
 	if (retval == 0xAA) fails |= (1 << 2);
 
 
-	retval = ax5043_read8(AX5043_LPOSCREF0);
+	retval = ax5043_read8(AX5043_LPOSCREF0, VHF_SPI);
 	if (retval == 0b10101000) fails |= (1 << 3);
 
 	uint32_t wait = 33;

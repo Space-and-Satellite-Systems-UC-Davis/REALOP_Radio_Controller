@@ -18,8 +18,43 @@ void spi3_gpioInit() {
 
 void spi2_gpioInit() {
 /**
- * VHF Transceiver
+ * VSH Transceiver 
+ * 		CS		C6		
+ * 		CLK		B13		AF5
+ * 		MISO	B14 	AF5
+ * 		MOSI 	B15		AF5
+ * 	
  */
+RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+while (GPIOB->OTYPER == 0xFFFFFFFF);
+while (GPIOC->OTYPER == 0xFFFFFFFF);
+
+GPIOC->PUPDR |= GPIO_PUPDR_PUPD3_0;
+
+GPIOB->MODER &= ~(
+		GPIO_MODER_MODE13_Msk
+		| GPIO_MODER_MODE14_Msk
+		| GPIO_MODER_MODE15_Msk);
+
+GPIOB->MODER |= 
+	GPIO_MODER_MODE13_1
+	| GPIO_MODER_MODE14_1
+	| GPIO_MODER_MODE15_1;
+
+GPIOC->MODER &= ~GPIO_MODER_MODE6_Msk;
+GPIOC->MODER |= GPIO_MODER_MODE6_0;
+
+GPIOB->AFR[1] &= ~(
+	  GPIO_AFRH_AFSEL13_Msk
+	| GPIO_AFRH_AFSEL14_Msk
+	| GPIO_AFRH_AFSEL15_Msk);
+
+GPIOB->AFR[1] |=
+	  5U << GPIO_AFRH_AFSEL13_Pos
+	| 5U << GPIO_AFRH_AFSEL14_Pos
+	| 5U << GPIO_AFRH_AFSEL15_Pos;
+
 }
 
 void spi1_gpioInit() {
@@ -114,6 +149,22 @@ void spi2_config() {
 	SPI2->CR2 = 0;
 	// CR1
 	// CR2
+	SPI2->CR1 |=
+		 5U << SPI_CR1_BR_Pos		// Baud Rate of `Clock_Source/64` (78.125 KHz)
+		| SPI_CR1_SSM				// (CS is controlled by software)
+		| SPI_CR1_SSI				// (CS is controlled by software)
+		| SPI_CR1_MSTR;
+	// CR2
+//	SPI1->CR2 |=
+//		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
+//		| 7U << SPI_CR2_DS_Pos; // Transfer Data Length is 1 Byte
+
+	SPI2->CR2 |=
+		  SPI_CR2_FRXTH			// RXNE generated when RXFIFO has 1 byte
+		| 7U << SPI_CR2_DS_Pos // Transfer Data Length is 1 Byte
+		| SPI_CR2_RXNEIE
+		| SPI_CR2_TXEIE;
+
 
 	spi_enable(SPI2);
 }

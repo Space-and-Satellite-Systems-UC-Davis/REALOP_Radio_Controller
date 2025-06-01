@@ -10,6 +10,9 @@
 #define UHF_SPI_CS SPI1_CS
 #define UHF_SPI SPI1
 
+#define VHF_SPI_CS SPI2_CS
+#define VHF_SPI SPI2
+
 #define AX5043_MAX_FIFO_SIZE 256
 
 #define AX5043_PWRMODE_RST (1 << 7) 
@@ -43,7 +46,8 @@
 #define AX5043_FIFODATA_REPEAT_DATA_COMMAND 0b01100010
 
 
-#define AX5043_POWSTAT_SVMODEM (1 << 1)
+
+#define AX5043_POWSTAT_SVMODEM (1 << 3)
 
 #define AX5043_PKTMISCFLAGS_WORPKT 1<<4
 
@@ -346,10 +350,11 @@
 #define AX5043_0xF44             0xFF44
 #define AX5043_MODCFGP           0xFF5F /* Modulator Configuration P */
 
-
+void autorange_registers(SPI_TypeDef* spi);
 void radio_init();
 
 void uhf_init();
+void vhf_init();
 
 typedef struct PACKET_STRUCT {
     int pkt[256];
@@ -358,14 +363,16 @@ typedef struct PACKET_STRUCT {
     int isPacketEnd;
 } packet_t;
 
-bool radio_autorange(float carrierHz, int xtalHz);
+bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi);
 
-void radio_transmit(int numBytes, uint8_t *bytesToSend);
+void radio_transmit(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
 
-void ax5043_write8(uint8_t address, uint8_t data);
-bool radio_receive(packet_t *received_packet);
-uint8_t ax5043_read8(uint32_t address);
-void wor_config(int ms);
+void ax5043_write8(uint8_t address, uint8_t data, SPI_TypeDef * spi);
+bool radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
+uint8_t ax5043_read8(uint32_t address, SPI_TypeDef * spi);
+void wor_config(int ms, SPI_TypeDef* spi);
+void tx_simple(SPI_TypeDef* spi);
+
 
 
 #endif
