@@ -13,15 +13,17 @@ int main(void)
     /* Loop forever */
     init_platform();
 	radio_init();
-	uint8_t arr[300];
-//	for(uint8_t i = 0; i<25; i++){
-//		arr[i]  =i;
-//	}
-	// while(1){
+	uint8_t arr[200];
+	for(uint8_t i = 0; i<200; i++){
+		arr[i]  =0xAA;
+		
+	}
+	 while(1){
 		//tx_simple(SPI1);
-		radio_transmit(300, arr, SPI1);
-		nop(10000);
-	// }
+		radio_transmit(200, arr, SPI1);
+//		nop(10);
+
+	 }
 	
 	packet_t* recieved;
 	for(int i = 0; i<256; i++){

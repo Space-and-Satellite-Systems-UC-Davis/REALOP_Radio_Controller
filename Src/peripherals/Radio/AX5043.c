@@ -5,7 +5,7 @@ void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	vhf_init();
+	// vhf_init();
 }
 
 void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
@@ -367,7 +367,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 	
 	while (bytesSent < numBytes) {
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		
+
 		if (spaceLeftInFIFO > numBytes + 3 - bytesSent) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
 			packetSize = numBytes + 3 - bytesSent;
 		} else {

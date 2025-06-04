@@ -59,7 +59,21 @@ void usart2_gpio_init() {
 }
 
 void usart3_gpio_init() {
-	return;
+	/**
+	 * PC10 TX
+	 * PC11 RX
+	 */
+
+	 RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+ 
+	 // configure the USART Pins to Alternate Function mode
+	 GPIOC->MODER &= ~(GPIO_MODER_MODE10_Msk | GPIO_MODER_MODE11_Msk);
+	 GPIOC->MODER |= (GPIO_MODER_MODE10_1 | GPIO_MODER_MODE11_1);
+ 
+	 // configure each pin to AF7
+	 GPIOC->AFR[1] &= ~(GPIO_AFRH_AFSEL10_Msk | GPIO_AFRH_AFSEL11_Msk);
+	 GPIOC->AFR[1] |= (7 << GPIO_AFRH_AFSEL10_Pos) | (7 << GPIO_AFRH_AFSEL11_Pos);
+
 }
 
 void lpuart_gpio_init() {
