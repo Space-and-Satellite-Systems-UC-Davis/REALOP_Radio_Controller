@@ -13,25 +13,46 @@ int main(void)
     /* Loop forever */
     init_platform();
 	radio_init();
-	uint8_t arr[200];
-	for(uint8_t i = 0; i<200; i++){
-		arr[i]  =0xAA;
-		
+	uint8_t arr[100];
+	for(uint8_t i = 0; i<100; i++){
+		arr[i] = i * 17;
 	}
-	 while(1){
-		//tx_simple(SPI1);
-		radio_transmit(200, arr, SPI1);
-//		nop(10);
-
-	 }
-	
 	packet_t* recieved;
 	for(int i = 0; i<256; i++){
 		recieved->pkt[i] = 0;
 	}
 	while(1){
-		//radio_receive(recieved);
+//		 radio_transmit(arr, 100, SPI1);
+		  tx_black_magic(SPI1);
+//		tx_simple(SPI1);
+		// nop(10000000);
+		// bool x = radio_receive(recieved, SPI2);
+		// nop(1000);
 	}
+	
+//	 uint8_t arr[200];
+//	 for(uint8_t i = 0; i<200; i++){
+//	 	arr[i]  =i;
+//
+//	 }
+	
+
+	int pinstate = 0;
+	 while(1){
+		// tx_simple(SPI1);
+		pinstate = ax5043_read8(AX5043_PINSTATE, SPI1);
+		radio_transmit(200, arr, SPI1);
+//		nop(10);
+
+	 }
+	
+	// packet_t* recieved;
+	// for(int i = 0; i<256; i++){
+	// 	recieved->pkt[i] = 0;
+	// }
+	// while(1){
+	// 	//radio_receive(recieved);
+	// }
     // while(true) {
     // 	blinky();
     // 	nop(1000);

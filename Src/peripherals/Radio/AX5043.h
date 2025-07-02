@@ -349,12 +349,16 @@
 #define AX5043_0xF35             0xFF35
 #define AX5043_0xF44             0xFF44
 #define AX5043_MODCFGP           0xFF5F /* Modulator Configuration P */
+#define AX5043_PERFTUNE114       0xFF74
 
 void autorange_registers(SPI_TypeDef* spi);
 void radio_init();
 
 void uhf_init();
 void vhf_init();
+
+void tx_black_magic(SPI_TypeDef* spi);
+
 
 typedef struct PACKET_STRUCT {
     int pkt[256];
