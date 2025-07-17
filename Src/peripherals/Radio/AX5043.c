@@ -137,6 +137,10 @@ void autorange_registers(SPI_TypeDef* spi){
 
 void ax5043_set_registers_tx(SPI_TypeDef* spi)
 {
+	//some of these registers aren't actually changing, why??
+	//send msb first
+	ax5043_write8(AX5043_PKTADDRCFG		, 										0xA0, spi);
+
 	ax5043_write8(AX5043_PLLLOOP        ,                              			0x09,spi);
 	ax5043_write8(AX5043_PLLCPI         ,                              			30,spi); //0x02
 	ax5043_write8(AX5043_PLLVCODIV      ,                              			0x24,spi);
@@ -156,7 +160,7 @@ void ax5043_set_registers_tx(SPI_TypeDef* spi)
 	ax5043_write8(AX5043_TXRATE0        ,                              			0x14,spi);
 	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x10,spi);//07 originally, then 0A
 	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0x00,spi);
-	ax5043_write8(AX5043_MODCFGF        ,                              			0x02,spi);//0x03 = gaussian = 0.5
+	ax5043_write8(AX5043_MODCFGF        ,                              			0x03,spi);//0x03 = gaussian = 0.5
 	ax5043_write8(AX5043_MODCFGA        ,                              			0x05,spi);
 
 
@@ -339,8 +343,8 @@ void tx_black_magic(SPI_TypeDef* spi) {
 
 	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
 	ax5043_write8(AX5043_FIFODATA, 0x18, spi);
-	ax5043_write8(AX5043_FIFODATA, 0x14, spi);
-	ax5043_write8(AX5043_FIFODATA, 0x55, spi);
+	ax5043_write8(AX5043_FIFODATA, 16, spi);
+	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
 	
 	// ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi);
 	// ax5043_write8(AX5043_FIFODATA, 101, spi);
@@ -349,13 +353,16 @@ void tx_black_magic(SPI_TypeDef* spi) {
 	int packetSize = 150;
 	uint8_t arr[packetSize];
 	for(uint8_t i = 0; i<packetSize; i++){
-		arr[i] = i * 17;
+		arr[i] = i * 17 + 5;
 	}
-	while(1){
+	// while(1){
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi);
-		ax5043_write8(AX5043_FIFODATA, packetSize + 1, spi);
+		ax5043_write8(AX5043_FIFODATA, packetSize + 1 + 2, spi);
 		ax5043_write8(AX5043_FIFODATA, 0x03, spi);
 
+		//sync word: 0011 0000 1111 0101 
+		ax5043_write8(AX5043_FIFODATA, 0x30, spi);
+		ax5043_write8(AX5043_FIFODATA, 0xF5, spi);
 		for(uint8_t i = 0; i<packetSize; i++){
 			ax5043_write8(AX5043_FIFODATA, arr[i], spi);
 		}
@@ -365,7 +372,7 @@ void tx_black_magic(SPI_TypeDef* spi) {
 		while(ax5043_read8(AX5043_RADIOSTATE, spi)){
 			radiostate = ax5043_read8(AX5043_RADIOSTATE, spi); 
 		}
-	}
+	// }
 	
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdowm
 	gpio_low(GPIOC, 9); //disable txco

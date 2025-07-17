@@ -17,17 +17,26 @@ int main(void)
 	for(uint8_t i = 0; i<100; i++){
 		arr[i] = i * 17;
 	}
-	packet_t* recieved;
+	packet_t* packet;
 	for(int i = 0; i<256; i++){
-		recieved->pkt[i] = 0;
+		packet->pkt[i] = 0;
 	}
 	while(1){
-//		 radio_transmit(arr, 100, SPI1);
+		printMsg("WORKS!\n");
+		// tx_just_preamble(SPI1);
+		// break;
+		//  radio_transmit(100, arr, SPI2);
 		  tx_black_magic(SPI1);
 //		tx_simple(SPI1);
 		// nop(10000000);
-		// bool x = radio_receive(recieved, SPI2);
-		// nop(1000);
+		// bool recieved = radio_receive(packet, SPI2);
+		// if(recieved){
+		// 	for(int i = 0; i<100; i++){
+		// 		printMsg(packet->pkt[i]);
+		// 	}
+		// }else{
+		// 	printMsg("Noooooo :(\n");
+		// }
 	}
 	
 //	 uint8_t arr[200];
@@ -37,14 +46,14 @@ int main(void)
 //	 }
 	
 
-	int pinstate = 0;
-	 while(1){
-		// tx_simple(SPI1);
-		pinstate = ax5043_read8(AX5043_PINSTATE, SPI1);
-		radio_transmit(200, arr, SPI1);
-//		nop(10);
+// 	int pinstate = 0;
+// 	 while(1){
+// 		// tx_simple(SPI1);
+// 		pinstate = ax5043_read8(AX5043_PINSTATE, SPI1);
+// 		radio_transmit(200, arr, SPI1);
+// //		nop(10);
 
-	 }
+// 	 }
 	
 	// packet_t* recieved;
 	// for(int i = 0; i<256; i++){
