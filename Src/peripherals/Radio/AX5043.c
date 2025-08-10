@@ -9,18 +9,19 @@ void radio_init() {
 }
 
 void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
-	
-	ax5043_write8(AX5043_ENCODING       ,                              			0x00,spi);
-	ax5043_write8(AX5043_FRAMING        ,                              			0x24,spi);
-	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01,spi);
-	ax5043_write8(AX5043_PINFUNCDCLK    ,                              			0x01,spi);
-	ax5043_write8(AX5043_PINFUNCDATA    ,                              			0x01,spi);
-	ax5043_write8(AX5043_PINFUNCANTSEL  ,                              			0x01,spi); //originally 0x01
-	ax5043_write8(AX5043_PINFUNCPWRAMP  ,                              			0x07,spi);
-	ax5043_write8(AX5043_WAKEUPXOEARLY  ,                              			0x01,spi);
-	ax5043_write8(AX5043_IFFREQ1        ,                              			0x15,spi);
-	ax5043_write8(AX5043_IFFREQ0        ,                              			0xFA,spi);
-	ax5043_write8(AX5043_DECIMATION     ,                              			0x01,spi);
+
+	ax5043_write8(AX5043_MODULATION		, 0x07, spi);
+	ax5043_write8(AX5043_ENCODING       ,                              			0x00,spi); 
+	ax5043_write8(AX5043_FRAMING        ,                              			0x24,spi); 
+	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01,spi); 
+	ax5043_write8(AX5043_PINFUNCDCLK    ,                              			0x01,spi); 
+	ax5043_write8(AX5043_PINFUNCDATA    ,                              			0x01,spi); 
+	ax5043_write8(AX5043_PINFUNCANTSEL  ,                              			0x01,spi); 
+	ax5043_write8(AX5043_PINFUNCPWRAMP  ,                              			0x07,spi); 
+	ax5043_write8(AX5043_WAKEUPXOEARLY  ,                              			0x01,spi); 
+	ax5043_write8(AX5043_IFFREQ1        ,                              			0x15,spi); 
+	ax5043_write8(AX5043_IFFREQ0        ,                              			0xFA,spi); 
+	ax5043_write8(AX5043_DECIMATION     ,                              			0x01,spi); 
 	ax5043_write8(AX5043_RXDATARATE2    ,                              			0x00,spi);
 	ax5043_write8(AX5043_RXDATARATE1    ,                              			0x34,spi);
 	ax5043_write8(AX5043_RXDATARATE0    ,                              			0x00,spi);
@@ -77,43 +78,47 @@ void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
 	ax5043_write8(AX5043_FREQDEV03      ,                              			0x2D,spi);
 	ax5043_write8(AX5043_FOURFSK3       ,                              			0x16,spi);
 	ax5043_write8(AX5043_BBOFFSRES3     ,                              			0x00,spi);
-	
-
-	
+	ax5043_write8(AX5043_FSKDEV2        ,                              			0x00,spi);
+	ax5043_write8(AX5043_FSKDEV1        ,                              			0x4E,spi);
+	ax5043_write8(AX5043_FSKDEV0        ,                              			0xC5,spi);
+	ax5043_write8(AX5043_TXRATE2        ,                              			0x01,spi);
+	ax5043_write8(AX5043_TXRATE1        ,                              			0x3B,spi);
+	ax5043_write8(AX5043_TXRATE0        ,                              			0x14,spi);
+	ax5043_write8(AX5043_PKTADDRCFG		, 										0xA0, spi);
 	ax5043_write8(AX5043_PLLVCOI        ,                              			0x95,spi);
 	ax5043_write8(AX5043_PLLRNGCLK      ,                              			0x04,spi);
 	ax5043_write8(AX5043_BBTUNE         ,                              			0x01,spi);
 	ax5043_write8(AX5043_BBOFFSCAP      ,                              			0x77,spi);
 	ax5043_write8(AX5043_PKTADDRCFG     ,                              			0x01,spi);
 	ax5043_write8(AX5043_PKTLENCFG      ,                              			0x80,spi);
-	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x00,spi);
-	ax5043_write8(AX5043_PKTMAXLEN      ,                              			0xC8,spi);
-	ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAA,spi);
-	ax5043_write8(AX5043_MATCH0PAT2     ,                              			0xCC,spi);
-	ax5043_write8(AX5043_MATCH0PAT1     ,                              			0xAA,spi);
-	ax5043_write8(AX5043_MATCH0PAT0     ,                              			0xCC,spi);
-	ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55,spi);
-	ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55,spi);
-	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A,spi);
-	ax5043_write8(AX5043_MATCH1MAX      ,                              			0x0A,spi);
-	ax5043_write8(AX5043_TMGTXBOOST     ,                              			0x3E,spi);
-	ax5043_write8(AX5043_TMGTXSETTLE    ,                              			0x31,spi);
-	ax5043_write8(AX5043_TMGRXBOOST     ,                              			0x3E,spi);
-	ax5043_write8(AX5043_TMGRXSETTLE    ,                              			0x31,spi);
-	ax5043_write8(AX5043_TMGRXOFFSACQ   ,                              			0x00,spi);
-	ax5043_write8(AX5043_TMGRXCOARSEAGC ,                              			0x7F,spi);
-	ax5043_write8(AX5043_TMGRXRSSI      ,                              			0x03,spi);
-	ax5043_write8(AX5043_TMGRXPREAMBLE2 ,                              			0x17,spi);
-	ax5043_write8(AX5043_RSSIABSTHR     ,                              			0xEB,spi);
-	ax5043_write8(AX5043_BGNDRSSITHR    ,                              			0x00,spi);
-	ax5043_write8(AX5043_PKTCHUNKSIZE   ,                              			0x0D,spi);
-	ax5043_write8(AX5043_PKTACCEPTFLAGS ,                              			0x20,spi);
-	// ax5043_write8(AX5043_DACVALUE1      ,                              			0x00,spi);
-	// ax5043_write8(AX5043_DACVALUE0      ,                              			0x00,spi);
+// //	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x00,spi); //turns off bit 5/6 on pwrmode? why????
+	 ax5043_write8(AX5043_PKTMAXLEN      ,                              			0xC8,spi);
+//	 ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAA,spi);
+//	 ax5043_write8(AX5043_MATCH0PAT2     ,                              			0xCC,spi);
+//	 ax5043_write8(AX5043_MATCH0PAT1     ,                              			0xAA,spi);
+//	 ax5043_write8(AX5043_MATCH0PAT0     ,                              			0xCC,spi);
+	 ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55,spi);
+	 ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55,spi);
+	 ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A,spi);
+	 ax5043_write8(AX5043_MATCH1MAX      ,                              			0x0A,spi);
+	 ax5043_write8(AX5043_TMGTXBOOST     ,                              			0x3E,spi);
+	 ax5043_write8(AX5043_TMGTXSETTLE    ,                              			0x31,spi);
+	 ax5043_write8(AX5043_TMGRXBOOST     ,                              			0x3E,spi);
+	 ax5043_write8(AX5043_TMGRXSETTLE    ,                              			0x31,spi);
+	 ax5043_write8(AX5043_TMGRXOFFSACQ   ,                              			0x00,spi);
+	 ax5043_write8(AX5043_TMGRXCOARSEAGC ,                              			0x7F,spi);
+	 ax5043_write8(AX5043_TMGRXRSSI      ,                              			0x03,spi);
+	 ax5043_write8(AX5043_TMGRXPREAMBLE2 ,                              			0x17,spi);
+	 ax5043_write8(AX5043_RSSIABSTHR     ,                              			0xEB,spi);
+	 ax5043_write8(AX5043_BGNDRSSITHR    ,                              			0x00,spi);
+	 ax5043_write8(AX5043_PKTCHUNKSIZE   ,                              			0x0D,spi);
+	 ax5043_write8(AX5043_PKTACCEPTFLAGS ,                              			0x20,spi);
+ 	ax5043_write8(AX5043_DACVALUE1      ,                              			0x00,spi);
+ 	ax5043_write8(AX5043_DACVALUE0      ,                              			0x00,spi);
 	ax5043_write8(AX5043_DACCONFIG      ,                              			0x00,spi);
 	ax5043_write8(AX5043_REF            ,                              			0x03,spi);
-	ax5043_write8(AX5043_XTALOSC        ,                              			0x04,spi);
-	ax5043_write8(AX5043_XTALAMPL       ,                              			0x00,spi);
+//	 ax5043_write8(AX5043_XTALOSC        ,                              			0x03,spi); //0x03 --> mod = 3? 0x04 --> mod = 4? 0x0D --> mod = 0xd
+	 ax5043_write8(AX5043_XTALAMPL       ,                              			0x00,spi);
 	ax5043_write8(AX5043_0xF1C          ,                              			0x07,spi);
 	ax5043_write8(AX5043_0xF21          ,                              			0x68,spi);
 	ax5043_write8(AX5043_0xF22          ,                              			0xFF,spi);
@@ -122,7 +127,6 @@ void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
 	ax5043_write8(AX5043_0xF34          ,                              			0x28,spi);
 	ax5043_write8(AX5043_0xF35          ,                              			0x11,spi);
 	ax5043_write8(AX5043_0xF44          ,                              			0x25,spi);
-
 	autorange_registers(spi);
 
 }
@@ -133,35 +137,32 @@ void autorange_registers(SPI_TypeDef* spi){
 	ax5043_write8(AX5043_0xF34          ,                              			0x28, spi);
 	ax5043_write8(AX5043_0xF35          ,                              			0x11, spi);
 	ax5043_write8(AX5043_PLLVCODIV      ,                              			0x04, spi);
+	int i = ax5043_read8(AX5043_DACVALUE0, spi) | ax5043_read8(AX5043_DACVALUE0, spi);
 }
 
 void ax5043_set_registers_tx(SPI_TypeDef* spi)
 {
-	//some of these registers aren't actually changing, why??
-	//send msb first
-	ax5043_write8(AX5043_PKTADDRCFG		, 										0xA0, spi);
-
-	ax5043_write8(AX5043_PLLLOOP        ,                              			0x09,spi);
-	ax5043_write8(AX5043_PLLCPI         ,                              			30,spi); //0x02
-	ax5043_write8(AX5043_PLLVCODIV      ,                              			0x24,spi);
-	ax5043_write8(AX5043_XTALCAP        ,                              			0x00,spi);
-	ax5043_write8(AX5043_0xF00          ,                              			0x0F,spi);
-	ax5043_write8(AX5043_0xF18          ,                              			0x06,spi);
-
-	ax5043_write8(AX5043_DIVERSITY		, 										0x00, spi);
-
-	ax5043_write8(AX5043_FSKDEV2        ,                              			0x00,spi);
-	ax5043_write8(AX5043_FSKDEV1        ,                              			0x4E,spi);
-	ax5043_write8(AX5043_FSKDEV0        ,                              			0xC5,spi);
+	ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN, spi); //Turn off RST bit
+	
 	ax5043_write8(AX5043_MODULATION     ,                              			0x07,spi); 
+	ax5043_write8(AX5043_ENCODING		, 										0x00, spi);
+	ax5043_write8(AX5043_FRAMING		, 										0x00, spi);
+	ax5043_write8(AX5043_MODCFGA        ,                              			0x05,spi);
+	ax5043_write8(AX5043_MODCFGF        ,                              			0x03,spi);
 
 	ax5043_write8(AX5043_TXRATE2        ,                              			0x01,spi);
 	ax5043_write8(AX5043_TXRATE1        ,                              			0x3B,spi);
 	ax5043_write8(AX5043_TXRATE0        ,                              			0x14,spi);
+
+	ax5043_write8(AX5043_FSKDEV2        ,                              			0x00,spi);
+	ax5043_write8(AX5043_FSKDEV1        ,                              			0x4E,spi);
+	ax5043_write8(AX5043_FSKDEV0        ,                              			0xC5,spi);
+
+	//send msb first
+	ax5043_write8(AX5043_PKTADDRCFG		, 										0xA0, spi);
+
 	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x10,spi);//07 originally, then 0A
 	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0x00,spi);
-	ax5043_write8(AX5043_MODCFGF        ,                              			0x03,spi);//0x03 = gaussian = 0.5
-	ax5043_write8(AX5043_MODCFGA        ,                              			0x05,spi);
 
 
 }
@@ -199,10 +200,10 @@ void uhf_init() {
 
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_RST, UHF_SPI); //Turn on RST bit
   	nop(1000);
-    ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES, UHF_SPI); //Turn off RST bit
-
-    // uhf_programParametersFromRadioLab(UHF_SPI); //TODO: Get those parameters
+    ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES, UHF_SPI); //Turn off RST bit	
+    uhf_programParametersFromRadioLab(UHF_SPI); //TODO: Get those parameters
 	// wor_config(WAKEUP_FREQUENCY, UHF_SPI);
+    int pwrmode = ax5043_read8(AX5043_PWRMODE, UHF_SPI);
 	autorange_registers(SPI1);
     int failCount = 0;
     while(!radio_autorange(AX5043_CARRIER_HZ, AX5043_XTAL_HZ, UHF_SPI)) {
@@ -229,7 +230,6 @@ void vhf_init() {
     ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_RST, VHF_SPI); //Turn on RST bit
   	nop(1000);
     ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES, VHF_SPI); //Turn off RST bit
-
     uhf_programParametersFromRadioLab(VHF_SPI); //TODO: Get those parameters
 	// wor_config(WAKEUP_FREQUENCY, VHF_SPI);
 	
@@ -334,7 +334,8 @@ void tx_black_magic(SPI_TypeDef* spi) {
 	gpio_high(GPIOC, 9); //enable tcxo
 	nop(1000);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES, spi);
-		
+	
+	int txrate = ax5043_read8(AX5043_TXRATE0, spi) | ax5043_read8(AX5043_TXRATE1, spi) << 8 | ax5043_read8(AX5043_TXRATE2, spi) << 16;
 	int mode = ax5043_read8(AX5043_PWRMODE, spi);
 
     while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
@@ -557,7 +558,7 @@ bool radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	return false; 
 } 
 
-uint8_t ax5043_read8(uint32_t address, SPI_TypeDef* spi) {
+uint8_t ax5043_read8(uint16_t address, SPI_TypeDef* spi) {
     uint8_t addr[2];
     addr[0] = address >> 8;
     addr[0] |=  0xF0;   // Set left 4 bits to 0b1111
@@ -591,10 +592,19 @@ uint8_t ax5043_read8(uint32_t address, SPI_TypeDef* spi) {
     return regVal[0];
 }
 
-void ax5043_write8(uint8_t address, uint8_t data, SPI_TypeDef* spi) {
-    uint8_t spiDATA[2];
-	spiDATA[0] = (uint8_t)address | 0x80;
-	spiDATA[1] = data;
+void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef* spi) {
+    uint8_t spiDATA[3];
+	int size = 2;
+	if(address & 0xF00){//if longer than 8 bits
+		size = 3;
+		spiDATA[0] = (address >> 8) | 0xF0;
+		spiDATA[1] = address & 0xFF; 
+		spiDATA[2] = data;
+	}else{
+		spiDATA[0] = (uint16_t)address | 0x80;
+		spiDATA[1] = data;
+	}
+	
 
 
 	if(spi == SPI1){
@@ -603,7 +613,7 @@ void ax5043_write8(uint8_t address, uint8_t data, SPI_TypeDef* spi) {
 		spi_startCommunication(VHF_SPI_CS);
 	}   
 	
-	spi_transmitReceive(spi, &spiDATA, NULL, 2, false);
+	spi_transmitReceive(spi, &spiDATA, NULL, size, false);
 
 	if(spi == SPI1){
 		spi_stopCommunication(UHF_SPI_CS);

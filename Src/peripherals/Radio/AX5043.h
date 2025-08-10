@@ -371,9 +371,9 @@ bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi);
 
 void radio_transmit(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
 
-void ax5043_write8(uint8_t address, uint8_t data, SPI_TypeDef * spi);
+void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
 bool radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
-uint8_t ax5043_read8(uint32_t address, SPI_TypeDef * spi);
+uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);
 void wor_config(int ms, SPI_TypeDef* spi);
 void tx_simple(SPI_TypeDef* spi);
 
