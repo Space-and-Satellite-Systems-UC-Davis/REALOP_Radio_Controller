@@ -45,7 +45,9 @@
 #define AX5043_FIFODATA_DATA_COMMAND 0xE1
 #define AX5043_FIFODATA_REPEAT_DATA_COMMAND 0b01100010
 
+#define GMSK_MODULATION 0x07
 
+#define AX5043_FRAMING_RAW_PATTERN 0b11 << 1
 
 #define AX5043_POWSTAT_SVMODEM (1 << 3)
 
@@ -56,6 +58,8 @@
 #define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
 #define AX5043_PLLRANGINGA_RNGERR (1 << 5)
+#define MILLION 100000
+#define XTALDIV 2
 
 #define AX5043_IRQM_FIFONOTEMPTY (1<<0)
 
@@ -353,6 +357,9 @@
 
 void autorange_registers(SPI_TypeDef* spi);
 void radio_init();
+void ax5043_calculate_rx_registers(SPI_TypeDef *spi);
+
+static uint8_t ax_value_to_mantissa_exp_4_4(uint32_t value);
 
 void uhf_init();
 void vhf_init();
@@ -372,6 +379,7 @@ bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi);
 void radio_transmit(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
 
 void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
+void ax5043_configInterrupt(SPI_TypeDef* spi);
 bool radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);
 void wor_config(int ms, SPI_TypeDef* spi);

@@ -21,22 +21,22 @@ int main(void)
 	for(int i = 0; i<256; i++){
 		packet->pkt[i] = 0;
 	}
+//	ax5043_calculate_rx_registers(50000, VHF_SPI);
+	
 	while(1){
 		printMsg("WORKS!\n");
-		// tx_just_preamble(SPI1);
-		// break;
-		//  radio_transmit(100, arr, SPI2);
+		//   radio_transmit(100, arr, SPI2);
 		  tx_black_magic(SPI1);
 //		tx_simple(SPI1);
 		// nop(10000000);
-		// bool recieved = radio_receive(packet, SPI2);
-		// if(recieved){
-		// 	for(int i = 0; i<100; i++){
-		// 		printMsg(packet->pkt[i]);
-		// 	}
-		// }else{
-		// 	printMsg("Noooooo :(\n");
-		// }
+		//  bool recieved = radio_receive(packet, SPI2);
+		//  if(recieved){
+		//  	for(int i = 0; i<100; i++){
+		//  		printMsg(packet->pkt[i]);
+		//  	}
+		//  }else{
+		//  	printMsg("Noooooo :(\n");
+		//  }
 	}
 	
 //	 uint8_t arr[200];
