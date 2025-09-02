@@ -24,9 +24,10 @@ int main(void)
 //	ax5043_calculate_rx_registers(50000, VHF_SPI);
 	
 	while(1){
-		printMsg("WORKS!\n");
+		// printMsg("WORKS!\n");
 		//   radio_transmit(100, arr, SPI2);
 		  tx_black_magic(SPI1);
+		  tx_black_magic(SPI2);
 //		tx_simple(SPI1);
 		// nop(10000000);
 		//  bool recieved = radio_receive(packet, SPI2);

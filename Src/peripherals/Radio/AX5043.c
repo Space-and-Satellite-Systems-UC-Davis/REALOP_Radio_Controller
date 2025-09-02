@@ -6,7 +6,8 @@ void radio_init() {
 	spi_config(VHF_SPI);
     uhf_init();
 	vhf_init();
-	ax5043_configInterrupt(VHF_SPI); //setup recieve interrupt
+	ax5043_configInterrupt(); //setup recieve interrupt
+
 }
 
 void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
@@ -175,6 +176,7 @@ void ax5043_set_registers_tx(SPI_TypeDef* spi)
 	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x10,spi);//07 originally, then 0A
 	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0x00,spi);
 
+	
 
 }
 
@@ -420,10 +422,10 @@ void uhf_init() {
 void vhf_init() {
 
     gpio_low(GPIOA , 8); // Disable power to UHF Transceiver 
-    nop(10000);
+    nop(10000000);
     gpio_high(GPIOA, 8); // Enable power to UHF Transceiver
     //power cycle the chip to clear previous auto ranges
-    nop(10000);
+    nop(10000000);
 
     spi_startCommunication(VHF_SPI_CS);
 
@@ -434,7 +436,8 @@ void vhf_init() {
     ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES, VHF_SPI); //Turn off RST bit
     // uhf_programParametersFromRadioLab(VHF_SPI); //TODO: Get those parameters
 	// wor_config(WAKEUP_FREQUENCY, VHF_SPI);
-	
+	autorange_registers(VHF_SPI);
+
     int failCount = 0;
     while(!radio_autorange(AX5043_CARRIER_HZ, AX5043_XTAL_HZ, VHF_SPI)) {
         if (failCount > 3) {
@@ -508,7 +511,7 @@ bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi) {
 
 void tx_black_magic(SPI_TypeDef* spi) {
 	ax5043_set_registers_tx(spi);
-	printMsg("HERE");
+	int txrate = ax5043_read8(AX5043_TXRATE1, spi);
 	// ax5043_write8(AX5043_MODULATION     ,                              			0x07,spi);
 	// ax5043_write8(AX5043_TXRATE2        ,                              			0x01,spi);
 	// ax5043_write8(AX5043_TXRATE1        ,                              			0x3B,spi);
@@ -539,18 +542,6 @@ void tx_black_magic(SPI_TypeDef* spi) {
 	nop(1000);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES, spi);
 	
-
-
-	/***
-	 * 
-	 * delete later!!!
-	 */
-
-	 ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, SPI2);
-
-	int txrate = ax5043_read8(AX5043_TXRATE0, spi) | ax5043_read8(AX5043_TXRATE1, spi) << 8 | ax5043_read8(AX5043_TXRATE2, spi) << 16;
-	int mode = ax5043_read8(AX5043_PWRMODE, spi);
-
     while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
 
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
@@ -867,19 +858,39 @@ void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef* spi) {
 }
 
 
-void ax5043_configInterrupt(SPI_TypeDef* spi){
+void ax5043_configInterrupt(){
+
+	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN; //enable syscfg
+
 	//IRQ = PA2
 	GPIOA->MODER &= ~GPIO_MODER_MODE2_Msk;	//input mode 00
-	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN; //enable syscfg
 	SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI2;
-	EXTI->IMR1 |= EXTI_EMR1_EM2;
+	SYSCFG->EXTICR[0] != SYSCFG_EXTICR1_EXTI2_PA;
+	EXTI->IMR1 |= EXTI_IMR1_IM2;
 	EXTI->RTSR1|= EXTI_RTSR1_RT2;
 	EXTI->FTSR1|= EXTI_FTSR1_FT2;
 	NVIC_EnableIRQ(EXTI2_IRQn);
-	ax5043_write8(AX5043_IRQMASK1, AX5043_IRQM_FIFONOTEMPTY, spi);
+
+	//IRQ = PB11
+	GPIOB->MODER &= ~GPIO_MODER_MODE11_Msk;
+	SYSCFG->EXTICR[2] &= ~SYSCFG_EXTICR3_EXTI11;
+	SYSCFG->EXTICR[2] |= SYSCFG_EXTICR3_EXTI11_PB;
+	EXTI->IMR1 |= EXTI_IMR1_IM11;
+	EXTI->RTSR1 |= EXTI_RTSR1_RT11;
+	EXTI->FTSR1 |= EXTI_FTSR1_FT11;
+	NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+
+	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI1);
+	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI2);
 }
 
 void EXTI2_IRQHandler(){
-	printMsg("INTERRUPT!");
+	printMsg("INTERRUPT on UHF!\r\n");
 	EXTI->PR1 |= EXTI_PR1_PIF2;
+}
+
+void EXTI15_10_IRQHandler(){
+	printMsg("INTERRUPT on VHF!\r\n");
+	EXTI->PR1 |= EXTI_PR1_PIF11;
 }
