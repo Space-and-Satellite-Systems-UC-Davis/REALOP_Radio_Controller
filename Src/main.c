@@ -26,56 +26,40 @@ int main(void)
 	}
 	 ax5043_set_registers_rx(UHF_SPI);
 	// ax5043_calculate_rx_registers(UHF_SPI);
+	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
 	gpio_high(GPIOC, 9);
 	delay_ms(1000);
 	printMsg("INITIAL RSSI: %d", ax5043_read8(AX5043_RSSI, UHF_SPI));
 	printMsg("INITIAL AGCCOUNTER: %d", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, UHF_SPI);
+	delay_ms(1000);
 	// tx_carrier_wave(SPI2);
 	while(1){
 		printMsg("Transmit!\r\n");
-		printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
+		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
+		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
+
+		// printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
 		//   radio_transmit(100, arr, SPI2);
 		tx_black_magic(SPI2);
 
-		uint64_t start = getSysTime();
-		long rssi = 0;
-		long agc = 0;
-		int count = 0;
-		while(getSysTime() - start < 1000){
-			rssi += ax5043_read8(AX5043_RSSI, UHF_SPI);
-			agc += ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI);
-			count++;
-			// printMsg("RSSI: %d\t", ax5043_read8(AX5043_RSSI, UHF_SPI));
-			// printMsg("AGC: %d\t", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));
-		}
-		printMsg("AV RSSI: %d, AV AGC: %d\r\n", rssi/count, agc/count);
+		delay_ms(500);
 		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, SPI2);
 
-		if(ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI)){
+		if(ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT1, UHF_SPI)){
+			printMsg("FILLED!!!");
+			// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 			int size = radio_receive(&packet, UHF_SPI);
 			for(int i = 0; i<size; i++){
 				printMsg("%d\t", packet.pkt[i]);
 			}
+			printMsg("\r\n");
 		}
-
+		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, UHF_SPI);
 		delay_ms(1000);
-		printMsg("NOT TRANSMITTING: \r\n");
-		start = getSysTime();
-		rssi = 0;
-		agc = 0;
-		count = 0;
-		while(getSysTime() - start < 1000){
-			rssi += ax5043_read8(AX5043_RSSI, UHF_SPI);
-			agc += ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI);
-			count++;
-			// printMsg("RSSI: %d\t", ax5043_read8(AX5043_RSSI, UHF_SPI));
-			// printMsg("AGC: %d\t", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));
-			// printMsg("PHASE: %d\r\n", ax5043_read8(AX5043_TRKPHASE1, UHF_SPI) | ax5043_read8(AX5043_TRKPHASE0, UHF_SPI));
-		}
-		printMsg("AV RSSI: %d, AV AGC: %d\r\n", rssi/count, agc/count);
 		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX, SPI2);
-		delay_ms(1000);
+		delay_ms(500);
 		//   tx_black_magic(SPI2);
 //		tx_simple(SPI1);
 		// nop(10000000);
