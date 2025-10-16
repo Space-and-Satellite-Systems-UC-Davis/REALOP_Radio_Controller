@@ -13,64 +13,45 @@ int main(void)
     /* Loop forever */
     init_platform();
 
-	printMsg("START!\r\n");
+//	printMsg("START!\r\n");
 
 	radio_init();
-	uint8_t arr[100];
-	for(uint8_t i = 0; i<100; i++){
-		arr[i] = i * 17;
-	}
 	packet_t packet;
 	for(int i = 0; i<256; i++){
 		packet.pkt[i] = 0;
 	}
-	 ax5043_set_registers_rx(UHF_SPI);
-	// ax5043_calculate_rx_registers(UHF_SPI);
+	// while(1){
+	// 	tx_black_magic(SPI1);
+	// 	delay_ms(1000);
+	// }
+	ax5043_set_registers_rx(UHF_SPI);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
 	gpio_high(GPIOC, 9);
 	delay_ms(1000);
 	printMsg("INITIAL RSSI: %d", ax5043_read8(AX5043_RSSI, UHF_SPI));
 	printMsg("INITIAL AGCCOUNTER: %d", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, UHF_SPI);
-	delay_ms(1000);
+	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, UHF_SPI);
+	// delay_ms(1000);
 	// tx_carrier_wave(SPI2);
+	int rssi = ax5043_read8(AX5043_RSSI, UHF_SPI);
+	int agc = ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI);
 	while(1){
-		printMsg("Transmit!\r\n");
-		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
-
-		// printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
-		//   radio_transmit(100, arr, SPI2);
-		tx_black_magic(SPI2);
-
-		delay_ms(500);
-		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, SPI2);
-
-		if(ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT1, UHF_SPI)){
-			printMsg("FILLED!!!");
-			// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-			int size = radio_receive(&packet, UHF_SPI);
-			for(int i = 0; i<size; i++){
-				printMsg("%d\t", packet.pkt[i]);
-			}
-			printMsg("\r\n");
-		}
-		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_STANDBY, UHF_SPI);
-		delay_ms(1000);
-		ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX, SPI2);
-		delay_ms(500);
-		//   tx_black_magic(SPI2);
-//		tx_simple(SPI1);
-		// nop(10000000);
-		//  bool recieved = radio_receive(packet, SPI2);
-		//  if(recieved){
-		//  	for(int i = 0; i<100; i++){
-		//  		printMsg(packet->pkt[i]);
-		//  	}
-		//  }else{
-		//  	printMsg("Noooooo :(\n");
-		//  }
+		// rssi = ax5043_read8(AX5043_RSSI, UHF_SPI);
+		// agc = ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI);
+		 int fifocount = ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT1, UHF_SPI) << 8;
+		// if(fifocount > 0){
+		 	printMsg("FILLED!!!");
+		// 	int size = radio_receive(&packet, UHF_SPI);
+		// 	for(int i = 0; i<size; i++){
+		// 		printMsg("%d\t", packet.pkt[i]);
+		// 	}
+		// 	printMsg("\r\n");
+		// 	for(int i = 0; i<256; i++){
+		// 			packet.pkt[i] = 0;
+		// 		}
+		// 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
+		// }
 	}
 	
 //	 uint8_t arr[200];

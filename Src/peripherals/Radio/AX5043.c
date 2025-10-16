@@ -5,7 +5,7 @@ void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	vhf_init();
+	// vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
 
 }
@@ -156,7 +156,7 @@ void ax5043_set_registers_tx(SPI_TypeDef* spi)
 	ax5043_write8(AX5043_XTALCAP        ,                              			0x00, spi);
 	ax5043_write8(AX5043_0xF00          ,                              			0x0F, spi);
 	ax5043_write8(AX5043_0xF18          ,                              			0x06, spi);
-	
+	return;
 	ax5043_write8(AX5043_MODULATION     ,                              			0x07,spi); 
 	ax5043_write8(AX5043_ENCODING		, 										0x00, spi);
 	ax5043_write8(AX5043_FRAMING		, 										0x06, spi);
@@ -827,7 +827,7 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	int received = 0;
 	int fifocount = ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8;
 	printMsg("FIFOCOUNT: %d\r\n", fifocount);
-	if(fifocount = 0){
+	if(fifocount == 0){
 		return 0;
 	}
 	// while (ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi)) {
@@ -944,7 +944,7 @@ void ax5043_configInterrupt(){
 	EXTI->IMR1 |= EXTI_IMR1_IM2;
 	EXTI->RTSR1|= EXTI_RTSR1_RT2;
 	EXTI->FTSR1|= EXTI_FTSR1_FT2;
-	// NVIC_EnableIRQ(EXTI2_IRQn);
+	NVIC_EnableIRQ(EXTI2_IRQn);
 
 	//IRQ = PB11
 	GPIOB->MODER &= ~GPIO_MODER_MODE11_Msk;
