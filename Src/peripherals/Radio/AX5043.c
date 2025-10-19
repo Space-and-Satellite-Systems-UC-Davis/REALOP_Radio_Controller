@@ -5,7 +5,7 @@ void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	// vhf_init();
+	vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
 
 }
@@ -944,7 +944,7 @@ void ax5043_configInterrupt(){
 	EXTI->IMR1 |= EXTI_IMR1_IM2;
 	EXTI->RTSR1|= EXTI_RTSR1_RT2;
 	EXTI->FTSR1|= EXTI_FTSR1_FT2;
-	NVIC_EnableIRQ(EXTI2_IRQn);
+	 NVIC_EnableIRQ(EXTI2_IRQn);
 
 	//IRQ = PB11
 	GPIOB->MODER &= ~GPIO_MODER_MODE11_Msk;
@@ -964,7 +964,7 @@ void ax5043_configInterrupt(){
 
 void EXTI2_IRQHandler(){
 	printMsg("INTERRUPT on UHF!\r\n");
-	// NVIC_DisableIRQ(EXTI2_IRQn);
+	NVIC_DisableIRQ(EXTI2_IRQn);
 	EXTI->PR1 |= EXTI_PR1_PIF2;
 	packet_t packet;
 	for(int i = 0; i<256; i++){
@@ -974,9 +974,9 @@ void EXTI2_IRQHandler(){
 	for(int i = 0; i<size; i++){
 		printMsg("%d\t", packet.pkt[i]);
 	}
-	nop(1000);
-	// NVIC_EnableIRQ(EXTI2_IRQn);
-
+	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
+	printMsg("FINISH INTERRUPT\r\n");
+	NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
 void EXTI15_10_IRQHandler(){
