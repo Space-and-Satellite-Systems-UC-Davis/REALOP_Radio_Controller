@@ -14,12 +14,12 @@
 #define PERIPHERALS_INTERCOMM_H_
 
 #include "Radio/radio.h"
-#include "UART/pcp.h"
+#include "UART/crc.h"
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
     UploadData = 'U', //Transfer data to PFC
-	SendState = 's', //Send state to PFC
+	SendState = 'S', //Send state to PFC
 	TransferToGround = 'T', //Transfer data to ground station
 } MessageType;
 
@@ -36,23 +36,23 @@ typedef enum {
 } State;
 
 //Primary function from which everything else here is called
-void handleInput(PCPDevice *dev, uint8_t chunk[]);
+void handleInput(USART_TypeDef *dev, uint8_t chunk[]);
 
 
 
 //DUsT:
 
 //Receive data from PFC
-void downloadData(PCPDevice *dev, uint8_t chunk[]);
+void downloadData(USART_TypeDef *dev, uint8_t chunk[]);
 
 //Transfer data to PFC
-void uploadData(PCPDevice *dev);
+void uploadData(USART_TypeDef *dev);
 
 //Send state to PFC
-void sendState(PCPDevice *dev);
+void sendState(USART_TypeDefdev);
 
 //Transfer data to ground station
-void transferToGround(PCPDevice *dev, uint8_t chunk[]);
+void transferToGround(USART_TypeDef *dev, uint8_t chunk[]);
 
 //Utility to initialize a chunk to all zeros
 //Otherwise it might be random data and result in unpredictable behavior

@@ -1,11 +1,10 @@
 #include <stdint.h>
 //#include "print_scan.h"
-#include "UART/pcp.h"
+#include "UART/crc.h"
 #include "UART/uart.h"
 #include "Timers/timers.h"
 #include "platform_init.h"
 #include "Flight_Computer/Intercomm.h"
-
 
 int main(void) {
     init_platform();
@@ -16,21 +15,18 @@ int main(void) {
     //Time between upload requests in seconds
     const int WAIT_INTERVAL = 5;
 
-	PCPDevice pcp;
-	make_pcpdev(&pcp, USART1);
-
 	uint8_t chunk[CHUNK_LENGTH];
 
 	uint64_t start_time = getSysTime();
     while(1) {
     	nop(1);
-    	int read_status = pcp_read(&pcp, chunk);
+    	int read_status = crc_read(, chunk);
     	if (read_status != -1) {
-    		handleInput(&pcp, chunk);
+    		handleInput(USART1, chunk);
     	}
 
     	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) {
-    		uploadData(&pcp);
+    		uploadData(USART1);
     		start_time = getSysTime();
     	}
     }
