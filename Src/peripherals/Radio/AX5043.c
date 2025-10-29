@@ -13,8 +13,8 @@ void radio_init() {
 void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
 
 	ax5043_write8(AX5043_MODULATION     ,                              			0x07, spi);
-	ax5043_write8(AX5043_ENCODING       ,                              			0x00, spi);
-	ax5043_write8(AX5043_FRAMING        ,                              			0x06, spi);
+	ax5043_write8(AX5043_ENCODING       ,                              			0x03, spi);
+	ax5043_write8(AX5043_FRAMING        ,                              			0x64, spi);
 	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01, spi);
 	ax5043_write8(AX5043_PINFUNCDCLK    ,                              			0x01, spi);
 	ax5043_write8(AX5043_PINFUNCDATA    ,                              			0x01, spi);
@@ -95,15 +95,13 @@ void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
 	ax5043_write8(AX5043_BBTUNE         ,                              			0x0A, spi);
 	ax5043_write8(AX5043_BBOFFSCAP      ,                              			0x77, spi);
 	ax5043_write8(AX5043_PKTADDRCFG     ,                              			0x80, spi);
-	ax5043_write8(AX5043_PKTLENCFG      ,                              			0x80, spi);
+	ax5043_write8(AX5043_PKTLENCFG      ,                              			0xF0, spi);
 	ax5043_write8(AX5043_PKTLENOFFSET   ,                              			0x00, spi);
 	ax5043_write8(AX5043_PKTMAXLEN      ,                              			0xFF, spi);
-	ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAF, spi);
-	ax5043_write8(AX5043_MATCH0PAT2     ,                              			0x0C, spi);
-	ax5043_write8(AX5043_MATCH0PAT1     ,                              			0x00, spi);
-	ax5043_write8(AX5043_MATCH0PAT0     ,                              			0x00, spi);
-	ax5043_write8(AX5043_MATCH0LEN      ,                              			0x8F, spi);
-	ax5043_write8(AX5043_MATCH0MAX      ,                              			0x0F, spi);
+	ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAA, spi);
+	ax5043_write8(AX5043_MATCH0PAT2     ,                              			0xCC, spi);
+	ax5043_write8(AX5043_MATCH0PAT1     ,                              			0xAA, spi);
+	ax5043_write8(AX5043_MATCH0PAT0     ,                              			0xCC, spi);
 	ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55, spi);
 	ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55, spi);
 	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A, spi);
@@ -115,11 +113,11 @@ void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
 	ax5043_write8(AX5043_TMGRXOFFSACQ   ,                              			0x00, spi);
 	ax5043_write8(AX5043_TMGRXCOARSEAGC ,                              			0x7F, spi);
 	ax5043_write8(AX5043_TMGRXRSSI      ,                              			0x03, spi);
-	ax5043_write8(AX5043_TMGRXPREAMBLE2 ,                              			0x1A, spi);
+	ax5043_write8(AX5043_TMGRXPREAMBLE2 ,                              			0x17, spi);
 	ax5043_write8(AX5043_RSSIABSTHR     ,                              			0xE9, spi);
 	ax5043_write8(AX5043_BGNDRSSITHR    ,                              			0x00, spi);
 	ax5043_write8(AX5043_PKTCHUNKSIZE   ,                              			0x0D, spi);
-	ax5043_write8(AX5043_PKTACCEPTFLAGS ,                              			0x20, spi);
+	ax5043_write8(AX5043_PKTACCEPTFLAGS ,                              			0x31, spi);
 	ax5043_write8(AX5043_DACVALUE1      ,                              			0x00, spi);
 	ax5043_write8(AX5043_DACVALUE0      ,                              			0x00, spi);
 	ax5043_write8(AX5043_DACCONFIG      ,                              			0x00, spi);
@@ -585,80 +583,60 @@ void tx_black_magic(SPI_TypeDef* spi) {
 
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
 
-	// for(int i = 0; i< 47; i++){
-	// 	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
-	// 	ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-	// 	ax5043_write8(AX5043_FIFODATA, 255, spi);
-	// 	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	// }
-
 	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
 	ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-	ax5043_write8(AX5043_FIFODATA, 4, spi);
+	ax5043_write8(AX5043_FIFODATA, 68, spi);
 	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	
-	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi);
-	ax5043_write8(AX5043_FIFODATA, 3, spi);
-	ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-// //sync word: 0011 0000 1111 0101 
-	ax5043_write8(AX5043_FIFODATA, 0x30, spi);
-	ax5043_write8(AX5043_FIFODATA, 0xF5, spi);
 
 	int packetSize = 100;
 	uint8_t arr[packetSize];
 	for(uint8_t i = 0; i<packetSize; i++){
 		arr[i] = i * 17 + 5;
 	}
-	// while(1){
+
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi);
 		ax5043_write8(AX5043_FIFODATA, packetSize + 1, spi);
-		ax5043_write8(AX5043_FIFODATA,  AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-
-
+		ax5043_write8(AX5043_FIFODATA,  AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND, spi);
 		
 		for(uint8_t i = 0; i<packetSize ; i++){
 			ax5043_write8(AX5043_FIFODATA, i, spi);
 		}
 
-	// 	packet_t packet;
-	// 	for(int i = 0; i<256; i++){
-	// 		packet.pkt[i] = 0;
-	// 	}
 		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
-		// printMsg("SENT!");
-		// while(1){
-		// 	printMsg("RECEIVING");
-		// 	bool recieved = radio_receive(&packet, SPI2);
-		// 							if(recieved){
-		// 							for(int i = 0; i<100; i++){
-		// 								printMsg(packet.pkt[i]);
-		// 							}
-		// 							}else{
-		// 							// printMsg("Noooooo :(\n");
-		// 							}
-		// 	if(!ax5043_read8(AX5043_RADIOSTATE, spi)){
-		// 		break;
-		// 	}
-		// }
-
-		// printMsg("AHAHA");
+		
 		int radiostate =ax5043_read8(AX5043_RADIOSTATE, spi);
-		long rssi = 0;
-		long agc = 0;
-		int count = 0;
 		while(ax5043_read8(AX5043_RADIOSTATE, spi)){
 			radiostate = ax5043_read8(AX5043_RADIOSTATE, spi); 
 			printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
-			// rssi += ax5043_read8(AX5043_RSSI, UHF_SPI);
-			// agc += ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI);
-			// count++;
-			
-			// printMsg("FREQ: %d\r\n", ax5043_read8(AX5043_TRKFREQ1, UHF_SPI) | ax5043_read8(AX5043_TRKFREQ0, UHF_SPI));
-
 		}
-		// printMsg("AV RSSI: %d, AV AGC: %d\r\n", rssi/count, agc/count);
-	// }
 	
+	// delay_ms(5000);
+
+	//send different data...
+
+	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
+
+	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
+	ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
+	ax5043_write8(AX5043_FIFODATA, 68, spi);
+	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
+
+	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi);
+	ax5043_write8(AX5043_FIFODATA, packetSize + 1, spi);
+	ax5043_write8(AX5043_FIFODATA,  AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND, spi);
+	
+	for(uint8_t i = 0; i<packetSize ; i++){
+		ax5043_write8(AX5043_FIFODATA, arr[i], spi);
+	}
+
+	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
+	
+	while(ax5043_read8(AX5043_RADIOSTATE, spi)){
+		radiostate = ax5043_read8(AX5043_RADIOSTATE, spi); 
+		printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
+	}
+
+
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdowm
 	//comment out for now because always want to receive
 	// gpio_low(GPIOC, 9); //disable txco
