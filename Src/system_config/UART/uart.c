@@ -52,7 +52,20 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 /************************ GPIO INITIALIZATION HELPERS ************************/
 
 void usart1_gpio_init() {
-	return;
+	/**
+	 * PB6 TX AF7
+	 * PB7 RX AF7
+	 */
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+ 
+	 // configure the USART Pins to Alternate Function mode
+	 GPIOB->MODER &= ~(GPIO_MODER_MODE6_Msk | GPIO_MODER_MODE7_Msk);
+	 GPIOB->MODER |= (GPIO_MODER_MODE6_1 | GPIO_MODER_MODE7_1);
+ 
+	 // configure each pin to AF7
+	 GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL6_Msk | GPIO_AFRL_AFSEL7_Msk);
+	 GPIOB->AFR[0] |= (7 << GPIO_AFRL_AFSEL6_Pos) | (7 << GPIO_AFRL_AFSEL7_Pos);
+
 }
 void usart2_gpio_init() {
 	return;
@@ -121,7 +134,7 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
-			uart_8bit_1stop(USART3, baud_rate, true);
+			uart_8bit_1stop(USART1, baud_rate, true);
 			break;
 		case (int)USART2:
 			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -218,7 +231,7 @@ int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size) {
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
-//		enqueueBuffer(USART1_RxBuffer, USART1);
+		// enqueueBuffer(USART1_RxBuffer, USART1);
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ISR &= ~USART_ISR_RTOF;

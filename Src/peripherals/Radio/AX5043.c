@@ -568,7 +568,7 @@ ax5043_write8(AX5043_PINFUNCDATA, 0x84, spi); // DATA pin pulled up, filling FIF
 ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX, spi); //start TX
 }
 
-void tx_black_magic(SPI_TypeDef* spi) {
+void tx_black_magic(SPI_TypeDef* spi, int packetSize) {
 	ax5043_set_registers_tx(spi);
 	
 	//disable fifonotempty interrupt
@@ -588,8 +588,7 @@ void tx_black_magic(SPI_TypeDef* spi) {
 	ax5043_write8(AX5043_FIFODATA, 68, spi);
 	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
 
-	int packetSize = 100;
-	uint8_t arr[packetSize];
+	uint8_t arr[250];
 	for(uint8_t i = 0; i<packetSize; i++){
 		arr[i] = i * 17 + 5;
 	}
@@ -609,105 +608,12 @@ void tx_black_magic(SPI_TypeDef* spi) {
 			radiostate = ax5043_read8(AX5043_RADIOSTATE, spi); 
 			printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
 		}
-	
-	// delay_ms(5000);
 
-	//send different data...
-
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
-
-	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
-	ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-	ax5043_write8(AX5043_FIFODATA, 68, spi);
-	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-
-	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi);
-	ax5043_write8(AX5043_FIFODATA, packetSize + 1, spi);
-	ax5043_write8(AX5043_FIFODATA,  AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND, spi);
-	
-	for(uint8_t i = 0; i<packetSize ; i++){
-		ax5043_write8(AX5043_FIFODATA, arr[i], spi);
-	}
-
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
-	
-	while(ax5043_read8(AX5043_RADIOSTATE, spi)){
-		radiostate = ax5043_read8(AX5043_RADIOSTATE, spi); 
-		printMsg("RX RADIOSTATE: %d\r\n", ax5043_read8(AX5043_RADIOSTATE, UHF_SPI) );
-	}
-
-
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdowm
-	//comment out for now because always want to receive
-	// gpio_low(GPIOC, 9); //disable txco
-
-	//reenable irq for recieving
-	ax5043_write8(AX5043_IRQMASK0, irqmask | AX5043_IRQM_FIFONOTEMPTY, spi); 
-
-}
-
-
-void tx_simple(SPI_TypeDef* spi){
-	ax5043_set_registers_tx(spi);
-	int radiostate = -1;
-	gpio_high(GPIOC, 9); //enable tcxo
-	nop(1000);
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES, spi);
-
-    while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
-
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
-	int free = ax5043_read8(AX5043_FIFOFREE1, spi) << 8| ax5043_read8(AX5043_FIFOFREE0, spi);
-
-	while(1){
-		ax5043_write8(AX5043_FIFODATA, 0xE1, spi);
-		ax5043_write8(AX5043_FIFODATA, 0x04, spi);
-		ax5043_write8(AX5043_FIFODATA, 0x27, spi);
-		ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-		ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-		ax5043_write8(AX5043_FIFODATA, 0x1A, spi);
-
-
-		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
-		radiostate = ax5043_read8(AX5043_RADIOSTATE, spi);
-
-
-		//Wait for transmitting to be active by making sure it changes from IDLE and that FIFO is being filled
-		free = ax5043_read8(AX5043_FIFOFREE1, spi) << 8| ax5043_read8(AX5043_FIFOFREE0, spi);
-		while(!ax5043_read8(AX5043_RADIOSTATE, spi) && ((ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi) < 10));
-				
-		int fifosize = -1;
-		int fifostat = -1;
-		while(ax5043_read8(AX5043_RADIOSTATE, spi));
-	}
-	ax5043_write8(AX5043_FIFODATA, 0xE1, spi);
-	ax5043_write8(AX5043_FIFODATA, 0x04, spi);
-	ax5043_write8(AX5043_FIFODATA, 0x27, spi);
-	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	ax5043_write8(AX5043_FIFODATA, 0x1A, spi);
-
-
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
-	radiostate = ax5043_read8(AX5043_RADIOSTATE, spi);
-
-
-	//Wait for transmitting to be active by making sure it changes from IDLE and that FIFO is being filled
-	free = ax5043_read8(AX5043_FIFOFREE1, spi) << 8| ax5043_read8(AX5043_FIFOFREE0, spi);
-	while(!ax5043_read8(AX5043_RADIOSTATE, spi) && ((ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi) < 10));
-			
-	int fifosize = -1;
-	int fifostat = -1;
-	while(ax5043_read8(AX5043_RADIOSTATE, spi)){
-		radiostate = ax5043_read8(AX5043_RADIOSTATE, spi); //Wait for RadioState to show IDLE
-		// fifo = ax5043_read8(AX5043_FIFODATA, spi);
-		fifosize = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		fifostat = ax5043_read8(AX5043_FIFOSTAT, spi);
-	}
-	radiostate = ax5043_read8(AX5043_RADIOSTATE, spi);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdowm
 	gpio_low(GPIOC, 9); //disable txco
 
+	//reenable irq for recieving
+	ax5043_write8(AX5043_IRQMASK0, irqmask | AX5043_IRQM_FIFONOTEMPTY, spi); 
 
 }
 
@@ -718,20 +624,25 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
     int packetSize = 0; 
     int spaceLeftInFIFO = 0;
     
-    ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES, spi);
-    while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM)); //Waiting for Modem to be ready
+	int irqmask = ax5043_read8(AX5043_IRQMASK0, spi);
+	ax5043_write8(AX5043_IRQMASK0, irqmask & ~AX5043_IRQM_FIFONOTEMPTY, spi); 
+
 	gpio_high(GPIOC, 9); //enable tcxo
-
-
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi); //clear data from fifo
+	nop(1000);
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES, spi);
 	
-	//write preamble
-	ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
-	ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC, spi); //no crc and bypass framing + encoding
-	ax5043_write8(AX5043_FIFODATA, 34, spi); //32 bits originally, going to try 272
-	ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	
+    while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
+
 	while (bytesSent < numBytes) {
+
+		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
+
+		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
+		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
+		ax5043_write8(AX5043_FIFODATA, 68, spi);
+		ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
+		
+
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
 
 		if (spaceLeftInFIFO > numBytes + 3 - bytesSent) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
@@ -742,7 +653,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
-		ax5043_write8(AX5043_FIFODATA, length, spi);
+		ax5043_write8(AX5043_FIFODATA, length--, spi);
 
 		uint8_t flags = 0;
 
@@ -756,7 +667,6 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 		}
 
 		ax5043_write8(AX5043_FIFODATA, flags, spi);
-		length--; 
 
 		int sent = 0;
 		while(pktCurrentIndex < length){
@@ -776,7 +686,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 		while(!ax5043_read8(AX5043_RADIOSTATE, spi) && ((ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi) < 10));
 		
 
-		bytesSent += packetSize - 3;
+		bytesSent += length;
 		int radiostate = -1;
 		int fifo = -1;
 		int fifosize = -1;
@@ -790,7 +700,8 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 
 	}
 	
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdowm
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdown
+	ax5043_write8(AX5043_IRQMASK0, irqmask | AX5043_IRQM_FIFONOTEMPTY, spi); 
 	gpio_low(GPIOC, 9); //disable txco
 
 }
@@ -806,7 +717,7 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	int fifocount = ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8;
 	printMsg("FIFOCOUNT: %d\r\n", fifocount);
 	if(fifocount == 0){
-		return 0;
+		return -1;
 	}
 	// while (ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi)) {
 		// received = true;
@@ -819,9 +730,9 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		printMsg("HEADER: %x\r\n", header);
 		printMsg("LENGTH: %d\r\n", length-1);
 		printMsg("FLAGS: %x\r\n", flags);
-		// if(header != AX5043_FIFODATA_DATA_COMMAND){
-		// 	return -1;
-		// }
+		if(header != AX5043_FIFODATA_DATA_COMMAND){
+			return -1;
+		}
 		int i = 0;
 		while(i < length-1 && i < 255){
 			(received_packet->pkt)[i++] = ax5043_read8(AX5043_FIFODATA, spi);
@@ -831,17 +742,12 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		// 		(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA, spi);
 		// 	}
 		// }
-		if(i < 255){
-			received = i;
-		}else{
-			received = 255;
-		}
 	// }
 
 	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);
 	// gpio_low(GPIOC, 9);
 
-	return received;
+	return i;
 } 
 
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef* spi) {

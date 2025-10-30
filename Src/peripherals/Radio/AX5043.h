@@ -364,7 +364,7 @@ static uint8_t ax_value_to_mantissa_exp_4_4(uint32_t value);
 void uhf_init();
 void vhf_init();
 
-void tx_black_magic(SPI_TypeDef* spi);
+void tx_black_magic(SPI_TypeDef* spi, int packetSize);
 
 
 typedef struct PACKET_STRUCT {
