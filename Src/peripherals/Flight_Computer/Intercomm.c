@@ -1,8 +1,6 @@
 #include "Intercomm.h"
 
-//Length of chunks being sent in bytes between PFC, Radio, and Ground
-#define CHUNK_LENGTH 8
-
+uint8_t storedData[CHUNK_LENGTH * MAX_UINT8_T];
 State current_state = Idle;
 
 //Primary function from which everything else here is called
@@ -26,8 +24,9 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 			// // ECHO
 			//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
 
-			//HERE BE DRAGONS TODO
+			//HERE BE DRAGONS
 			//Whenever radio memory is finished, put these chunks into memory
+			memcpy(&storedData[CHUNK_LENGTH*i], chunk, CHUNK_LENGTH);
 		}
 	}
 }
@@ -49,19 +48,20 @@ void uploadData(USART_TypeDef *dev) {
 		nop(1000);
 
 		uint8_t packet[CHUNK_LENGTH + 1];
-		uint8_t chunk = &packet[1];
+		uint8_t *chunk = &packet[1];
 		packet[0] = i;
 		initEmptyChunk(chunk);
 
 		//HERE BE DRAGONS
 		//Once memory access is implemented, the radio would retrieve memory and put it here
+		memcpy(chunk, &storedData[CHUNK_LENGTH * i], CHUNK_LENGTH);
 
-		//rat
-		chunk[0]='R';
-		chunk[1]='A';
-		chunk[2]='T';
+		// //rat
+		// chunk[0]='R';
+		// chunk[1]='A';
+		// chunk[2]='T';
 
-		crc_transmit(dev, chunk, CHUNK_LENGTH);
+		crc_transmit(dev, packet, CHUNK_LENGTH + 1);
 	}
 }
 

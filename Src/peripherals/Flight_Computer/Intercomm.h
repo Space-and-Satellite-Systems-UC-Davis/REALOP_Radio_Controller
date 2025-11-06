@@ -39,8 +39,11 @@ typedef enum {
 void handleInput(USART_TypeDef *dev, uint8_t chunk[]);
 
 
+//Length of chunks being sent in bytes between PFC, Radio, and Ground
+#define CHUNK_LENGTH 8
+#define MAX_UINT8_T 255
 
-//DUsT:
+//DUST:
 
 //Receive data from PFC
 void downloadData(USART_TypeDef *dev, uint8_t chunk[]);

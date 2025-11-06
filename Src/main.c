@@ -9,9 +9,7 @@
 int main(void) {
     init_platform();
     usart_init(USART1, 9600);
-
-    //Length of chunks being sent in bytes between PFC, Radio, and Ground
-    const int CHUNK_LENGTH = 8;
+	
     //Time between upload requests in seconds
     const int WAIT_INTERVAL = 5;
 
@@ -20,7 +18,7 @@ int main(void) {
 	uint64_t start_time = getSysTime();
     while(1) {
     	nop(1);
-    	int read_status = crc_read(, chunk);
+    	int read_status = crc_read(USART1, chunk);
     	if (read_status != -1) {
     		handleInput(USART1, chunk);
     	}
