@@ -12,12 +12,12 @@ int main(void)
 {
     /* Loop forever */
     init_platform();
-
 	printMsg("START!\r\n");
+	
 
 	radio_init();
-	uint8_t arr[500];
-	for(int i = 0; i<500; i++){
+	uint8_t arr[1000];
+	for(int i = 0; i<1000; i++){
 		// arr[i] = i * 17;
 		arr[i] = (uint8_t)i;
 	}
@@ -25,11 +25,15 @@ int main(void)
 	for(int i = 0; i<256; i++){
 		packet.pkt[i] = 0;
 	}
-	while(1){
-		// radio_transmit(500, arr, UHF_SPI);
-		tx_black_magic(UHF_SPI, 237);
-		delay_ms(5000);
-	}
+	// while(1){
+	// 	radio_transmit(500, arr, UHF_SPI);
+	// 	delay_ms(1000);
+	// 	// radio_transmit(239, arr, UHF_SPI);
+	// 	// delay_ms(1000);
+	// 	// radio_transmit(50, arr, UHF_SPI);
+	// 	// // tx_black_magic(UHF_SPI, 237);
+	// 	// delay_ms(5000);
+	// }
 	ax5043_set_registers_rx(UHF_SPI);
 	// ax5043_calculate_rx_registers(UHF_SPI);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
