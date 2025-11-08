@@ -613,6 +613,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
     while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
 	while(bytesSent < numBytes){
+		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
 		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
 		ax5043_write8(AX5043_FIFODATA, 68, spi);
@@ -635,7 +636,8 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 
 		int sent = 0;
 		while(sent < length){
-			ax5043_write8(AX5043_FIFODATA, bytesToSend[sent++], spi);
+			ax5043_write8(AX5043_FIFODATA, bytesToSend[bytesSent + sent], spi);
+			sent++;
 		}
 
 		//check if crytal is running
@@ -648,7 +650,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 		while(ax5043_read8(AX5043_RADIOSTATE, spi));
 
 		bytesSent += sent;
-
+		delay_ms(1000);
 	}	
 	
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdown
@@ -670,8 +672,6 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	if(fifocount == 0){
 		return -1;
 	}
-	// while (ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi)) {
-		// received = true;
 		uint8_t header = ax5043_read8(AX5043_FIFODATA, spi);
 		uint8_t length = ax5043_read8(AX5043_FIFODATA, spi);
 		uint8_t flags = ax5043_read8(AX5043_FIFODATA, spi);
@@ -681,9 +681,9 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		printMsg("HEADER: %x\r\n", header);
 		printMsg("LENGTH: %d\r\n", length-1);
 		printMsg("FLAGS: %x\r\n", flags);
-		if(header != AX5043_FIFODATA_DATA_COMMAND){
-			return -1;
-		}
+		// if(header != AX5043_FIFODATA_DATA_COMMAND){
+		// 	return -1;
+		// }
 		int i = 0;
 		while(i < length-1 && i < 255){
 			(received_packet->pkt)[i++] = ax5043_read8(AX5043_FIFODATA, spi);
@@ -808,11 +808,13 @@ void EXTI2_IRQHandler(){
 	}
 	int size = 0;
 	do{
+		printMsg("Received: \r\n");
 		size = radio_receive(&packet, UHF_SPI);
 		for(int i = 0; i<size; i++){
-			printMsg("%d\t", packet.pkt[i]);
+			printMsg("%c", packet.pkt[i]);
 		}
-	}while(size > 0);
+	}while(!packet.isPacketEnd && size != 0);
+	printMsg("\r\n");
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	printMsg("FINISH INTERRUPT\r\n");
 	NVIC_EnableIRQ(EXTI2_IRQn);

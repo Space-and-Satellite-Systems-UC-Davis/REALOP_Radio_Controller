@@ -16,24 +16,25 @@ int main(void)
 	
 
 	radio_init();
-	uint8_t arr[1000];
-	for(int i = 0; i<1000; i++){
-		// arr[i] = i * 17;
-		arr[i] = (uint8_t)i;
-	}
+	// uint8_t arr[1000];
+	// for(int i = 0; i<1000; i++){
+	// 	// arr[i] = i * 17;
+	// 	arr[i] = (uint8_t)i;
+	// }
+	char arr[1045] = "Hello world I hate this stupid radio so much i hope this transmits and receives correctly but honestly i would not be surprised if it does not work at all because for some random reason radio does not like me :( Please just work I am praying to all of the gods i will be the happiest person on earth if this even transmits or receives somehow. I do not know what to write but honestly it will probably work as long as its more than 240 so you know what? This is good enough, or so i thought but actually i want to get to one thousand bytes whoo hoo because somehow im only receiving the first couple hundred and i lose all the data and its actually a tragedy but once i figure this out i can go eat and be done with radio!! Except I do have wake on radio left which im going to die omg but it cannot be that bad, right? Or I did just remember that i might need to do forward error correction which is horrible but should be one register and what could go wrong? I’m at 962 characters now so i only need to blab on for a little bit more yippee";
 	packet_t packet;
 	for(int i = 0; i<256; i++){
 		packet.pkt[i] = 0;
 	}
-	// while(1){
-	// 	radio_transmit(500, arr, UHF_SPI);
-	// 	delay_ms(1000);
-	// 	// radio_transmit(239, arr, UHF_SPI);
-	// 	// delay_ms(1000);
-	// 	// radio_transmit(50, arr, UHF_SPI);
-	// 	// // tx_black_magic(UHF_SPI, 237);
-	// 	// delay_ms(5000);
-	// }
+	while(1){
+		radio_transmit(1042, arr, UHF_SPI);
+		delay_ms(5000);
+		// radio_transmit(239, arr, UHF_SPI);
+		// delay_ms(1000);
+		// radio_transmit(50, arr, UHF_SPI);
+		// // tx_black_magic(UHF_SPI, 237);
+		// delay_ms(5000);
+	}
 	ax5043_set_registers_rx(UHF_SPI);
 	// ax5043_calculate_rx_registers(UHF_SPI);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
