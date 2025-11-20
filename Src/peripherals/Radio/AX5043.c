@@ -105,7 +105,7 @@ void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
 	ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55, spi);
 	ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55, spi);
 	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A, spi);
-	ax5043_write8(AX5043_MATCH1MAX      ,                              			0x0A, spi);
+	ax5043_write8(AX5043_MATCH1MAX      ,                              			0x05, spi);
 	ax5043_write8(AX5043_TMGTXBOOST     ,                              			0x3E, spi);
 	ax5043_write8(AX5043_TMGTXSETTLE    ,                              			0x31, spi);
 	ax5043_write8(AX5043_TMGRXBOOST     ,                              			0x3E, spi);
@@ -612,23 +612,21 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 	
     while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
+	
+
 	while(bytesSent < numBytes){
 		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
 		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
 		ax5043_write8(AX5043_FIFODATA, 68, spi);
 		ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		if(spaceLeftInFIFO > 239 + 3){
-			spaceLeftInFIFO = 239 + 3;
-		}
 		if (spaceLeftInFIFO > numBytes - bytesSent + 3) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
 			packetSize = numBytes + 3 - bytesSent;
 		} else {
 			packetSize = spaceLeftInFIFO;
 		}
-
+		
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
 		ax5043_write8(AX5043_FIFODATA, length--, spi);
@@ -668,7 +666,7 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	// gpio_high(GPIOC, 9);
 	int received = 0;
 	int fifocount = ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8;
-	printMsg("FIFOCOUNT: %d\r\n", fifocount);
+	// printMsg("FIFOCOUNT: %d\r\n", fifocount);
 	if(fifocount == 0){
 		return -1;
 	}
@@ -678,14 +676,23 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
 		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
 		received_packet->length = length - 1;
-		printMsg("HEADER: %x\r\n", header);
-		printMsg("LENGTH: %d\r\n", length-1);
-		printMsg("FLAGS: %x\r\n", flags);
+		// printMsg("HEADER: %x\r\n", header);
+		// printMsg("LENGTH: %d\r\n", length-1);
+		// printMsg("FLAGS: %x\r\n", flags);
 		// if(header != AX5043_FIFODATA_DATA_COMMAND){
 		// 	return -1;
 		// }
 		int i = 0;
-		while(i < length-1 && i < 255){
+		if(received_packet->isPacketEnd){
+			if(length >= 235){
+				length -= 4 - (239 - length);
+			}else{
+				length -= 4;
+			}
+			
+
+		}
+		while(i < length-1   && i < 255){
 			(received_packet->pkt)[i++] = ax5043_read8(AX5043_FIFODATA, spi);
 		}
 		
@@ -799,7 +806,7 @@ void ax5043_configInterrupt(){
 }
 
 void EXTI2_IRQHandler(){
-	printMsg("INTERRUPT on UHF!\r\n");
+	// printMsg("INTERRUPT on UHF!\r\n");
 	NVIC_DisableIRQ(EXTI2_IRQn);
 	EXTI->PR1 |= EXTI_PR1_PIF2;
 	packet_t packet;
@@ -808,15 +815,15 @@ void EXTI2_IRQHandler(){
 	}
 	int size = 0;
 	do{
-		printMsg("Received: \r\n");
+		// printMsg("Received: \r\n");
 		size = radio_receive(&packet, UHF_SPI);
 		for(int i = 0; i<size; i++){
 			printMsg("%c", packet.pkt[i]);
 		}
-	}while(!packet.isPacketEnd && size != 0);
-	printMsg("\r\n");
+	}while(!packet.isPacketEnd);
+	// printMsg("\r\n");
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-	printMsg("FINISH INTERRUPT\r\n");
+	// printMsg("FINISH INTERRUPT\r\n");
 	NVIC_EnableIRQ(EXTI2_IRQn);
 }
 

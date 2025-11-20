@@ -355,6 +355,7 @@
 #define AX5043_MODCFGP           0xFF5F /* Modulator Configuration P */
 #define AX5043_PERFTUNE114       0xFF74
 
+
 void autorange_registers(SPI_TypeDef* spi);
 void radio_init();
 void ax5043_calculate_rx_registers(SPI_TypeDef *spi);
