@@ -7,9 +7,9 @@ const uint8_t iv[] = {0x50, 0xfe, 0x3c, 0x6a, 0x6d, 0x0d, 0xda, 0x6a,
 struct AES_ctx StructofAES;
 
 /**
- * Encrypts a message by the AES-128 CBC method of operation and stores it back into given parameter.
+ * Encrypts a message by the AES-128 CBC method of operation and stores it back into the given parameter.
  * Pads zeros if needed.
- * @param Dest: The 256 byte message you want to encrypt.
+ * @param Dest: The 256-byte message you want to encrypt.
  */
 void Encrypt_Array(uint8_t *Dest) {
   AES_init_ctx_iv(&StructofAES, key, iv);
@@ -19,7 +19,7 @@ void Encrypt_Array(uint8_t *Dest) {
 /**
  * Decrypts a message by the AES-128 CBC method of operation and stores it back into
  * given parameter.
- * @param Dest: The 256 byte message you want to encrypt.
+ * @param Dest: The 256-byte message you want to decrypt.
  */
 void Decrypt_Array(uint8_t *EncryptedText) {
   AES_init_ctx_iv(&StructofAES, key, iv);
