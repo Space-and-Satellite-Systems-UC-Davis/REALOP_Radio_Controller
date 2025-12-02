@@ -2,9 +2,6 @@
 #include "platform_init.h"
 #include "Radio/AX5043.h"
 
-#if !defined(__SOFT_FP__) && defined(__ARM_FP)
-  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
-#endif
 
 #define RUN_TEST	3	// 0 = run, 1 = run a very specific test
 #define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1

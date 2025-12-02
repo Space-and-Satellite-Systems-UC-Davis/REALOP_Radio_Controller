@@ -17,6 +17,8 @@ release
 
 # Prerequisites
 *.d
+.DS*
+.vscode
 
 # Object files
 *.o

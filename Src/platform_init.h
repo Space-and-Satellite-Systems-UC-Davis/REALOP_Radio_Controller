@@ -42,6 +42,7 @@ void init_platform() {
 	led_init();
 	
 	printer_init();
+	// printer_init();
 	systick_init();
 }
 
