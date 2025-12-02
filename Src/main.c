@@ -1,37 +1,60 @@
 #include <stdint.h>
-//#include "print_scan.h"
-#include "UART/pcp.h"
-#include "UART/uart.h"
-#include "Timers/timers.h"
 #include "platform_init.h"
-#include "Flight_Computer/Intercomm.h"
+#include "Radio/AX5043.h"
 
 
-int main(void) {
+#define RUN_TEST	3	// 0 = run, 1 = run a very specific test
+#define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
+
+
+bool test_radio_reads_simple();
+
+int main(void)
+{
+    /* Loop forever */
     init_platform();
-    usart_init(USART1, 9600);
+	
+	#if (RUN_TEST==1) && (TEST_ID != 0)
 
-    //Length of chunks being sent in bytes between PFC, Radio, and Ground
-    const int CHUNK_LENGTH = 8;
-    //Time between upload requests in seconds
-    const int WAIT_INTERVAL = 5;
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
 
-	PCPDevice pcp;
-	make_pcpdev(&pcp, USART1);
+    #else
 
-	uint8_t chunk[CHUNK_LENGTH];
+	//TODO: use RTC first_time flag.
+	//if (first_time) {
+	//  init_first_time()
+	//}
 
-	uint64_t start_time = getSysTime();
-    while(1) {
-    	nop(1);
-    	int read_status = pcp_read(&pcp, chunk);
-    	if (read_status != -1) {
-    		handleInput(&pcp, chunk);
-    	}
+	while (1) {
+		continue;
+	}
 
-    	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) {
-    		uploadData(&pcp);
-    		start_time = getSysTime();
-    	}
-    }
+#endif
+	
+}
+
+bool test_radio_reads_simple() {
+	gpio_high(GPIOA, 8); // Enable power to UHF Transceiver
+	uint32_t fails = 0;
+
+	uint8_t retval = ax5043_read8(AX5043_SILICONREVISION, UHF_SPI);
+	if (retval == 0b01010001) fails |= (1 << 0);
+
+	retval = ax5043_read8(AX5043_SCRATCH, UHF_SPI);
+	if (retval == 0b11000101) fails |= (1 << 1);
+
+	ax5043_write8(AX5043_SCRATCH, 0xAA, UHF_SPI);
+
+	retval = ax5043_read8(AX5043_SCRATCH, UHF_SPI);
+	if (retval == 0xAA) fails |= (1 << 2);
+
+
+	retval = ax5043_read8(AX5043_LPOSCREF0, UHF_SPI);
+	if (retval == 0b10101000) fails |= (1 << 3);
+
+	uint32_t wait = 33;
+
+	return true;
 }
