@@ -6,6 +6,7 @@
 
 extern void testFunction_Nothing();
 extern void testFunction_SystemStartup();
+extern void testFunction_radiooooo();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -19,6 +20,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Nothing;
 		case 1:
 			return testFunction_SystemStartup;
+		case 4:
+			return testFunction_radiooooo;
 		default:
 			return testFunction_Nothing;
 	}
