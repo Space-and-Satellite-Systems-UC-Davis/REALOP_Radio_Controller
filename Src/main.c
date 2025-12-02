@@ -27,7 +27,7 @@ int main(void)
 		packet.pkt[i] = 0;
 	}
 	while(1){
-		radio_transmit(13600, arr, UHF_SPI);
+		radio_transmit(1000, arr, UHF_SPI);
 		delay_ms(5000);
 		// radio_transmit(239, arr, UHF_SPI);
 		// delay_ms(1000);
@@ -46,7 +46,7 @@ int main(void)
 	delay_ms(1000);
 	// tx_carrier_wave(SPI2);
 	while(1){
-		// printMsg("STILL WORKING");
+		printMsg("STILL WORKING");
 		delay_ms(1000);
 // 		printMsg(\"RSSI: %d\r\n\", ax5043_read8(AX5043_RSSI, UHF_SPI));
 // 		printMsg(\"AGCCOUNTER: %d\r\n\", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));

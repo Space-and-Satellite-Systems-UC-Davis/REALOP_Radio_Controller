@@ -356,17 +356,40 @@
 #define AX5043_PERFTUNE114       0xFF74
 
 
+/**
+ * Calculates and sets registers for autorange/tx/rx
+ * magical functions with magical register values, idk how it works
+ * yippee
+ */
 void autorange_registers(SPI_TypeDef* spi);
+void ax5043_set_registers_tx(SPI_TypeDef* spi);
+void ax5043_set_registers_rx(SPI_TypeDef* spi); 
+
+
+/**
+ * init the radio
+ */
 void radio_init();
-void ax5043_calculate_rx_registers(SPI_TypeDef *spi);
-
-static uint8_t ax_value_to_mantissa_exp_4_4(uint32_t value);
-
+/**
+ * init the uhf transceiver/receiver
+ */
 void uhf_init();
+/**
+ * init the uhf transceiver/receiver
+ */
 void vhf_init();
 
-void tx_black_magic(SPI_TypeDef* spi, int packetSize);
+/**
+ * configures wake on radio mode, not finished yet
+ */
+void wor_config(int ms, SPI_TypeDef* spi);
 
+
+/**
+ * transmit function, used for testing purposes
+ * transmits the first packetSize values in a row 
+ */
+void tx_black_magic(SPI_TypeDef* spi, int packetSize);
 
 typedef struct PACKET_STRUCT {
     int pkt[256];
@@ -375,18 +398,35 @@ typedef struct PACKET_STRUCT {
     int isPacketEnd;
 } packet_t;
 
+/**
+ * Performs autoranging in the radio
+ */
 bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi);
 
-void tx_carrier_wave(SPI_TypeDef *spi);
-
+/**
+ * transmits packets in radio
+ * @param numBytes # of bytes
+ * @param bytesToSend array of bytes to send
+ * @param spi spi bus that communicates with the chip, UHF_SPI or VHF_SPI
+ * 
+ */
 void radio_transmit(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
 
-void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
-void ax5043_configInterrupt();
+/**
+ * receives packets in radio
+ * @param received_packet buffer to store received bytes
+ * @param spi spi bus that communicates with the chip, UHF_SPI or VHF_SPI
+ */
 int radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
+
+/**
+ * configures the uhf and vhf interrupts when fifo filled
+ */
+void ax5043_configInterrupt();
+
+
+void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);
-void wor_config(int ms, SPI_TypeDef* spi);
-void tx_simple(SPI_TypeDef* spi);
 
 
 

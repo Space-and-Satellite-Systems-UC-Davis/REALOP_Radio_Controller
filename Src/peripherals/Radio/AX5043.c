@@ -155,39 +155,6 @@ void ax5043_set_registers_tx(SPI_TypeDef* spi)
 	ax5043_write8(AX5043_0xF00          ,                              			0x0F, spi);
 	ax5043_write8(AX5043_0xF18          ,                              			0x06, spi);
 	return;
-	ax5043_write8(AX5043_MODULATION     ,                              			0x07,spi); 
-	ax5043_write8(AX5043_ENCODING		, 										0x00, spi);
-	ax5043_write8(AX5043_FRAMING		, 										0x06, spi);
-	ax5043_write8(AX5043_MODCFGA        ,                              			0x05,spi);
-	ax5043_write8(AX5043_MODCFGF        ,                              			0x03,spi);
-
-	//125kbps
-	// ax5043_write8(AX5043_TXRATE2        ,                              			0x01,spi);
-	// ax5043_write8(AX5043_TXRATE1        ,                              			0x3B,spi);
-	// ax5043_write8(AX5043_TXRATE0        ,                              			0x14,spi);
-
-	// ax5043_write8(AX5043_FSKDEV2        ,                              			0x00,spi);
-	// ax5043_write8(AX5043_FSKDEV1        ,                              			0x4E,spi);
-	// ax5043_write8(AX5043_FSKDEV0        ,                              			0xC5,spi);
-
-	//48kbps
-	ax5043_write8(AX5043_TXRATE2        ,                              			0x00, spi);
-	ax5043_write8(AX5043_TXRATE1        ,                              			0x78, spi);
-	ax5043_write8(AX5043_TXRATE0        ,                              			0xFD, spi);
-
-	ax5043_write8(AX5043_FSKDEV2        ,                              			0x00, spi);
-	ax5043_write8(AX5043_FSKDEV1        ,                              			0x1E, spi);
-	ax5043_write8(AX5043_FSKDEV0        ,                              			0x3F, spi);
-
-
-	//send msb first
-	// ax5043_write8(AX5043_PKTADDRCFG		, 										0xA0, spi);
-
-	ax5043_write8(AX5043_TXPWRCOEFFB1   ,                              			0x10,spi);//07 originally, then 0A
-	ax5043_write8(AX5043_TXPWRCOEFFB0   ,                              			0x00,spi);
-
-	
-
 }
 
 
@@ -201,226 +168,7 @@ void ax5043_set_registers_rx(SPI_TypeDef* spi)
 	ax5043_write8(AX5043_0xF00          ,                              			0x0F, spi);
 	ax5043_write8(AX5043_0xF18          ,                              			0x02, spi);
 	return;
-
-	
-	// ax5043_write8(AX5043_PLLLOOP        ,                              			0x09, spi);
-	// ax5043_write8(AX5043_PLLCPI         ,                              			0x01, spi);
-	// ax5043_write8(AX5043_PLLVCODIV      ,                              			0x24, spi);
-	// ax5043_write8(AX5043_XTALCAP        ,                              			0x00, spi);
-	// ax5043_write8(AX5043_0xF00          ,                              			0x0F, spi);
-	// ax5043_write8(AX5043_0xF18          ,                              			0x02, spi);
-	ax5043_write8(AX5043_MODULATION, 0x07, spi);
-    ax5043_write8(AX5043_ENCODING       ,                                       0x00, spi);
-    ax5043_write8(AX5043_FRAMING        ,                                       0x06, spi);
-
-
-
-
-    ax5043_write8(AX5043_DECIMATION, 0x03, spi); //0x01
-    ax5043_write8(AX5043_IFFREQ1, 0x01, spi); //0x1D
-    ax5043_write8(AX5043_IFFREQ0, 0x00, spi);//0x8A
-    ax5043_write8(AX5043_RXDATARATE2, 0x00, spi);//00
-    ax5043_write8(AX5043_RXDATARATE1, 0x2D, spi);//34
-    ax5043_write8(AX5043_RXDATARATE0, 0x24, spi);//00
-    ax5043_write8(AX5043_MAXRFOFFSET2, 0x80, spi);//00
-    ax5043_write8(AX5043_MAXRFOFFSET1, 0x02, spi);//0B   04
-    ax5043_write8(AX5043_MAXRFOFFSET0, 0x85, spi);//C9   BA
-
-
-
-
-    ax5043_write8(AX5043_AMPLFILTER, 0x00, spi);
-    ax5043_write8(AX5043_FREQUENCYLEAK, 0x00, spi);
-
-	ax5043_write8(AX5043_RXPARAMSETS, 0xF4, spi);
-
-
-	ax5043_write8(AX5043_AGCGAIN0, 0x41, spi);
-    ax5043_write8(AX5043_AGCTARGET0, 0x84, spi);
-    
-    ax5043_write8(AX5043_TIMEGAIN0, 0xCA, spi);//FB
-    ax5043_write8(AX5043_TIMEGAIN1, 0xCA, spi);//FB
-    ax5043_write8(AX5043_TIMEGAIN2, 0xCA, spi);//FB
-    ax5043_write8(AX5043_TIMEGAIN3, 0xCA, spi);//FB
-    ax5043_write8(AX5043_DRGAIN0, 0xC5, spi);//F7
-    ax5043_write8(AX5043_DRGAIN1, 0xC5, spi);//F7
-    ax5043_write8(AX5043_DRGAIN2, 0xC5, spi);//F7
-    ax5043_write8(AX5043_DRGAIN3, 0xC5, spi);//F7
-
-	ax5043_write8(AX5043_FREQUENCYGAINA0, 0xF, spi);
-	ax5043_write8(AX5043_FREQUENCYGAINB0, 0x1F, spi);
-	ax5043_write8(AX5043_FREQUENCYGAINC0, 0x6, spi);
-	ax5043_write8(AX5043_FREQUENCYGAIND0, 0x6, spi);
-
-
-    ax5043_write8(AX5043_FREQDEV00, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV01, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV02, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV03, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV10, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV11, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV12, 0x00, spi);
-    ax5043_write8(AX5043_FREQDEV13, 0x00, spi);
-
-	// ax5043_write8(AX5043_0xF21, 0x5C, spi);
-	// ax5043_write8(AX5043_0xF22, 0x53, spi);
-	// ax5043_write8(AX5043_0xF23, 0x76, spi);
-	// ax5043_write8(AX5043_0xF26, 0x92, spi);
-	// ax5043_write8(0xFF72, 0x00, spi);
-	// ax5043_write8(AX5043_0xF18, 0x02, spi);
-
-	ax5043_write8(AX5043_MATCH0PAT3, 0xAF, spi);
-	ax5043_write8(AX5043_MATCH0PAT2, 0x0C, spi);
-	ax5043_write8(AX5043_MATCH0PAT1, 0x00, spi);
-	ax5043_write8(AX5043_MATCH0PAT0, 0x00, spi);
-	ax5043_write8(AX5043_MATCH0LEN, 0xAF, spi); //raw recieved bits, length - 1
-	ax5043_write8(AX5043_MATCH0MAX, 0xF, spi);
-
-
-	ax5043_write8(AX5043_MATCH1PAT1, 0x55, spi);
-	ax5043_write8(AX5043_MATCH1PAT0, 0x55, spi);
-	ax5043_write8(AX5043_MATCH1LEN, 0xAF, spi); 
-	ax5043_write8(AX5043_MATCH1MAX, 0x0F, spi);
-
-
-
-
 }
-
-void ax5043_calculate_rx_registers(SPI_TypeDef* spi){
-	ax5043_write8(AX5043_MODULATION, GMSK_MODULATION, spi);
-	ax5043_write8(AX5043_ENCODING, 0x00, spi);
-	ax5043_write8(AX5043_FRAMING, 0x00, spi);
-
-	ax5043_write8(0xFF72, 0x00, spi);
-
-	ax5043_write8(AX5043_PINFUNCSYSCLK  ,                              			0x01,spi); 
-	ax5043_write8(AX5043_PINFUNCDCLK    ,                              			0x01,spi); 
-	ax5043_write8(AX5043_PINFUNCDATA    ,                              			0x01,spi); 
-	ax5043_write8(AX5043_PINFUNCANTSEL  ,                              			0x01,spi); 
-	ax5043_write8(AX5043_PINFUNCPWRAMP  ,                              			0x07,spi); 
-
-	ax5043_write8(AX5043_WAKEUPXOEARLY, 0x01, spi);
-
-	int bitrate = 48000;
-
-	float m = 0.5;
-	float bandwidth = bitrate * (m + (5.0/6.0));
-	uint32_t iffreq = bandwidth * 5 /6;
-	if(iffreq < 3180) iffreq = 3180;
-	iffreq *= XTALDIV * (1 << 20) / (AX5043_XTAL_HZ * MILLION)  + 0.5;
-	ax5043_write8(AX5043_IFFREQ1, iffreq >> 8 , spi);
-	ax5043_write8(AX5043_IFFREQ0, iffreq & 0xFF, spi);
-
-	float baseband = bandwidth * 5;
-	uint16_t decimation = AX5043_XTAL_HZ * MILLION / (16.0* XTALDIV * baseband);
-	
-	ax5043_write8(AX5043_DECIMATION, decimation, spi);
-
-
-	uint64_t rxdatarate = AX5043_XTAL_HZ * MILLION * 128 / (XTALDIV * bitrate * decimation * 1.0) + 0.5;
-
-	ax5043_write8(AX5043_RXDATARATE2, (rxdatarate >> 16) & 0xFF, spi);
-	ax5043_write8(AX5043_RXDATARATE1, (rxdatarate >> 8) & 0xFF, spi);
-	ax5043_write8(AX5043_RXDATARATE0, rxdatarate & 0xFF, spi);
-
-	ax5043_write8(AX5043_MAXDROFFSET2, 0x00, spi);
-	ax5043_write8(AX5043_MAXDROFFSET1, 0x00, spi);
-	ax5043_write8(AX5043_MAXDROFFSET0, 0x00, spi);
-
-	uint64_t maxrfoffset = 1000.0 * (1<<24) / (AX5043_XTAL_HZ * MILLION) + 0.5;
-
-	ax5043_write8(AX5043_MAXRFOFFSET2, (maxrfoffset >> 16) & 0xFF, spi);
-	ax5043_write8(AX5043_MAXRFOFFSET1, (maxrfoffset >> 8) & 0xFF, spi);
-	ax5043_write8(AX5043_MAXRFOFFSET0, maxrfoffset & 0xFF, spi);
-
-	ax5043_write8(AX5043_AMPLFILTER, 0x00, spi);
-
-
-	ax5043_write8(AX5043_RXPARAMSETS, 0xA4, spi); //2, 2, 1, 0
-
-	//OOOH DIFFERENT SO COOOL
-	uint8_t agcattck = 1; //lots of math :))
-	uint8_t agcdecay = 5; 
-
-	
-	uint8_t tmg_corr = 4;
-	uint8_t drg_corr = 128;
-	uint32_t freqdev = 0;
-	uint16_t rffreq = 6;
-
-	uint32_t timegain;
-	uint32_t dr_gain;
-	int diff = AX5043_AGCGAIN1- AX5043_AGCGAIN0;
-
-	for(int i = 0; i< 3; i++){
-		timegain = rxdatarate / tmg_corr;
-		dr_gain = rxdatarate / drg_corr;
-		if(i == 2){
-			agcattck = 0xF;
-			agcdecay = 0xF;
-			rffreq += 4;
-		}
-
-		ax5043_write8(AX5043_AGCGAIN0 + i *diff, agcdecay << 4 | agcattck, spi );
-		ax5043_write8(AX5043_AGCTARGET0 + i * diff, 0x84, spi);
-		ax5043_write8(AX5043_AGCAHYST0+ i * diff, 0x00, spi);
-		ax5043_write8(AX5043_AGCMINMAX0 + i * diff, 0x00, spi);
-		ax5043_write8(AX5043_TIMEGAIN0 + i * diff, ax_value_to_mantissa_exp_4_4(timegain), spi);
-		ax5043_write8(AX5043_DRGAIN0 + i * diff, ax_value_to_mantissa_exp_4_4(dr_gain), spi);
-		ax5043_write8(AX5043_PHASEGAIN0 + i * diff, 0xC3, spi);		
-		ax5043_write8(AX5043_FREQUENCYGAINA0 + i * diff, 0x0F, spi);		
-		ax5043_write8(AX5043_FREQUENCYGAINB0 + i * diff, 0x1F, spi);		
-		ax5043_write8(AX5043_FREQUENCYGAINC0 + i * diff, rffreq, spi);		
-		ax5043_write8(AX5043_FREQUENCYGAIND0 + i * diff, rffreq, spi);	
-		ax5043_write8(AX5043_AMPLITUDEGAIN0 + i * diff, 0x06, spi);	
-		ax5043_write8(AX5043_FREQDEV10 + i * diff, freqdev >> 8, spi);
-		ax5043_write8(AX5043_FOURFSK0 + i * diff, 0x16, spi);		
-		ax5043_write8(AX5043_BBOFFSRES0 + i * diff, 0x00, spi);	
-
-		drg_corr *= 2;
-		tmg_corr *= (4 - i*2); //4, 16, 32  
-		freqdev = m * 128 * 0.8 + 0.5;
-	}
-
-	// ax5043_write8(AX5043_MATCH0PAT3, 0xAF, spi);
-	// ax5043_write8(AX5043_MATCH0PAT2, 0x0C, spi);
-	// ax5043_write8(AX5043_MATCH0PAT1, 0x00, spi);
-	// ax5043_write8(AX5043_MATCH0PAT0, 0x00, spi);
-	// ax5043_write8(AX5043_MATCH0LEN, 0xAF, spi); //raw recieved bits, length - 1
-	// ax5043_write8(AX5043_MATCH0MAX, 0xD, spi);
-
-
-	// ax5043_write8(AX5043_MATCH1PAT1, 0x55, spi);
-	// ax5043_write8(AX5043_MATCH1PAT0, 0x55, spi);
-	// ax5043_write8(AX5043_MATCH1LEN, 0xAF, spi); 
-	// ax5043_write8(AX5043_MATCH1MAX, 0xD, spi);
-
-	ax5043_write8(AX5043_MATCH0PAT3     ,                              			0xAF, spi);
-	ax5043_write8(AX5043_MATCH0PAT2     ,                              			0x0C, spi);
-	ax5043_write8(AX5043_MATCH0PAT1     ,                              			0x00, spi);
-	ax5043_write8(AX5043_MATCH0PAT0     ,                              			0x00, spi);
-	ax5043_write8(AX5043_MATCH0LEN      ,                              			0x8F, spi);
-	ax5043_write8(AX5043_MATCH0MAX      ,                              			0x0F, spi);
-	ax5043_write8(AX5043_MATCH1PAT1     ,                              			0x55, spi);
-	ax5043_write8(AX5043_MATCH1PAT0     ,                              			0x55, spi);
-	ax5043_write8(AX5043_MATCH1LEN      ,                              			0x8A, spi);
-	ax5043_write8(AX5043_MATCH1MAX      ,                              			0x0A, spi);
-
-
-}
-
-static uint8_t ax_value_to_mantissa_exp_4_4(uint32_t value)
-{
-  uint8_t exp = 0;
-
-  while (value > 15 && exp < 15) {
-    value >>= 1; exp++;
-  }
-
-  return ((value & 0xF) << 4) | exp; /* mantissa, exponent */
-}
-
 
 void ax5043_set_registers_rxwor(SPI_TypeDef* spi)
 {
@@ -621,9 +369,9 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 	int count = 0;
 	while(bytesSent < numBytes){
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		// while(spaceLeftInFIFO < 200){
-		// 	spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		// }
+		while(spaceLeftInFIFO < 4){
+			spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
+		}
 		if (spaceLeftInFIFO > numBytes - bytesSent + 3) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
 			packetSize = numBytes + 3 - bytesSent;
 		} else {
@@ -682,42 +430,28 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		return -1;
 	}
 		uint8_t header = ax5043_read8(AX5043_FIFODATA, spi);
+		if (header != AX5043_FIFODATA_DATA_COMMAND){
+			return -1;
+		}
 		uint8_t length = ax5043_read8(AX5043_FIFODATA, spi);
 		uint8_t flags = ax5043_read8(AX5043_FIFODATA, spi);
 		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
 		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
 		received_packet->length = length - 1;
-		// printMsg("HEADER: %x\r\n", header);
-		// printMsg("LENGTH: %d\r\n", length-1);
-		// printMsg("FLAGS: %x\r\n", flags);
-		// if(header != AX5043_FIFODATA_DATA_COMMAND){
-		// 	return -1;
-		// }
-		int i = 0;
-		if(received_packet->isPacketEnd){
-			if(length >= 235){
-				length -= 4 - (239 - length);
-			}else{
-				length -= 4;
-			}
-			
-
+		printMsg("HEADER: %x\r\n", header);
+		printMsg("LENGTH: %d\r\n", length-1);
+		printMsg("FLAGS: %x\r\n", flags);
+		for (int i = 0; i < length - 1; i++) {
+			// if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command
+				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA, spi);
+			// }
 		}
-		while(i < length-1   && i < 255){
-			(received_packet->pkt)[i++] = ax5043_read8(AX5043_FIFODATA, spi);
-		}
-		
-		// for (int i = 0; i < length - 1; i++) {
-		// 	if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command
-		// 		(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA, spi);
-		// 	}
-		// }
 	// }
 
 	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);
 	// gpio_low(GPIOC, 9);
 
-	return i;
+	return length-1;
 } 
 
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef* spi) {
@@ -817,7 +551,7 @@ void ax5043_configInterrupt(){
 }
 
 void EXTI2_IRQHandler(){
-	// printMsg("INTERRUPT on UHF!\r\n");
+	printMsg("INTERRUPT on UHF!\r\n");
 	NVIC_DisableIRQ(EXTI2_IRQn);
 	EXTI->PR1 |= EXTI_PR1_PIF2;
 	packet_t packet;
@@ -825,15 +559,26 @@ void EXTI2_IRQHandler(){
 		packet.pkt[i] = 0;
 	}
 	int size = 0;
+	char arr[1000];
+	for(int i = 0; i<1000; i++){
+		arr[i] = 0;
+	}
+	int count = 0;
 	do{
-		// printMsg("Received: \r\n");
+		printMsg("Received: %d\r\n", count);
 		size = radio_receive(&packet, UHF_SPI);
+		// printMsg("size: %d\r\n", size);
 		for(int i = 0; i<size; i++){
-			printMsg("%c", packet.pkt[i]);
+			arr[count + i] = packet.pkt[i];
 		}
-	}while(!packet.isPacketEnd);
+		if(size > 0)
+			count += size;
+	}while(count < 1000 && !packet.isPacketEnd);
+	for(int i = 0; i< 1000; i++){
+		printMsg("%c", arr[i]);
+	}
 	// printMsg("\r\n");
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
+	// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	// printMsg("FINISH INTERRUPT\r\n");
 	NVIC_EnableIRQ(EXTI2_IRQn);
 }
