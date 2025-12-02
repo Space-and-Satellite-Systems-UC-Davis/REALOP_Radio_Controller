@@ -10,13 +10,14 @@
 
 #include "aes.h"
 #include <_string.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_BYTES_MESSAGE 256
+#define MAX_BYTES_AES_MESSAGE 256
 
-void Encrypt_Array(uint8_t *Dest);
-void Decrypt_Array(uint8_t *EncryptedText);
+void Encrypt_Array(uint8_t *PlainText, size_t* n);
+void Decrypt_Array(uint8_t *EncryptedText, size_t n);
 
 #endif

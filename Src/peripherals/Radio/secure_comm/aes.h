@@ -66,7 +66,7 @@ void AES_ECB_decrypt(const struct AES_ctx* ctx, uint8_t* buf);
 
 
 #if defined(CBC) && (CBC == 1)
-// buffer size MUST be mutile of AES_BLOCKLEN;
+// buffer size MUST be mutiple of AES_BLOCKLEN;
 // Suggest https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7 for padding scheme
 // NOTES: you need to set IV in ctx via AES_init_ctx_iv() or AES_ctx_set_iv()
 //        no IV should ever be reused with the same key 
