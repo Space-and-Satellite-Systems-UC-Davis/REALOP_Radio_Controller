@@ -21,6 +21,7 @@ typedef enum {
     UploadData = 'U', //Transfer data to PFC
 	SendState = 'S', //Send state to PFC
 	TransferToGround = 'T', //Transfer data to ground station
+    KillAll = 'K', // Kill the satelite
 } MessageType;
 
 //Tells PFC what type of data is being sent
@@ -52,10 +53,12 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]);
 void uploadData(USART_TypeDef *dev);
 
 //Send state to PFC
-void sendState(USART_TypeDefdev);
+void sendState(USART_TypeDef *dev);
 
 //Transfer data to ground station
 void transferToGround(USART_TypeDef *dev, uint8_t chunk[]);
+
+void killAll(USART_TypeDef *dev);
 
 //Utility to initialize a chunk to all zeros
 //Otherwise it might be random data and result in unpredictable behavior
