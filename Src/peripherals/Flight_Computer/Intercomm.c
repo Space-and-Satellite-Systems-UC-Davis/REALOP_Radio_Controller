@@ -1,6 +1,6 @@
 #include "Intercomm.h"
 
-uint8_t storedData[CHUNK_LENGTH * MAX_UINT8_T];
+uint8_t storedData[CHUNK_LENGTH * 4];
 State current_state = Idle;
 
 //Primary function from which everything else here is called
@@ -38,10 +38,8 @@ void uploadData(USART_TypeDef *dev) {
 	uint8_t first_chunk[CHUNK_LENGTH];
 	initEmptyChunk(first_chunk);
 
-	const uint8_t n_chunks = 1;
-
 	first_chunk[0] = UploadData; // Tell PFC this is an upload request
-	first_chunk[1] = n_chunks; //How many more chunks it should expect
+	first_chunk[1] = (sizeof storedData - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
 	first_chunk[2] = Unflagged; //No actual upload flags were made yet
 
 	crc_transmit(dev, first_chunk, CHUNK_LENGTH);
