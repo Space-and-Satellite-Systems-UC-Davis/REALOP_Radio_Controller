@@ -1,12 +1,13 @@
 #include <stdint.h>
 #include "platform_init.h"
 #include "Radio/AX5043.h"
+#include <TestDefinition.h>
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
-#define RUN_TEST	3	// 0 = run, 1 = run a very specific test
+#define RUN_TEST	1	// 0 = run, 1 = run a very specific test
 #define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
 
 
@@ -16,7 +17,6 @@ int main(void)
 {
     /* Loop forever */
     init_platform();
-	
 	#if (RUN_TEST==1) && (TEST_ID != 0)
 
     void (*testFunc)();
