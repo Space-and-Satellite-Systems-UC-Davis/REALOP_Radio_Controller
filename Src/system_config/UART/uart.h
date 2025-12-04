@@ -1,15 +1,9 @@
 /*
  * uart.h
  *
- *	- May 11, 2023
- *		Author       : Darsh
- *		Log          : Added comments, plus configurable baud rate
- *
- *  - May 6, 2023
- *      Author       : Raphael, Darsh
- *      Contributors : Jacob, Allison, Raymond
- *      Log          : Initial Setup
- *
+ *  - August 18, 2023
+ *  	Author	: Darsh
+ *  	Log		: Copied from IntelliSat, modified for Radio Controller
  */
 
 #ifndef REALOP1_UART_H_
@@ -38,24 +32,15 @@ bool usart_init(USART_TypeDef *bus, int baud_rate);
  *
  * @returns None
  */
-void usart_transmitStr(USART_TypeDef *bus, uint8_t message[]);
-/*
- * Utilizes USART hardware transmitter to send a fixed length byte stream
- *
- * @param bus       The USART Bus doing the transmission
- * @param message   The string (character array) being sent
- *
- * @returns None
- */
-void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[], int nbytes);
+void usart_transmitBytes(USART_TypeDef *bus, uint8_t message[]);
 
 /*
- * Returns the status of the USART receiver's FIFO buffer
+ * Returns the status of the USART reciever's FIFO buffer
  *
  * @param None
  * @returns Whether the buffer has
  */
-bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
+bool usart_recieveBufferNotEmpty();
 
 /*
  * Utilizes the USART hardware receiver to get `size` number of bytes from a FIFO buffer.
@@ -68,13 +53,6 @@ bool usart_receiveBufferNotEmpty(USART_TypeDef *bus);
  *
  * @returns			The number of bytes actually received and stored ( <= `size`)
  */
-int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
-
-/*
- * Empties the receive buffer.
- *
- * @param bus		The USART Bus that will be receiving
- */
-void usart_flushrx(USART_TypeDef* bus);
+int usart_recieveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
 
 #endif	// REALOP1_UART_H_

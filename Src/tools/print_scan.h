@@ -1,9 +1,9 @@
 /*
  * print_scan.h
  *
- * 	- May 11, 2023 (Creation)
+ * 	- August 17, 2024
  * 		Author : Darsh
- * 		Log    : Created the printMsg function
+ * 		Log    : Copied from IntelliSat, modified for the Radio Controller
  */
 
 #ifndef REALOP1_PRINT_SCAN_H_
@@ -26,6 +26,5 @@ void printer_init();
  * @returns None
  */
 int printMsg(const char *message, ...);
-int debugMsg(const char *message, ...);
 
 #endif // REALOP1_PRINT_SCAN_H_

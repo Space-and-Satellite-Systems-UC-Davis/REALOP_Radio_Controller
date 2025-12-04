@@ -1,9 +1,9 @@
 /*
  * print_scan.c
  *
- * 	- May 11, 2023 (Creation)
+ * 	- August 17, 2024
  * 		Author : Darsh
- * 		Log    : Created the printMsg function
+ * 		Log    : Copied from IntelliSat, modified for the Radio Controller
  */
 
 
@@ -27,21 +27,5 @@ int printMsg(const char *message, ...) {
 	va_start(args, message);
 	vsprintf(buff,message,args);
 
-	usart_transmitStr(ConsoleUART, buff);
-}
-
-int debugMsg(const char *message, ...) {
-	char buff[128];
-
-	va_list args;
-	va_start(args, message);
-	vsprintf(buff,message,args);
-
-    int now = getSysTime();
-    uint8_t str[64];
-    sprintf((char*)str, "%8d", now);
-    usart_transmitStr(ConsoleUART, (uint8_t*)"\n");
-    usart_transmitStr(ConsoleUART, str);
-    usart_transmitStr(ConsoleUART, (uint8_t*)":");
-    usart_transmitStr(ConsoleUART, (uint8_t*)buff);
+	usart_transmitBytes(ConsoleUART, buff);
 }
