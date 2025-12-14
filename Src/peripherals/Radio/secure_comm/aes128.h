@@ -17,7 +17,7 @@
 
 #define MAX_BYTES_AES_MESSAGE 256
 
-void Encrypt_Array(uint8_t *PlainText, size_t* n);
-void Decrypt_Array(uint8_t *EncryptedText, size_t n);
+void Encrypt_Array(uint8_t *PlainText, size_t* length);
+void Decrypt_Array(uint8_t *EncryptedText, size_t length);
 
 #endif
