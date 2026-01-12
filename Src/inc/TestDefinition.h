@@ -5,9 +5,7 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 extern void testFunction_Nothing();
-extern void testFunction_SystemStartup();
 extern void testFunction_radiooooo();
-extern void testFunction_PCP();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -20,11 +18,7 @@ void (*getTestFunction(int test_id))(void) {
 		case 0:
 			return testFunction_Nothing;
 		case 1:
-			return testFunction_SystemStartup;
-		case 4:
 			return testFunction_radiooooo;
-		case 2:
-			return testFunction_PCP;
 		default:
 			return testFunction_Nothing;
 	}

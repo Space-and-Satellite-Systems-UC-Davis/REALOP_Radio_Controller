@@ -95,24 +95,20 @@ void usart1_gpio_init() {
 	 GPIOB->AFR[0] |= (7 << GPIO_AFRL_AFSEL6_Pos) | (7 << GPIO_AFRL_AFSEL7_Pos);
 
 }
-//void usart2_gpio_init() {
-//#if OP_REV == 3
-//	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
-//	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
-//
-//	GPIOD->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk);
-//	GPIOD->MODER |= (GPIO_MODER_MODE5_1 | GPIO_MODER_MODE6_1);
-//
-//	// configure each pin to AF7
-//	GPIOD->AFR[0] &= ~(GPIO_AFRL_AFSEL5_Msk | GPIO_AFRL_AFSEL6_Msk);
-//	GPIOD->AFR[0] |= (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL6_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL5_Pos);
-//#endif
-//	return;
-//
-//}
+void usart2_gpio_init() {
+#if OP_REV == 3
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
 
-void usart3_gpio_init() {
+	GPIOD->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk);
+	GPIOD->MODER |= (GPIO_MODER_MODE5_1 | GPIO_MODER_MODE6_1);
+
+	// configure each pin to AF7
+	GPIOD->AFR[0] &= ~(GPIO_AFRL_AFSEL5_Msk | GPIO_AFRL_AFSEL6_Msk);
+	GPIOD->AFR[0] |= (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL6_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL5_Pos);
+#endif
 	return;
+
 }
 
 void usart3_gpio_init() {
