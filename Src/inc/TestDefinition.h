@@ -6,6 +6,7 @@
 
 extern void testFunction_Nothing();
 extern void testFunction_radiooooo();
+extern void testFunction_beacon();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -19,6 +20,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Nothing;
 		case 1:
 			return testFunction_radiooooo;
+		case 2:
+			return testFunction_beacon;
 		default:
 			return testFunction_Nothing;
 	}

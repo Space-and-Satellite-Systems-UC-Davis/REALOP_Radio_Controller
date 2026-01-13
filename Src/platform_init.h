@@ -19,6 +19,7 @@
 #include <LED/led.h>
 #include <UART/uart.h>
 #include <print_scan.h>
+#include <RTC/rtc.h>
 
 static void gpio_init();
 
@@ -44,6 +45,8 @@ void init_platform() {
 	printer_init();
 	// printer_init();
 	systick_init();
+	// RTC init
+	rtc_config(LSI, 0);
 }
 
 static void gpio_init() {
