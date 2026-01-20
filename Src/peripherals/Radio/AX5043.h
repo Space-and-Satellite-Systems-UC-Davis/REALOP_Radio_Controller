@@ -7,6 +7,7 @@
 #include "RadioLab/RadioLabUHF.h"
 
 
+
 #define UHF_SPI_CS SPI1_CS
 #define UHF_SPI SPI1
 
@@ -428,6 +429,7 @@ void ax5043_configInterrupt();
 void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);
 
-
+bool isBufFull();
+void printBuffer();
 
 #endif

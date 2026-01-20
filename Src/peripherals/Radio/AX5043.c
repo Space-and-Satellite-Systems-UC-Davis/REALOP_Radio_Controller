@@ -1,13 +1,22 @@
 #include "AX5043.h"
 #include <print_scan.h>
 
+#define BUFFSIZE  10000
+char buffer[BUFFSIZE];
+int BUFFINDEX;
+
+
+
 void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
 	vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
-
+	for(int i = 0; i<BUFFSIZE; i++){
+		buffer[i] = 0;
+	}
+	BUFFINDEX = 0;
 }
 
 void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
@@ -417,28 +426,38 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		return -1;
 	}
 		uint8_t header = ax5043_read8(AX5043_FIFODATA, spi);
-		if (header != AX5043_FIFODATA_DATA_COMMAND){
-			return -1;
-		}
+		// if (header != AX5043_FIFODATA_DATA_COMMAND){
+		// 	return -1;
+		// }
 		uint8_t length = ax5043_read8(AX5043_FIFODATA, spi);
 		uint8_t flags = ax5043_read8(AX5043_FIFODATA, spi);
 		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
 		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
-		received_packet->length = length - 1;
-		printMsg("HEADER: %x\r\n", header);
-		printMsg("LENGTH: %d\r\n", length-1);
-		printMsg("FLAGS: %x\r\n", flags);
-		for (int i = 0; i < length - 1; i++) {
+		received_packet->length = length --;
+		// printMsg("HEADER: %x\r\n", header);
+		// printMsg("LENGTH: %d\r\n", length);
+		// printMsg("FLAGS: %x\r\n", flags);
+		int crc = 0;
+		if(length < 236){
+			crc = 4;
+		}else{
+			crc = (239 - length);
+		}
+		length -=crc;
+		for (int i = 0; i < length; i++) {
 			// if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command
 				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA, spi);
 			// }
+		}
+		for(int i = 0; i<crc; i++){
+			ax5043_read8(AX5043_FIFODATA, spi);//actually empty fifo
 		}
 	// }
 
 	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);
 	// gpio_low(GPIOC, 9);
 
-	return length-1;
+	return length;
 } 
 
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef* spi) {
@@ -538,7 +557,7 @@ void ax5043_configInterrupt(){
 }
 
 void EXTI2_IRQHandler(){
-	printMsg("INTERRUPT on UHF!\r\n");
+	// printMsg("INTERRUPT on UHF!\r\n");
 	NVIC_DisableIRQ(EXTI2_IRQn);
 	EXTI->PR1 |= EXTI_PR1_PIF2;
 	packet_t packet;
@@ -546,24 +565,21 @@ void EXTI2_IRQHandler(){
 		packet.pkt[i] = 0;
 	}
 	int size = 0;
-	char arr[1000];
-	for(int i = 0; i<1000; i++){
-		arr[i] = 0;
-	}
-	int count = 0;
 	do{
-		printMsg("Received: %d\r\n", count);
+		// printMsg("Received:\r\n");
 		size = radio_receive(&packet, UHF_SPI);
 		// printMsg("size: %d\r\n", size);
 		for(int i = 0; i<size; i++){
-			arr[count + i] = packet.pkt[i];
+			buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
+			// printMsg("%c", packet.pkt[i]);
 		}
+		// printMsg("\r\n");
 		if(size > 0)
-			count += size;
-	}while(count < 1000 && !packet.isPacketEnd);
-	for(int i = 0; i< 1000; i++){
-		printMsg("%c", arr[i]);
-	}
+			BUFFINDEX += size;
+	}while(!packet.isPacketEnd);
+	// for(int i = 0; i< 1000; i++){
+	// 	printMsg("%c", arr[i]);
+	// }
 	// printMsg("\r\n");
 	// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	// printMsg("FINISH INTERRUPT\r\n");
@@ -573,4 +589,16 @@ void EXTI2_IRQHandler(){
 void EXTI15_10_IRQHandler(){
 	printMsg("INTERRUPT on VHF!\r\n");
 	EXTI->PR1 |= EXTI_PR1_PIF11;
+}
+
+
+bool isBufFull(){
+	return BUFFINDEX >= BUFFSIZE * 0.75;
+}
+
+void printBuffer(){
+	for(int i = 0; i<BUFFINDEX; i++){
+		printMsg("%c",buffer[i%BUFFSIZE]);
+	}
+	BUFFINDEX = 0;
 }
