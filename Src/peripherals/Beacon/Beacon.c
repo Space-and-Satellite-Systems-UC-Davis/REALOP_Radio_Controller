@@ -7,13 +7,26 @@
 void beacon_ping() {
 
     // replace with transmit later
-    printMsg("bee\n");
+    printMsg("ping\n");
 
 }
 
-void beacon_init() {
+uint32_t beacon_init() {
 
-    rtc_scheduleCallback(0, 5, 0, true, beacon_ping);
+    return rtc_scheduleCallback(1, 0, 0, true, beacon_ping);
 
 }
+
+void beacon_stop(uint32_t id) {
+
+    bool temp = rtc_deleteEntry(id);
+    if (temp) {
+        printMsg("beacon found\n");
+    } else {
+        printMsg("beacon not found\n");
+    }
+
+    // rtc_deleteAllEntries();
+
+} 
 
