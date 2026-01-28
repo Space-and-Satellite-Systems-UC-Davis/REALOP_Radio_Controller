@@ -541,7 +541,7 @@ uint32_t rtc_insertEntry(CallbackEntry entry) {
 bool rtc_deleteEntry(uint32_t id) {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		if (callbacks[i].id == id) {
-			printMsg("beacon id to be deleted: %u\n", callbacks[i].id);
+			// printMsg("beacon id to be deleted: %u\n", callbacks[i].id);
 			callbacks[i].id = NULL_ID;
 
 			// Need to do for sorting
@@ -566,9 +566,9 @@ bool rtc_deleteEntry(uint32_t id) {
 }
 void rtc_deleteAllEntries() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
-		if (callbacks[i].id != NULL_ID) {
-			printMsg("beacon deleted: %d\n", callbacks[i].id);
-		}
+		// if (callbacks[i].id != NULL_ID) {
+		// 	printMsg("beacon deleted: %d\n", callbacks[i].id);
+		// }
 		callbacks[i].id = NULL_ID;
 		callbacks[i].unix_time = NULL_UNIX_TIME;
 	}
@@ -640,7 +640,7 @@ void runCurrentTask() {
 	rtc_deleteEntry(entry.id);
 
 	if (entry.id != NULL_ID && entry.next_time != 0) {
-		printMsg("new entry with non null id: %u\n", entry.id);
+		// printMsg("new entry with non null id: %u\n", entry.id);
 		entry.unix_time += entry.next_time;
 		rtc_insertEntry(entry);
 	}
