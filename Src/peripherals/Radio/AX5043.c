@@ -571,7 +571,7 @@ void EXTI2_IRQHandler(){
 		// printMsg("size: %d\r\n", size);
 		for(int i = 0; i<size; i++){
 			buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
-			// printMsg("%c", packet.pkt[i]);
+			printMsg("%c", packet.pkt[i]);
 		}
 		// printMsg("\r\n");
 		if(size > 0)

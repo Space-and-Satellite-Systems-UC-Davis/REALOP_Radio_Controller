@@ -2,6 +2,7 @@
 #include <print_scan.h>
 
 void testFunction_radiooooo(){
+
 	printMsg("START\r\n");
     radio_init();
 	// uint8_t arr[1000];
@@ -15,6 +16,7 @@ void testFunction_radiooooo(){
 		packet.pkt[i] = 0;
 	}
 	// while(1){
+
 	// 	radio_transmit(13000, arr, UHF_SPI);
 	// 	delay_ms(5000);
 	// 	// radio_transmit(239, arr, UHF_SPI);
@@ -34,8 +36,8 @@ void testFunction_radiooooo(){
 	delay_ms(1000);
 	// tx_carrier_wave(SPI2);
 	while(1){
-		// printMsg("STILL WORKING");
-		// delay_ms(1000);
+		printMsg("STILL WORKING");
+		delay_ms(1000);
 		if(isBufFull()){
 			gpio_low(GPIOC, 9);
 			printBuffer();
