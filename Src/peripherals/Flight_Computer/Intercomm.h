@@ -13,7 +13,6 @@
 #ifndef PERIPHERALS_INTERCOMM_H_
 #define PERIPHERALS_INTERCOMM_H_
 
-#include "Radio/radio.h"
 #include "UART/crc.h"
 
 typedef enum {

@@ -80,73 +80,53 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 /************************ GPIO INITIALIZATION HELPERS ************************/
 
 void usart1_gpio_init() {
-
-	/*
-	 * OP REV 2 GPIO
-	 * 		TX		GPIO B 6		Alternate Function 7
-	 * 		RX		GPIO B 7		Alternate Function 7
-	 * 		RTS		// MUST BE FORCED - HIGH
-	 * 		CTS		// MUST BE FORCED - HIGH
-	 *
-	 * OP REV 1 GPIO
-	 * 		TX		GPIO A 9		Alternate Function 7
-	 * 		RX		GPIO G 10		Alternate Function 7
-	 * 		RTS		// MUST BE FORCED - HIGH
-	 * 		CTS		// MUST BE FORCED - HIGH
+	/**
+	 * PB6 TX AF7
+	 * PB7 RX AF7
 	 */
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
+ 
+	 // configure the USART Pins to Alternate Function mode
+	 GPIOB->MODER &= ~(GPIO_MODER_MODE6_Msk | GPIO_MODER_MODE7_Msk);
+	 GPIOB->MODER |= (GPIO_MODER_MODE6_1 | GPIO_MODER_MODE7_1);
+ 
+	 // configure each pin to AF7
+	 GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL6_Msk | GPIO_AFRL_AFSEL7_Msk);
+	 GPIOB->AFR[0] |= (7 << GPIO_AFRL_AFSEL6_Pos) | (7 << GPIO_AFRL_AFSEL7_Pos);
 
-	//	TODO: Forcing RTS and CTS High
+}
+void usart2_gpio_init() {
+#if OP_REV == 3
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
+	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
 
-
-	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-	wait_with_timeout(is_GPIOA_not_ready, DEFAULT_TIMEOUT_MS);
-
-	// configure the USART Pins to Alternate Function mode
-	GPIOA->MODER &= ~(GPIO_MODER_MODE9_Msk | GPIO_MODER_MODE10_Msk);
-	GPIOA->MODER |= (GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1);
+	GPIOD->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk);
+	GPIOD->MODER |= (GPIO_MODER_MODE5_1 | GPIO_MODER_MODE6_1);
 
 	// configure each pin to AF7
-	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFSEL9_Msk | GPIO_AFRH_AFSEL10_Msk);
-	GPIOA->AFR[1] |= (GPIO_AFRX_AF7 << GPIO_AFRH_AFSEL9_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRH_AFSEL10_Pos);
-
+	GPIOD->AFR[0] &= ~(GPIO_AFRL_AFSEL5_Msk | GPIO_AFRL_AFSEL6_Msk);
+	GPIOD->AFR[0] |= (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL6_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL5_Pos);
+#endif
 	return;
 
-//	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-//
-//
-//	// configure the USART Pins to Alternate Function mode
-//	GPIOA->MODER &= ~(GPIO_MODER_MODE9_Msk | GPIO_MODER_MODE10_Msk);
-//	GPIOA->MODER |= (GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1);
-//
-//	// configure each pin to AF7
-//	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFSEL9_Msk | GPIO_AFRH_AFSEL10_Msk);
-//	GPIOA->AFR[1] |= (7U << GPIO_AFRH_AFSEL9_Pos) | (7U << GPIO_AFRH_AFSEL10_Pos);
-//	return;
-
 }
-//void usart2_gpio_init() {
-//#if OP_REV == 3
-//	RCC->AHB2ENR |= RCC_AHB2ENR_GPIODEN;
-//	wait_with_timeout(is_GPIOD_not_ready, DEFAULT_TIMEOUT_MS);
-//
-//	GPIOD->MODER &= ~(GPIO_MODER_MODE5_Msk | GPIO_MODER_MODE6_Msk);
-//	GPIOD->MODER |= (GPIO_MODER_MODE5_1 | GPIO_MODER_MODE6_1);
-//
-//	// configure each pin to AF7
-//	GPIOD->AFR[0] &= ~(GPIO_AFRL_AFSEL5_Msk | GPIO_AFRL_AFSEL6_Msk);
-//	GPIOD->AFR[0] |= (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL6_Pos) | (GPIO_AFRX_AF7 << GPIO_AFRL_AFSEL5_Pos);
-//#endif
-//	return;
-//
-//}
 
 void usart3_gpio_init() {
-	return;
-}
+	/**
+	 * PC10 TX
+	 * PC11 RX
+	 */
 
-void uart4_gpio_init() {
+	 RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
+ 
+	 // configure the USART Pins to Alternate Function mode
+	 GPIOC->MODER &= ~(GPIO_MODER_MODE10_Msk | GPIO_MODER_MODE11_Msk);
+	 GPIOC->MODER |= (GPIO_MODER_MODE10_1 | GPIO_MODER_MODE11_1);
+ 
+	 // configure each pin to AF7
+	 GPIOC->AFR[1] &= ~(GPIO_AFRH_AFSEL10_Msk | GPIO_AFRH_AFSEL11_Msk);
+	 GPIOC->AFR[1] |= (7 << GPIO_AFRH_AFSEL10_Pos) | (7 << GPIO_AFRH_AFSEL11_Pos);
 
-	return;
 }
 void uart5_gpio_init() {
 
@@ -241,8 +221,16 @@ bool usart_init(USART_TypeDef *bus, int baud_rate) {
 		case (int)USART1:
 			RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 			usart1_gpio_init();
-			uart_8bit_1stop(USART1, baud_rate, false);
-            NVIC_EnableIRQ(USART1_IRQn);
+			uart_8bit_1stop(USART1, baud_rate, true);
+			break;
+		case (int)USART2:
+			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+			usart2_gpio_init();
+			break;
+		case (int)USART3:
+			RCC->APB1ENR1 |= RCC_APB1ENR1_USART3EN;
+			usart3_gpio_init();
+			uart_8bit_1stop(USART3, baud_rate, false);
 			break;
 //		case (int)USART2:
 //			RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
@@ -389,7 +377,7 @@ void usart_flushrx(USART_TypeDef* bus) {
 void USART1_IRQHandler() {
 	if (USART1->ISR & USART_ISR_RXNE) {
 		USART1->ISR &= ~USART_ISR_RXNE;
-		enqueueBuffer(USART1_RxBuffer, USART1);
+		// enqueueBuffer(USART1_RxBuffer, USART1);
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ISR &= ~USART_ISR_RTOF;
