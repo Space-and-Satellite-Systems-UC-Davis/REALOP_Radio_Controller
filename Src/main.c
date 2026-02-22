@@ -9,7 +9,17 @@
 
 int main(void) {
     init_platform();
-    usart_init(USART1, 9600);
+
+	usart_init(USART1, 9600);
+	while(1){
+		delay_ms(5000);
+		while(usart_receiveBufferNotEmpty(USART1)){
+			char one[1];
+			usart_receiveBytes(USART1, one, 1);
+			printMsg("%c", one[0]);
+		}
+		printMsg(":)\r\n");
+	}
 
     //Length of chunks being sent in bytes between PFC, Radio, and Ground
     const int CHUNK_LENGTH = 8;
