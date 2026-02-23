@@ -1,47 +1,60 @@
 #include <stdint.h>
-//#include "print_scan.h"
-#include "UART/pcp.h"
-#include "UART/uart.h"
-#include "Timers/timers.h"
 #include "platform_init.h"
-#include "Flight_Computer/Intercomm.h"
+#include "Radio/AX5043.h"
+#include <TestDefinition.h>
+
+#define RUN_TEST	0	// 0 = run, 1 = run a very specific test
+#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
 
 
-int main(void) {
+bool test_radio_reads_simple();
+
+int main(void)
+{
+    /* Loop forever */
     init_platform();
+	
+	#if (RUN_TEST==1) && (TEST_ID != 0)
 
-	usart_init(USART1, 9600);
-	while(1){
-		delay_ms(5000);
-		while(usart_receiveBufferNotEmpty(USART1)){
-			char one[1];
-			usart_receiveBytes(USART1, one, 1);
-			printMsg("%c", one[0]);
-		}
-		printMsg(":)\r\n");
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
+
+    #else
+
+	//TODO: use RTC first_time flag.
+	//if (first_time) {
+	//  init_first_time()
+	//}
+
+	while (1) {
+		continue;
 	}
 
-    //Length of chunks being sent in bytes between PFC, Radio, and Ground
-    const int CHUNK_LENGTH = 8;
-    //Time between upload requests in seconds
-    const int WAIT_INTERVAL = 5;
+#endif
+	
+}
 
-	PCPDevice pcp;
-	make_pcpdev(&pcp, USART1);
+bool test_radio_reads_simple() {
+	gpio_high(GPIOA, 8); // Enable power to UHF Transceiver
+	uint32_t fails = 0;
 
-	uint8_t chunk[CHUNK_LENGTH];
+	uint8_t retval = ax5043_read8(AX5043_SILICONREVISION, UHF_SPI);
+	if (retval == 0b01010001) fails |= (1 << 0);
 
-	uint64_t start_time = getSysTime();
-    while(1) {
-    	nop(1);
-    	int read_status = pcp_read(&pcp, chunk);
-    	if (read_status != -1) {
-    		handleInput(&pcp, chunk);
-    	}
+	retval = ax5043_read8(AX5043_SCRATCH, UHF_SPI);
+	if (retval == 0b11000101) fails |= (1 << 1);
 
-    	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) {
-    		uploadData(&pcp);
-    		start_time = getSysTime();
-    	}
-    }
+	ax5043_write8(AX5043_SCRATCH, 0xAA, UHF_SPI);
+
+	retval = ax5043_read8(AX5043_SCRATCH, UHF_SPI);
+	if (retval == 0xAA) fails |= (1 << 2);
+
+
+	retval = ax5043_read8(AX5043_LPOSCREF0, UHF_SPI);
+	if (retval == 0b10101000) fails |= (1 << 3);
+
+	uint32_t wait = 33;
+
+	return true;
 }

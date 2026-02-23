@@ -11,7 +11,12 @@
 /***************************** LED INITIALIZERS ******************************/
 
 void led_init() {
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
 
+	while(GPIOC->OTYPER == 0xFFFFFFFF);
+
+	GPIOC->MODER &= ~GPIO_MODER_MODE2_Msk;	// D6? - D5 on in kicad?
+	GPIOC->MODER |=  GPIO_MODER_MODE2_0;
 }
 
 /******************************* LED TOGGLERS ********************************/
@@ -23,8 +28,8 @@ void blinky() {
 		counter = 0;
 	}
 	if (counter > 900) {
-		// on
+		GPIOC->BSRR = GPIO_BSRR_BS2;
 	} else {
-		// off
+		GPIOC->BSRR = GPIO_BSRR_BR2;
 	}
 }
