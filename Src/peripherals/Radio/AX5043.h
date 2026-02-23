@@ -4,8 +4,6 @@
 #include "globals.h"
 #include "stm32l431xx.h"
 #include <SPI/spi.h>
-#include "RadioLab/RadioLabUHF.h"
-
 
 #define UHF_SPI_CS SPI1_CS
 #define UHF_SPI SPI1
