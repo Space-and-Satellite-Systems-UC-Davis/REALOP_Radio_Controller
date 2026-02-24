@@ -85,6 +85,7 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
+    if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
     crc_ack(bus);
     int breaks = 0;
     for (int index = 0; index + breaks < size && index < MAX_PAYLOAD_BYTES; index++) {
