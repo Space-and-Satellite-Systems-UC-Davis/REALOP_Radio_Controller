@@ -17,6 +17,14 @@ int main(void) {
 
 	uint64_t start_time = getSysTime();
     while(1) {
+		// usart_receiveBytes(USART1, chunk, CHUNK_LENGTH);
+		// usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
+		chunk[0] = 'H';
+		chunk[1] = 'E';
+		chunk[2] = 'W';
+		chunk[3] = 'W';
+		chunk[4] = 'O';
+		chunk[5] = '!';
     	int read_status = crc_read(USART1, chunk);
     	if (read_status != -1) {
     		handleInput(USART1, chunk);
