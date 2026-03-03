@@ -13,6 +13,7 @@
 #ifndef PERIPHERALS_INTERCOMM_H_
 #define PERIPHERALS_INTERCOMM_H_
 
+#include "Radio/AX5043.h"
 #include "Radio/radio.h"
 #include "UART/crc.h"
 

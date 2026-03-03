@@ -6,6 +6,7 @@
 
 extern void testFunction_Nothing();
 extern void testFunction_radiooooo();
+extern void testFunction_Radio2PFCAPI();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -19,6 +20,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Nothing;
 		case 1:
 			return testFunction_radiooooo;
+		case 32:
+			return testFunction_Radio2PFCAPI;
 		default:
 			return testFunction_Nothing;
 	}
