@@ -4,13 +4,15 @@
 
 void testFunction_beacon() {
 
-    uint32_t beacon_id = beacon_init();
+    static char arr[50] = "transmit test \n";
+
+    uint32_t beacon_id = beacon_init(arr, 50);
     printMsg("beacon init w/ id: %u\n", beacon_id);
   
     for (int i = 0; i < 50000000; i++) {
         // printMsg("l\n");
     }
-    printMsg("beacon stop\n");
+    printMsg("beacon stop\n");  
     printMsg("beacon id: %u\n", beacon_id);
     beacon_stop(beacon_id);
 

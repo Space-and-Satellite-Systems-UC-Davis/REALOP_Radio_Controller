@@ -13,15 +13,12 @@
 #ifndef REALOP1_RTC_H_
 #define REALOP1_RTC_H_
 
-// #include "stm32l476xx.h"
 #include "stm32l431xx.h"
 #include <globals.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <globals.h>
 #include <core_config.h>
-// #include "PWR/sleep.h"
-// #include "WDG/watchdog.h"
 
 /***************************** RTC CONFIGURATIONS ****************************/
 

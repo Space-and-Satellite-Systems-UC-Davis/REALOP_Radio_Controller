@@ -47,6 +47,8 @@ void init_platform() {
 	systick_init();
 	// RTC init
 	rtc_config(LSI, 0);
+	// radio init
+	radio_init();
 }
 
 static void gpio_init() {
