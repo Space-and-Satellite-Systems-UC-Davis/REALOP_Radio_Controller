@@ -12,8 +12,8 @@ bool test_radio_reads_simple();
 int main(void)
 {
     /* Loop forever */
-    init_platform();
-	
+	init_platform();
+
 	#if (RUN_TEST==1) && (TEST_ID != 0)
 
     void (*testFunc)();
@@ -32,7 +32,7 @@ int main(void)
 	}
 
 #endif
-	
+
 }
 
 bool test_radio_reads_simple() {
