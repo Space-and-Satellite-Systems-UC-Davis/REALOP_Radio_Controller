@@ -41,9 +41,7 @@ void init_platform() {
 	// init intercomm
 	// init radio
 	led_init();
-	
 	printer_init();
-	// printer_init();
 	systick_init();
 	// RTC init
 	rtc_config(LSI, 0);
