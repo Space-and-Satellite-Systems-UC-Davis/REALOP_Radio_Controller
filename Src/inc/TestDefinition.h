@@ -24,7 +24,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_radiooooo;
 		case 2:
 			return testFunction_beacon;
-		case 3:
+		case 18:
 			return testFunction_RTC_Alarm;
 		case 10:
 			return testFunction_UART;
