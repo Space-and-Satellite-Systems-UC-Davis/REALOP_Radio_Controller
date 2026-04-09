@@ -3,8 +3,10 @@
 #include "UART/uart.h"
 #include "Timers/timers.h"
 
+#define PFC_USART USART1
+
 void testFunction_Radio2PFCAPI() {
-    usart_init(USART1, 9600);
+    usart_init(PFC_USART, 9600);
 
     //Length of chunks being sent in bytes between PFC, Radio, and Ground
     //Time between upload requests in seconds
@@ -13,7 +15,7 @@ void testFunction_Radio2PFCAPI() {
 
 	uint64_t start_time = getSysTime();
     while(1) {
-    	usart_transmitBytes(USART1, "HELP???", 7);
+    	usart_transmitBytes(PFC_USART, "HELP???", 7);
     	// int read_status = crc_read(USART1, chunk);
     	// if (read_status != -1) {
     	// 	handleInput(USART1, chunk);

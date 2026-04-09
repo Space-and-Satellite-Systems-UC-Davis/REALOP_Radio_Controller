@@ -8,12 +8,17 @@
 
 #include "UART/crc.h"
 #include <string.h>
+#include "print_scan.h"
 
 int crc_wait(USART_TypeDef *bus) {
     uint8_t ack[MAX_MESSAGE_BYTES];
     memset(ack, 0, sizeof ack);
     int count = usart_receiveBytes(bus, ack, MAX_MESSAGE_BYTES);
-    return (ack[0] == 'A') - (count < 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
+    bool acked = false;
+    for (int i = 0; i < sizeof ack; i++) {
+        if (ack[i] == 'A') acked = true;
+    }
+    return acked - (count < 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
 }
 
 void crc_ack(USART_TypeDef *bus) {
@@ -84,6 +89,7 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     uint8_t buffer[MAX_MESSAGE_BYTES];
     int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
     if (size <= 0) return -1;
+    printMsg("%d\n", crc_remainer(buffer, size));
     if (crc_remainder(buffer, size)) return -1;
     if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
     crc_ack(bus);
@@ -104,11 +110,9 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
 
 bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int lchunks) {
     int nchunks = ((nbytes - 1) / lchunks) + 1;
-    int failures = 0;
     bool cumulative_success = true;
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     for (int i = 0; i < nchunks; i++) {
-        int local_success;
         subchunk[0] = i;
         memcpy(1 + &subchunk[0], payload + i*lchunks, lchunks);
         if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
