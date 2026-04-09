@@ -7,6 +7,9 @@
 extern void testFunction_Nothing();
 extern void testFunction_radiooooo();
 extern void testFunction_Radio2PFCAPI();
+extern void testFunction_beacon();
+extern void testFunction_RTC_Alarm();
+extern void testFunction_UART();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -20,6 +23,12 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Nothing;
 		case 1:
 			return testFunction_radiooooo;
+		case 2:
+			return testFunction_beacon;
+		case 10:
+			return testFunction_UART;
+		case 18:
+			return testFunction_RTC_Alarm;
 		case 32:
 			return testFunction_Radio2PFCAPI;
 		default:
