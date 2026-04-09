@@ -19,7 +19,8 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
 
-	crc_chunked_read(dev, storedData, CHUNK_LENGTH, n_chunks);
+	crc_chunked_read(dev, &storedData[0], CHUNK_LENGTH, n_chunks);
+	// usart_transmitBytes(dev, storedData, CHUNK_LENGTH*4);
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	int read_status = crc_read(dev, chunk);
 	// 	if (read_status != -1) {
@@ -44,7 +45,7 @@ void uploadData(USART_TypeDef *dev) {
 
 	crc_transmit(dev, first_chunk, CHUNK_LENGTH);
 
-	crc_chunked_transmit(dev, storedData, sizeof storedData, CHUNK_LENGTH);
+	crc_chunked_transmit(dev, &storedData[0], sizeof storedData, CHUNK_LENGTH);
 
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	nop(1000);

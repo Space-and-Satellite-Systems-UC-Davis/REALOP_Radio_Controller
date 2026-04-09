@@ -113,7 +113,7 @@ bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int 
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     for (int i = 0; i < nchunks; i++) {
         subchunk[0] = i;
-        memcpy(1 + &subchunk[0], payload + i*lchunks, lchunks);
+        memcpy(&subchunk[1], payload + i*lchunks, lchunks);
         if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
     }
     return cumulative_success;
