@@ -13,12 +13,10 @@ void testFunction_Radio2PFCAPI() {
 
 	uint8_t chunk[MAX_MESSAGE_BYTES];
 
-	uint64_t start_time = getSysTime();
     while(1) {
-    	usart_transmitBytes(PFC_USART, "HELP???", 7);
-    	// int read_status = crc_read(USART1, chunk);
-    	// if (read_status != -1) {
-    	// 	handleInput(USART1, chunk);
-    	// }
+		int read_status = crc_read(USART1, chunk);
+    	if (read_status != -1) {
+    		handleInput(USART1, chunk);
+    	}
     }
 }
