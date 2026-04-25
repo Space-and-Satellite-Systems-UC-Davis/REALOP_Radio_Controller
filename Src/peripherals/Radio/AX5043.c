@@ -1,7 +1,7 @@
 #include "AX5043.h"
 #include <print_scan.h>
 
-#define BUFFSIZE  10000
+#define BUFFSIZE  2000
 char buffer[BUFFSIZE];
 int BUFFINDEX;
 
@@ -572,6 +572,9 @@ void EXTI2_IRQHandler(){
 		// printMsg("size: %d\r\n", size);
 		for(int i = 0; i<size; i++){
 			buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
+			if(BUFFINDEX + i == BUFFSIZE - 1){
+				printBuffer();
+			}
 			// printMsg("%c", packet.pkt[i]);
 		}
 		// printMsg("\r\n");
