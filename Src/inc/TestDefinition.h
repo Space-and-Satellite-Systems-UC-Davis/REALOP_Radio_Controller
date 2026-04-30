@@ -29,7 +29,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_UART;
 		case 18:
 			return testFunction_RTC_Alarm;
-		case 32:
+		case 21:
 			return testFunction_Radio2PFCAPI;
 		default:
 			return testFunction_Nothing;
