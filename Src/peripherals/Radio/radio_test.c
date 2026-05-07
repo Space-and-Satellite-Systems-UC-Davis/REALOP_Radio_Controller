@@ -30,12 +30,13 @@ void testFunction_radiooooo(){
 	ax5043_set_registers_rx(UHF_SPI);
 	// ax5043_calculate_rx_registers(UHF_SPI);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX, UHF_SPI);
 	gpio_high(GPIOC, 9);
 	delay_ms(1000);
 	printMsg("INITIAL RSSI: %d", ax5043_read8(AX5043_RSSI, UHF_SPI));
 	printMsg("INITIAL AGCCOUNTER: %d", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));
 	delay_ms(1000);
+	wor_config(3000, UHF_SPI);
 	// tx_carrier_wave(SPI2);
 	while(1){
 		printMsg("STILL WORKING");

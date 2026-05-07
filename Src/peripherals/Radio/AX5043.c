@@ -177,6 +177,9 @@ void ax5043_set_registers_rx(SPI_TypeDef* spi)
 	ax5043_write8(AX5043_XTALCAP        ,                              			0x00, spi);
 	ax5043_write8(AX5043_0xF00          ,                              			0x0F, spi);
 	ax5043_write8(AX5043_0xF18          ,                              			0x02, spi);
+	ax5043_write8(AX5043_TMGRXAGC,                 0x90, spi);
+	ax5043_write8(AX5043_TMGRXPREAMBLE1,           0x19, spi);
+	ax5043_write8(AX5043_PKTMISCFLAGS,             0x03, spi);
 	return;
 }
 
@@ -203,7 +206,6 @@ void uhf_init() {
   	nop(1000);
     ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES, UHF_SPI); //Turn off RST bit	
     uhf_programParametersFromRadioLab(UHF_SPI); //TODO: Get those parameters
-	// wor_config(WAKEUP_FREQUENCY, UHF_SPI);
     int pwrmode = ax5043_read8(AX5043_PWRMODE, UHF_SPI);
 	autorange_registers(SPI1);
     int failCount = 0;
@@ -213,7 +215,6 @@ void uhf_init() {
         }
         failCount++;
     }
-	
 }
 
 void vhf_init() {
@@ -248,23 +249,17 @@ void vhf_init() {
 
 void wor_config(int ms, SPI_TypeDef* spi){
 	//check frequency of low power oscillator
-	int oscillator = (ax5043_read8(AX5043_LPOSCCONFIG, spi) >> 1) & 1;
-	if(oscillator){
-		oscillator = 10240; //10.24kHz
-	}else{
-		oscillator = 640; //640Hz
-	}
-	//get value to put in wakeupfreq, which is # of oscillator cycles
-	//frequency * period = # cycles
-	uint16_t freq = ms * 1000 * oscillator; 
-	ax5043_write8(AX5043_WAKEUPFREQ0, freq & 0xFF, spi);
+	ax5043_write8(AX5043_LPOSCCONFIG, 0x01, spi);
+	int oscillator = 640; //640Hz
+	int freq = oscillator * ms / 1000;
+	ax5043_write8(AX5043_WAKEUP1, freq >> 8, spi);
+	ax5043_write8(AX5043_WAKEUP0, freq, spi);
 	ax5043_write8(AX5043_WAKEUPFREQ1, freq >> 8, spi);
-
-	//make sure receiver still on after waking up if packet received to read
-	ax5043_write8(AX5043_PKTMISCFLAGS, AX5043_PKTMISCFLAGS_WORPKT, spi);
-
-	//enable irq interrupt
-	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, spi);
+	ax5043_write8(AX5043_WAKEUPFREQ0, freq, spi);
+	
+	
+	// //enable irq interrupt
+	ax5043_write8(AX5043_IRQMASK1, AX5043_IRQM1_WAKEUPTIMER, spi);
 
 }
 
@@ -374,7 +369,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
 		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-		ax5043_write8(AX5043_FIFODATA, 68, spi);
+		ax5043_write8(AX5043_FIFODATA, 250, spi);
 		ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
 
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
@@ -554,40 +549,43 @@ void ax5043_configInterrupt(){
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, SPI2);
 
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI1);
+	ax5043_write8(AX5043_IRQMASK1, AX5043_IRQM1_WAKEUPTIMER, SPI1);
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI2);
 }
 
 void EXTI2_IRQHandler(){
-	// printMsg("INTERRUPT on UHF!\r\n");
-	NVIC_DisableIRQ(EXTI2_IRQn);
+	int systime = getSysTime();
+	printMsg("INTERRUPT on UHF! %d\r\n", systime);
+	// NVIC_DisableIRQ(EXTI2_IRQn);
 	EXTI->PR1 |= EXTI_PR1_PIF2;
-	packet_t packet;
-	for(int i = 0; i<256; i++){
-		packet.pkt[i] = 0;
-	}
-	int size = 0;
-	do{
-		printMsg("Received:\r\n");
-		size = radio_receive(&packet, UHF_SPI);
-		// printMsg("size: %d\r\n", size);
-		for(int i = 0; i<size; i++){
-			buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
-			if(BUFFINDEX + i == BUFFSIZE - 1){
-				printBuffer();
-			}
-			// printMsg("%c", packet.pkt[i]);
-		}
-		// printMsg("\r\n");
-		if(size > 0)
-			BUFFINDEX += size;
-	}while(!packet.isPacketEnd);
-	// for(int i = 0; i< 1000; i++){
-	// 	printMsg("%c", arr[i]);
+	ax5043_read8(AX5043_WAKEUPTIMER0, UHF_SPI);
+	// packet_t packet;
+	// for(int i = 0; i<256; i++){
+	// 	packet.pkt[i] = 0;
 	// }
-	// printMsg("\r\n");
-	// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-	// printMsg("FINISH INTERRUPT\r\n");
-	NVIC_EnableIRQ(EXTI2_IRQn);
+	// int size = 0;
+	// do{
+	// 	printMsg("Received:\r\n");
+	// 	size = radio_receive(&packet, UHF_SPI);
+	// 	// printMsg("size: %d\r\n", size);
+	// 	for(int i = 0; i<size; i++){
+	// 		buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
+	// 		if(BUFFINDEX + i == BUFFSIZE - 1){
+	// 			printBuffer();
+	// 		}
+	// 		// printMsg("%c", packet.pkt[i]);
+	// 	}
+	// 	// printMsg("\r\n");
+	// 	if(size > 0)
+	// 		BUFFINDEX += size;
+	// }while(!packet.isPacketEnd);
+	// // for(int i = 0; i< 1000; i++){
+	// // 	printMsg("%c", arr[i]);
+	// // }
+	// // printMsg("\r\n");
+	// // ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
+	printMsg("FINISH INTERRUPT\r\n");
+	// NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
 void EXTI15_10_IRQHandler(){

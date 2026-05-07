@@ -63,6 +63,7 @@
 #define XTALDIV 2
 
 #define AX5043_IRQM_FIFONOTEMPTY (1<<0)
+#define AX5043_IRQM1_WAKEUPTIMER (1 << 1)
 
 #define PACKAGE_FULL     1
 #define PACKAGE_START    2
