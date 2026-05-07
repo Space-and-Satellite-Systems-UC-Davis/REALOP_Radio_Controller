@@ -18,6 +18,7 @@ void testFunction_UART(){
 		// CNDTR counts down from RX_BUFFER_SIZE to 0
 		uint16_t dma_write_index = RX_BUFFER_SIZE - DMA1_Channel5->CNDTR; 
 		// 2. Check if the DMA has moved ahead of our software read pointer
+		printMsg("cpu_read_index: %d, dma_write_index: %d\r\n", cpu_read_index, dma_write_index);
 		while (cpu_read_index != dma_write_index) {
 			// Read the character
 			char c = dma_rx_buffer[cpu_read_index];
