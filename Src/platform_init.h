@@ -39,8 +39,11 @@ void init_platform() {
 	led_init();
 	printer_init();
 	systick_init();
+
 	rtc_config(LSI, 0);
 	radio_init();
+  
+  dma_init();
 }
 
 static void gpio_init() {
