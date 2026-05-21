@@ -42,6 +42,8 @@ void init_platform() {
 	led_init();
 	printer_init();
 	systick_init();
+
+	dma_init();
 }
 
 static void gpio_init() {
