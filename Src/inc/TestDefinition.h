@@ -6,6 +6,7 @@
 
 extern void testFunction_Nothing();
 extern void testFunction_radiooooo();
+extern void testFunction_watchdog();
 extern void testFunction_Radio2PFCAPI();
 extern void testFunction_beacon();
 extern void testFunction_RTC_Alarm();
@@ -31,6 +32,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RTC_Alarm;
 		case 21:
 			return testFunction_Radio2PFCAPI;
+		case 29:
+			return testFunction_watchdog;
 		default:
 			return testFunction_Nothing;
 	}
