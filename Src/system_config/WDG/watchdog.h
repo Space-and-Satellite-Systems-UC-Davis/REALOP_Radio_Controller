@@ -37,12 +37,12 @@ void watchdog_init(int ms);
  */
 void watchdog_iwdg_config(int ms);
 
-/**
- * Initialize the window watchdog
- * 
- * @param ms timeout time in ms, a number between 10 and 420 
- */
-void watchdog_wwdg_config(int ms);
+// /**
+//  * Initialize the window watchdog
+//  * 
+//  * @param ms timeout time in ms, a number between 10 and 420 
+//  */
+// void watchdog_wwdg_config(int ms);
 
 /**
  * Initialize the hardware mode watchdogs
@@ -60,7 +60,7 @@ void watchdog_interrupt_config(int ms);
 /**
  * Configures what to do when the interrupt is called
  */
-void TIM15_IRQHandler();
+void TIM1_BRK_TIM15_IRQHandler();
 
 /**
  * Configure the IWDG timeout to be the max possible (32 s) for sleep mode (call before entering)
