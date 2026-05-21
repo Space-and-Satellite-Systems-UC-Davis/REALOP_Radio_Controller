@@ -13,7 +13,7 @@
 #include "print_scan.h"
 #include <UART/uart.h>
 
-#define ConsoleUART 	USART3 //NOT SURE OF
+#define ConsoleUART 	USART1
 #define UART_BAUDRATE	9600
 
 void printer_init() {

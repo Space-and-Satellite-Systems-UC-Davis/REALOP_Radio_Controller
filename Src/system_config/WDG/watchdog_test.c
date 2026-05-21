@@ -8,7 +8,6 @@ int zero() {
 }
 
 void testFunction_watchdog() {
-    printer_init();
     printMsg("start watchdog\r\n");
     int count = 0;
     while(1){
