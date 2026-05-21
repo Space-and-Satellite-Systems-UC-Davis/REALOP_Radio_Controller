@@ -6,6 +6,7 @@
 
 extern void testFunction_Nothing();
 extern void testFunction_radiooooo();
+extern void testFunction_watchdog();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -19,6 +20,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Nothing;
 		case 1:
 			return testFunction_radiooooo;
+		case 29:
+			return testFunction_watchdog;
 		default:
 			return testFunction_Nothing;
 	}
