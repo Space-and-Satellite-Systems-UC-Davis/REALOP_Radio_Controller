@@ -11,9 +11,28 @@ bool test_radio_reads_simple();
 
 int main(void)
 {
-    init_platform();
-	dma_init();
-	testFunction_UART();
+    /* Loop forever */
+	init_platform();
+
+	#if (RUN_TEST==1) && (TEST_ID != 0)
+
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
+
+    #else
+
+	//TODO: use RTC first_time flag.
+	//if (first_time) {
+	//  init_first_time()
+	//}
+
+	while (1) {
+		continue;
+	}
+
+#endif
+
 }
 
 bool test_radio_reads_simple() {
