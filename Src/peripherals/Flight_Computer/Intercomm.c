@@ -85,16 +85,13 @@ void transferToGround(USART_TypeDef *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
 
 	for (int i = 0; i < n_chunks; i++) {
-		int read_status = crc_read(dev, chunk);
-		if (read_status != -1) {
-			// // ECHO
-			//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
+		// // ECHO
+		//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
 
-			//HERE BE DRAGONS
-			//Whenever ground communication is written it will go here
-				//Send n_chunks of radio memory to ground
-				//May change based on ground comm interface
-		}
+		//HERE BE DRAGONS
+		//Whenever ground communication is written it will go here
+			//Send n_chunks of radio memory to ground
+			//May change based on ground comm interface
 	}
 
 	current_state = Idle;
