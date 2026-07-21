@@ -1,4 +1,5 @@
 #include "Intercomm.h"
+#include <print_scan.h>
 
 uint8_t storedData[CHUNK_LENGTH * 4];
 State current_state = Idle;
@@ -20,6 +21,16 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
 
 	crc_chunked_read(dev, &storedData[0], CHUNK_LENGTH, n_chunks);
+	uint8_t remainder = chunk[2];
+
+	int totalBytes = (n_chunks-1) * CHUNK_LENGTH + remainder;
+
+	printMsg("GOT: ");
+	for(int i = 0; i<totalBytes; i++){
+		printMsg("%c", storedData[i]);
+	}
+	printMsg("\r\n");
+
 	// usart_transmitBytes(dev, storedData, CHUNK_LENGTH*4);
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	int read_status = crc_read(dev, chunk);
@@ -70,12 +81,10 @@ void uploadData(USART_TypeDef *dev) {
 
 //Send state to PFC
 void sendState(USART_TypeDef*dev) {
-	uint8_t state_chunk[CHUNK_LENGTH];
-	initEmptyChunk(state_chunk);
-
+	uint8_t state_chunk[1];
 	state_chunk[0] = current_state;
 
-	crc_transmit(dev, state_chunk, CHUNK_LENGTH);
+	crc_transmit(dev, state_chunk, 1);
 }
 
 //Transfer data to ground station
