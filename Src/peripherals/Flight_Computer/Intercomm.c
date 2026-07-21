@@ -11,7 +11,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 		case UploadData: uploadData(dev); break;
 		case SendState: sendState(dev); break;
 		case TransferToGround: transferToGround(dev, chunk); break;
-		case KillAll: killAll(dev); break;
+		case kYs: killAll(dev); break;
 	}
 }
 
