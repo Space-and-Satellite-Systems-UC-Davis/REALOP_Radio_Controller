@@ -1,6 +1,6 @@
 #include "Intercomm.h"
 
-uint8_t storedData[CHUNK_LENGTH * 4];
+uint8_t storedData[CHUNK_LENGTH * 30];
 State current_state = Idle;
 
 //Primary function from which everything else here is called

@@ -30,7 +30,6 @@ static void gpio_init();
  * @returns None
  */
 void init_platform() {
-	
 	SCB->CPACR |= 0x00F00000;
 	init_coreClocks();
 	
@@ -42,8 +41,8 @@ void init_platform() {
 
 	rtc_config(LSI, 0);
 	radio_init();
-  
-  dma_init();
+
+	dma_init();
 }
 
 static void gpio_init() {

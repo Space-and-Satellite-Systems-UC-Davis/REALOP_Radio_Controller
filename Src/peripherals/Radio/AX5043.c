@@ -5,7 +5,6 @@ void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
 
 }
