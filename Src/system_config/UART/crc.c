@@ -11,19 +11,23 @@
 #include "print_scan.h"
 
 int crc_wait(USART_TypeDef *bus) {
-    uint8_t ack[MAX_MESSAGE_BYTES];
-    memset(ack, 0, sizeof ack);
-    int count = usart_receiveBytes(bus, ack, MAX_MESSAGE_BYTES);
+    uint8_t ack[1];
     bool acked = false;
-    for (int i = 0; i < sizeof ack; i++) {
-        if (ack[i] == 'A') acked = true;
+    int count = 0;
+    for(int i = 0; i<10; i++){
+        count = usart_receiveBytes(bus, ack, 1);
+        if (ack[0] == 'A'){
+            acked = true;
+            break;
+        }else if(ack[0] == ';'){
+            break; //may have accidentally read through packet
+        }
     }
     return acked - (count < 1); // receives nothing -> -1, receives noise -> 0, receives ACK -> 1.
 }
 
 void crc_ack(USART_TypeDef *bus) {
-    uint8_t ack[MAX_MESSAGE_BYTES];
-    memset(ack, 0, sizeof ack);
+    uint8_t ack[1];
     ack[0] = 'A';
     usart_transmitBytes(bus, ack, sizeof ack);
 }
@@ -78,7 +82,7 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
     buffer[nbytes + breaks + 1] = ';';
     int ack = 0;
     for (int attempts = 0; attempts < 5; attempts++) {
-        usart_transmitBytes(bus, buffer, MAX_MESSAGE_BYTES);
+        usart_transmitBytes(bus, buffer, nbytes+breaks+2);
         ack = crc_wait(bus);
         if (ack != -1) break;
     }
@@ -87,7 +91,15 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
     uint8_t buffer[MAX_MESSAGE_BYTES];
-    int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
+    memset(buffer, 0, sizeof(buffer));
+    uint8_t temp[1];
+    int size = 0;
+    do{
+        int count = usart_receiveBytes(bus, temp, 1);
+        if(count == 0) break;
+        buffer[size] = temp[0];
+        size++;
+    }while(buffer[size-1] != ';' && size <= MAX_MESSAGE_BYTES);
     if (size <= 0) return -1;
     if (crc_remainder(buffer, size)) return -1;
     if (buffer[0] == 'A' && buffer[1] == crc_remainder("A", 1) && buffer[2] == ';') return -1;
@@ -123,10 +135,10 @@ int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks)
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
     int read = 0;
     for (int i = 0; i < nchunks; i++) {
-        crc_read(bus, subchunk);
-        if (subchunk[0] == i) read += lchunks;
-        if (subchunk[0] > nchunks) return -1;
-        memcpy(buf + subchunk[0]*lchunks, &subchunk[1], lchunks);
+        int size = crc_read(bus, subchunk);
+        memcpy(buf + read, &subchunk[1], size-1);
+        if (subchunk[0] == i) read += size;
+        if (subchunk[0] >= nchunks) return -1;
     }
     return read;
 }

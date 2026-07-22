@@ -42,7 +42,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]);
 
 
 //Length of chunks being sent in bytes between PFC, Radio, and Ground
-#define CHUNK_LENGTH 8
+#define CHUNK_LENGTH 20
 #define MAX_UINT8_T 255
 
 //DUST:
