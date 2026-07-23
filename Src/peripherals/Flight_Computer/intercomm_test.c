@@ -15,7 +15,7 @@ void testFunction_Radio2PFCAPI() {
     
     while(1) {
 		int read_status = crc_read(USART1, chunk);
-        printMsg("Read %d\r\n", read_status);
+        // printMsg("Read %d\r\n", read_status);
     	if (read_status != -1) {
     		handleInput(USART1, chunk);
     	}
