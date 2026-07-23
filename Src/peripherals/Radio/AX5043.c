@@ -179,10 +179,10 @@ void ax5043_set_registers_rxwor(SPI_TypeDef* spi)
 void uhf_init() {
 
     gpio_low(GPIOB , 9); // Disable power to UHF Transceiver 
-    nop(10000000);
+    nop(1000000);
     gpio_high(GPIOB, 9); // Enable power to UHF Transceiver
     //power cycle the chip to clear previous auto ranges
-    nop(10000000);
+    nop(1000000);
 
     spi_startCommunication(UHF_SPI_CS);
 
