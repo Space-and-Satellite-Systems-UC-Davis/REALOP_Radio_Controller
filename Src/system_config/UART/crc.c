@@ -137,7 +137,7 @@ int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks)
     for (int i = 0; i < nchunks; i++) {
         int size = crc_read(bus, subchunk);
         memcpy(buf + read, &subchunk[1], size-1);
-        if (subchunk[0] == i) read += size;
+        if (subchunk[0] == i) read += size-1;
         if (subchunk[0] >= nchunks) return -1;
     }
     return read;
