@@ -45,7 +45,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]);
 #define CHUNK_LENGTH 8
 #define MAX_UINT8_T 255
 
-//DUST:
+//DUSTY:
 
 //Receive data from PFC
 void downloadData(USART_TypeDef *dev, uint8_t chunk[]);
