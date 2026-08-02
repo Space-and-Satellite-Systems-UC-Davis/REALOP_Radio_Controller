@@ -16,6 +16,7 @@
 #include "Radio/AX5043.h"
 #include "Radio/radio.h"
 #include "UART/crc.h"
+#include "ADCS/logging_records.h"
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC

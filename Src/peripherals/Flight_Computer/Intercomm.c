@@ -98,8 +98,8 @@ void sendState(USART_TypeDef*dev) {
 void transferToGround(USART_TypeDef *dev, uint8_t chunk[]) {
 	current_state = TXactive;
 
-	// Replace magic number
-	radio_transmit(124, storedData, UHF_SPI);
+	uint8_t n_chunks = chunk[1];
+	radio_transmit(n_chunks * CHUNK_LENGTH, storedData, UHF_SPI);
 
 	current_state = Idle;
 }

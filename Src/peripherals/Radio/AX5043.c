@@ -519,7 +519,6 @@ void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef* spi) {
     int test = 33;
 }
 
-
 void ax5043_configInterrupt(){
 
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN; //enable syscfg
