@@ -29,7 +29,7 @@ int crc_wait(USART_TypeDef *bus) {
 void crc_ack(USART_TypeDef *bus) {
     uint8_t ack[1];
     ack[0] = 'A';
-    usart_transmitBytes(bus, ack, sizeof ack);
+    usart_transmitBytes(bus, ack, sizeof(ack));
 }
 
 /**
@@ -122,11 +122,22 @@ int crc_read(USART_TypeDef *bus, uint8_t* buf) {
 bool crc_chunked_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes, int lchunks) {
     int nchunks = ((nbytes - 1) / lchunks) + 1;
     bool cumulative_success = true;
+    int bytes_copied = 0;
     uint8_t subchunk[MAX_PAYLOAD_BYTES];
+
     for (int i = 0; i < nchunks; i++) {
         subchunk[0] = i;
-        memcpy(&subchunk[1], payload + i*lchunks, lchunks);
-        if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
+        if (bytes_copied + lchunks < nbytes) {
+        	// Regular step
+            memcpy(&subchunk[1], payload + i*lchunks, lchunks);
+            bytes_copied += lchunks;
+
+            if (!crc_transmit(bus, subchunk, lchunks + 1)) return -1;
+        } else {
+        	// Copy remainder. Avoid sending random junk
+            memcpy(&subchunk[1], payload + i*lchunks, nbytes-bytes_copied);
+            if (!crc_transmit(bus, subchunk, nbytes-bytes_copied+1)) return -1;
+        }
     }
     return cumulative_success;
 }
@@ -136,7 +147,8 @@ int crc_chunked_read(USART_TypeDef *bus, uint8_t* buf, int lchunks, int nchunks)
     int read = 0;
     for (int i = 0; i < nchunks; i++) {
         int size = crc_read(bus, subchunk);
-        if (size < 0) continue;
+        // Giving a negative value for the third argument of memcpy is an error
+        if (size-1 < 0) continue;
         memcpy(buf + read, &subchunk[1], size-1);
         if (subchunk[0] == i) read += size-1;
         if (subchunk[0] >= nchunks) return -1;
