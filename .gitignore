@@ -60,6 +60,3 @@ release
 
 # Launch file
 *.launch
-
-# Reed-Solomon (vetting a library)
-Src/peripherals/Radio/Reed-Solomon
