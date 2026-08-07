@@ -11,7 +11,7 @@ size_t FAEEncodeBlock(char *input, char *output, uint64_t index, size_t block_si
     size_t length = block_size;
     Encrypt_Array(workpad, &length);
     // TODO if needed: separate authentication (e.g. append a shared private key to result in a workpad and hash, then appent hash to message)
-    ReedSolomon rs;
+    ReedSolomon rs = {length, FAE_ECC_SIZE};
     RSGF_construct_ReedSolomon(&rs, length, FAE_ECC_SIZE);
     length += rs.ecc_length;
     RSGF_encode_message(&rs, workpad, output + index*length);
@@ -44,12 +44,12 @@ FAEBlockData FAEEncodeStream(char *in, char *out, size_t nbytes, size_t output_b
 size_t FAEDecodeBlock(char *input, char *output, uint64_t index, size_t block_size, char *workpad) {
     size_t length;
     length = block_size;
-    ReedSolomon rs;
+    ReedSolomon rs = {length - FAE_ECC_SIZE, FAE_ECC_SIZE};
     RSGF_construct_ReedSolomon(&rs, length - FAE_ECC_SIZE, FAE_ECC_SIZE);
     RSGF_decode_message(&rs, output + index*length, workpad, NULL, 0);
     length -= FAE_ECC_SIZE;
     // TODO if needed: check authentication (e.g. append a shared private key to contents in workpad and hash, check that hash matches)
-    Decrypt_Array(workpad, &length);
+    Decrypt_Array(workpad, length);
     memcpy(output, workpad, length);
     return length;
 }
