@@ -16,7 +16,7 @@ typedef struct FAEBlockData {
  * @param out           buffer for output data, at least MAX_FAE_BLOCKS * MAX_FAE_BLOCK_SIZE in size
  * @param nbytes        number of bytes in the input data
  * @param block_size    number of bytes in each output block
- * @returns             the number of bytes in the output stream
+ * @returns             the number of bytes in the output stream and the block size
  */
 FAEBlockData FAEEncodeStream(char *in, char *out, size_t nbytes, size_t block_size);
 
@@ -24,7 +24,7 @@ FAEBlockData FAEEncodeStream(char *in, char *out, size_t nbytes, size_t block_si
  * @param in                stream of bytes to be decoded
  * @param out               storage area for a stream of decoded bytes
  * @param nbytes            the number of bytes in the input stream
- * @param input_block_size  the size of the blocks in the input stream
+ * @param input_block_size  the size of the blocks in the input stream and the block size
  */
 FAEBlockData FAEDecodeStream(char *in, char *out, size_t nbytes, size_t input_block_size);
 #endif // _ENCFECAUTH_H_

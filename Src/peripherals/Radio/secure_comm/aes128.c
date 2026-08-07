@@ -41,9 +41,9 @@ void Encrypt_Array(uint8_t *PlainText, size_t *length) {
  * YOU MUST USE THE LENGTH GIVEN BY THE ENCRYPT_ARRAY FUNCTION.
 
  * @param EncryptedText: The 256-byte message you want to decrypt.
- * @param n: The length of the message.
+ * @param n: Pointer to the length of the message.
  */
-void Decrypt_Array(uint8_t *EncryptedText, size_t length) {
+void Decrypt_Array(uint8_t *EncryptedText, size_t *length) {
   if (length > MAX_BYTES_AES_MESSAGE)
     return;
 
@@ -52,9 +52,10 @@ void Decrypt_Array(uint8_t *EncryptedText, size_t length) {
   AES_CBC_decrypt_buffer(&StructofAES, EncryptedText, length);
 
   // Remove Padding
-  if ((EncryptedText[length - 1]) <= 15) {
-    unsigned int RemovePadding = *(EncryptedText + length - 1);
-    memset(EncryptedText + (length - RemovePadding), '\0', RemovePadding);
+  if ((EncryptedText[*length - 1]) <= 15) {
+    unsigned int RemovePadding = *(EncryptedText + *length - 1);
+    memset(EncryptedText + (*length - RemovePadding), '\0', RemovePadding);
+    *length -= RemovePadding;
   }
 }
 
