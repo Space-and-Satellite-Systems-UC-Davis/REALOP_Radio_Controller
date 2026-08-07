@@ -49,7 +49,7 @@ size_t FAEDecodeBlock(char *input, char *output, uint64_t index, size_t block_si
     RSGF_decode_message(&rs, output + index*length, workpad, NULL, 0);
     length -= FAE_ECC_SIZE;
     // TODO if needed: check authentication (e.g. append a shared private key to contents in workpad and hash, check that hash matches)
-    Decrypt_Array(workpad, length);
+    Decrypt_Array(workpad, &length);
     memcpy(output, workpad, length);
     return length;
 }

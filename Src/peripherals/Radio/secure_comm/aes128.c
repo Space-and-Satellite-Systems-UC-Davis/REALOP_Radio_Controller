@@ -44,12 +44,12 @@ void Encrypt_Array(uint8_t *PlainText, size_t *length) {
  * @param n: Pointer to the length of the message.
  */
 void Decrypt_Array(uint8_t *EncryptedText, size_t *length) {
-  if (length > MAX_BYTES_AES_MESSAGE)
+  if (*length > MAX_BYTES_AES_MESSAGE)
     return;
 
   // Decrypt
   AES_init_ctx_iv(&StructofAES, key, iv);
-  AES_CBC_decrypt_buffer(&StructofAES, EncryptedText, length);
+  AES_CBC_decrypt_buffer(&StructofAES, EncryptedText, *length);
 
   // Remove Padding
   if ((EncryptedText[*length - 1]) <= 15) {
@@ -77,7 +77,7 @@ void testFunction_AES128_Round_Trip(void) {
   size_t *lengthPointer = &length;
   Encrypt_Array(finalMessage, lengthPointer);
   printf("%s", finalMessage);
-  Decrypt_Array(finalMessage, *lengthPointer);
+  Decrypt_Array(finalMessage, lengthPointer);
 
   // Comparison back to starting point
   if (0 == memcmp(finalMessage, startMessage, 256)) {
@@ -111,7 +111,7 @@ void testFunction_AES128_FullSize_Message_Round_Trip(void){
   size_t *lengthPointer = &length;
   Encrypt_Array(finalMessage, lengthPointer);
   printf("%s", finalMessage);
-  Decrypt_Array(finalMessage, *lengthPointer);
+  Decrypt_Array(finalMessage, lengthPointer);
 
   // Comparison back to starting point
   if (0 == memcmp(finalMessage, startMessage, 256)) {
