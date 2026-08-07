@@ -5,9 +5,8 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 extern void testFunction_Nothing();
-extern void testFunction_SystemStartup();
-extern void testFunction_PCP();
 extern void testFunction_AES128_Round_Trip();
+extern void testFunction_FAE();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -19,12 +18,10 @@ void (*getTestFunction(int test_id))(void) {
 	switch (test_id) {
 		case 0:
 			return testFunction_Nothing;
-		case 1:
-			return testFunction_SystemStartup;
-		case 2:
-			return testFunction_PCP;
 		case 3:
             return testFunction_AES128_Round_Trip;
+		case 31:
+			return testFunction_FAE;
         default:
 			return testFunction_Nothing;
 	}

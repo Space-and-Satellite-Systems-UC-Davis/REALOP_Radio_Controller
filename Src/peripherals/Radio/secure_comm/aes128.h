@@ -9,7 +9,7 @@
 #define ENCRYPTION_AES123_H_
 
 #include "aes.h"
-#include <_string.h>
+#include <string.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>

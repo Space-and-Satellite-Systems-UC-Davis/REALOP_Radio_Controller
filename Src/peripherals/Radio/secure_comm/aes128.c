@@ -21,7 +21,7 @@ struct AES_ctx StructofAES;
 void Encrypt_Array(uint8_t *PlainText, size_t *length) {
   if (*length > MAX_BYTES_AES_MESSAGE)
     return;
-  else if (*length < MAX_BYTES_AES_MESSAGE) {
+  else if (*length < MAX_BYTES_AES_MESSAGE && *length % AES_BLOCKLEN != 0) {
     // Calculate Padding
     unsigned int remainder = AES_BLOCKLEN - (*length % AES_BLOCKLEN);
     memset(PlainText + *length, remainder, remainder);

@@ -1,37 +1,33 @@
 #include <stdint.h>
-//#include "print_scan.h"
-#include "UART/pcp.h"
-#include "UART/uart.h"
-#include "Timers/timers.h"
 #include "platform_init.h"
-#include "Flight_Computer/Intercomm.h"
+#include "Radio/AXM5043.h"
+#include <TestDefinition.h>
 
+#define RUN_TEST	0	// 0 = run, 1 = run a very specific test
+#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
 
-int main(void) {
-    init_platform();
-    usart_init(USART1, 9600);
+int main(void)
+{
+    /* Loop forever */
+	init_platform();
 
-    //Length of chunks being sent in bytes between PFC, Radio, and Ground
-    const int CHUNK_LENGTH = 8;
-    //Time between upload requests in seconds
-    const int WAIT_INTERVAL = 5;
+	#if (RUN_TEST==1) && (TEST_ID != 0)
 
-	PCPDevice pcp;
-	make_pcpdev(&pcp, USART1);
+    void (*testFunc)();
+    testFunc = getTestFunction(TEST_ID);
+    testFunc();
 
-	uint8_t chunk[CHUNK_LENGTH];
+    #else
 
-	uint64_t start_time = getSysTime();
-    while(1) {
-    	nop(1);
-    	int read_status = pcp_read(&pcp, chunk);
-    	if (read_status != -1) {
-    		handleInput(&pcp, chunk);
-    	}
+	//TODO: use RTC first_time flag.
+	//if (first_time) {
+	//  init_first_time()
+	//}
 
-    	if (getSysTime() > (start_time + (1000*WAIT_INTERVAL))) {
-    		uploadData(&pcp);
-    		start_time = getSysTime();
-    	}
-    }
+	while (1) {
+		continue;
+	}
+
+#endif
+
 }
