@@ -37,7 +37,7 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Radio2PFCAPI;
 		case 31:
 			return testFunction_FAE;
-        default:
+		default:
 			return testFunction_Nothing;
 	}
 	return testFunction_Nothing;
