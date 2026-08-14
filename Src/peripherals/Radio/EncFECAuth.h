@@ -27,4 +27,8 @@ FAEBlockData FAEEncodeStream(char *in, char *out, size_t nbytes, size_t block_si
  * @param input_block_size  the size of the blocks in the input stream and the block size
  */
 FAEBlockData FAEDecodeStream(char *in, char *out, size_t nbytes, size_t input_block_size);
+
+size_t FAEDecodeBlock(char *input, char *output, uint64_t index, size_t block_size, char *workpad);
+
+size_t FAEEncodeBlock(char *input, char *output, uint64_t index, size_t block_size, size_t end_size, char *workpad);
 #endif // _ENCFECAUTH_H_

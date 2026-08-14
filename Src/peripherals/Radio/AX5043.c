@@ -1,4 +1,5 @@
 #include "AX5043.h"
+#include "EncFECAuth.h"
 #include <print_scan.h>
 
 void radio_init() {
@@ -346,6 +347,7 @@ void tx_black_magic(SPI_TypeDef* spi, int packetSize) {
 
 void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
     ax5043_set_registers_tx(spi);
+	char coded[MAX_FAE_BLOCK_SIZE];
     int bytesSent = 0;
     int pktCurrentIndex = 0;
     int packetSize = 0; 
@@ -378,6 +380,9 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 			packetSize = spaceLeftInFIFO;
 		}
 		
+		char workpad[MAX_FAE_BLOCK_SIZE];
+		packetSize = FAEEncodeBlock(bytesToSend + bytesSent, coded, 0, packetSize, 0, workpad);
+
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
 		ax5043_write8(AX5043_FIFODATA, length--, spi);
@@ -392,7 +397,7 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 
 		int sent = 0;
 		while(sent < length){
-			ax5043_write8(AX5043_FIFODATA, bytesToSend[bytesSent + sent], spi);
+			ax5043_write8(AX5043_FIFODATA, coded[sent], spi);
 			sent++;
 		}
 
@@ -450,6 +455,9 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 
 	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);
 	// gpio_low(GPIOC, 9);
+	
+	char workpad[256];
+	received_packet->length = FAEDecodeBlock(received_packet->pkt, received_packet->pkt, 0, received_packet->length, workpad);
 
 	return length-1;
 } 
