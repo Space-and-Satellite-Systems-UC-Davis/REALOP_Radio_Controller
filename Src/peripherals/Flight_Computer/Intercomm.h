@@ -13,16 +13,14 @@
 #ifndef PERIPHERALS_INTERCOMM_H_
 #define PERIPHERALS_INTERCOMM_H_
 
-#include "Radio/AX5043.h"
 #include "Radio/radio.h"
-#include "UART/crc.h"
+#include "UART/pcp.h"
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
     UploadData = 'U', //Transfer data to PFC
-	SendState = 'S', //Send state to PFC
+	SendState = 's', //Send state to PFC
 	TransferToGround = 'T', //Transfer data to ground station
-    KillAll = 'K', // Kill the satelite
 } MessageType;
 
 //Tells PFC what type of data is being sent
@@ -38,28 +36,23 @@ typedef enum {
 } State;
 
 //Primary function from which everything else here is called
-void handleInput(USART_TypeDef *dev, uint8_t chunk[]);
+void handleInput(PCPDevice *dev, uint8_t chunk[]);
 
 
-//Length of chunks being sent in bytes between PFC, Radio, and Ground
-#define CHUNK_LENGTH 8
-#define MAX_UINT8_T 255
 
-//DUST:
+//DUsT:
 
 //Receive data from PFC
-void downloadData(USART_TypeDef *dev, uint8_t chunk[]);
+void downloadData(PCPDevice *dev, uint8_t chunk[]);
 
 //Transfer data to PFC
-void uploadData(USART_TypeDef *dev);
+void uploadData(PCPDevice *dev);
 
 //Send state to PFC
-void sendState(USART_TypeDef *dev);
+void sendState(PCPDevice *dev);
 
 //Transfer data to ground station
-void transferToGround(USART_TypeDef *dev, uint8_t chunk[]);
-
-void killAll(USART_TypeDef *dev);
+void transferToGround(PCPDevice *dev, uint8_t chunk[]);
 
 //Utility to initialize a chunk to all zeros
 //Otherwise it might be random data and result in unpredictable behavior

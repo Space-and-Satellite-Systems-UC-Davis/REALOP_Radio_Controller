@@ -23,22 +23,4 @@
  */
 void init_coreClocks();
 
-/**
- * Enables writing access to registers powered by the Backup Domain
- * Key registers include RCC's BDRC, and several key RTC registers
- *
- * @param   None
- * @returns None
- */
-void backup_domain_controlEnable();
-
-/**
- * Disables writing access to registers powered by the Backup Domain
- * Key registers include RCC's BDRC, and several key RTC registers
- *  
- * @param   None
- * @returns None
- */
-void backup_domain_controlDisable();
-
 #endif /* REALOP1_CORE_CONFIG_H_ */

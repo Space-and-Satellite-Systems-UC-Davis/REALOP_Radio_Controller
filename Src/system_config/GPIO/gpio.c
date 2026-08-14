@@ -30,6 +30,7 @@ int gpio_read(GPIO_TypeDef * port, int pin) {
 	} else {
 		return 0;
 	}
+
 	// Prevent from reading junk data if pin is not set to an actual pin
 	return -1;
 }

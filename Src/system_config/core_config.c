@@ -92,11 +92,3 @@ void nop(long long nop_loops) {
 		__NOP();
 	}
 }
-
-void backup_domain_controlEnable() {
-	PWR->CR1 |= PWR_CR1_DBP;
-}
-
-void backup_domain_controlDisable() {
-	PWR->CR1 &= ~PWR_CR1_DBP;
-}

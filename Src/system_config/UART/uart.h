@@ -77,11 +77,4 @@ int usart_receiveBytes(USART_TypeDef *bus, uint8_t buffer[], uint16_t size);
  */
 void usart_flushrx(USART_TypeDef* bus);
 
-
-void usart1_gpio_init();
-
-void usart2_gpio_init();
-
-void usart3_gpio_init();
-
 #endif	// REALOP1_UART_H_

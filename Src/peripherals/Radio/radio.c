@@ -11,6 +11,14 @@
 uint64_t lastStateChange = 0;
 
 /**
+ * Initialize radio
+ */
+void radio_init() {
+	usart_init(RADIO_USART, RADIO_BAUDRATE);
+	lastStateChange = getSysTime();
+}
+
+/**
  * Pauses the system to wait for acknowledgement byte from other device
  *
  * @return false if time out, true if didn't received acknowledgement
