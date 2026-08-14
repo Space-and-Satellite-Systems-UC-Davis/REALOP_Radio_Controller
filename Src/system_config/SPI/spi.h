@@ -14,8 +14,8 @@
 #include <GPIO/gpio.h>
 
 // predefined macros for cs_port,cs_pin (useful for later spi functions)
-#define SPI1_CS			  UNUSED_GPIO
-#define SPI2_CS			  UNUSED_GPIO
+#define SPI1_CS			  GPIOA, 3
+#define SPI2_CS			  GPIOC, 6
 #define SPI3_CS			  UNUSED_GPIO
 
 #define SPI_DUMMY_BYTE 0xAA

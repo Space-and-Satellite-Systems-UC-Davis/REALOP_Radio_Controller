@@ -1,86 +1,91 @@
 #include "Intercomm.h"
 
-//Length of chunks being sent in bytes between PFC, Radio, and Ground
-const int CHUNK_LENGTH = 8;
-
+uint8_t storedData[CHUNK_LENGTH * 4];
 State current_state = Idle;
 
 //Primary function from which everything else here is called
-void handleInput(PCPDevice *dev, uint8_t chunk[]) {
+void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 	//Command must be the first char
 	switch (chunk[0]) {
 		case DownloadData: downloadData(dev, chunk); break;
 		case UploadData: uploadData(dev); break;
 		case SendState: sendState(dev); break;
 		case TransferToGround: transferToGround(dev, chunk); break;
+		case KillAll: killAll(dev); break;
 	}
 }
 
 //Receive data from PFC
-void downloadData(PCPDevice *dev, uint8_t chunk[]) {
+void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
 
-	for (int i = 0; i < n_chunks; i++) {
-		int read_status = pcp_read(dev, chunk);
-		if (read_status != -1) {
-			// // ECHO
-			//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
+	crc_chunked_read(dev, &storedData[0], CHUNK_LENGTH, n_chunks);
+	// usart_transmitBytes(dev, storedData, CHUNK_LENGTH*4);
+	// for (int i = 0; i < n_chunks; i++) {
+	// 	int read_status = crc_read(dev, chunk);
+	// 	if (read_status != -1) {
+	// 		// // ECHO
+	// 		//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
 
-			//HERE BE DRAGONS
-			//Whenever radio memory is finished, put these chunks into memory
-		}
-	}
+	// 		//HERE BE DRAGONS
+	// 		//Whenever radio memory is finished, put these chunks into memory
+	// 		memcpy(&storedData[CHUNK_LENGTH*i], chunk, CHUNK_LENGTH);
+	// 	}
+	// }
 }
 
 //Transfer data to PFC
-void uploadData(PCPDevice *dev) {
+void uploadData(USART_TypeDef *dev) {
 	uint8_t first_chunk[CHUNK_LENGTH];
 	initEmptyChunk(first_chunk);
 
-	const uint8_t n_chunks = 1;
-
 	first_chunk[0] = UploadData; // Tell PFC this is an upload request
-	first_chunk[1] = n_chunks; //How many more chunks it should expect
+	first_chunk[1] = (sizeof storedData - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
 	first_chunk[2] = Unflagged; //No actual upload flags were made yet
 
-	pcp_transmit(dev, first_chunk, CHUNK_LENGTH);
+	crc_transmit(dev, first_chunk, CHUNK_LENGTH);
 
-	for (int i = 0; i < n_chunks; i++) {
-		nop(1000);
+	crc_chunked_transmit(dev, &storedData[0], sizeof storedData, CHUNK_LENGTH);
 
-		uint8_t chunk[CHUNK_LENGTH];
-		initEmptyChunk(chunk);
+	// for (int i = 0; i < n_chunks; i++) {
+	// 	nop(1000);
 
-		//HERE BE DRAGONS
-		//Once memory access is implemented, the radio would retrieve memory and put it here
+	// 	uint8_t packet[CHUNK_LENGTH + 1];
+	// 	uint8_t *chunk = &packet[1];
+	// 	packet[0] = i;
+	// 	initEmptyChunk(chunk);
 
-		//rat
-		chunk[0]='R';
-		chunk[1]='A';
-		chunk[2]='T';
+	// 	//HERE BE DRAGONS
+	// 	//Once memory access is implemented, the radio would retrieve memory and put it here
+	// 	memcpy(chunk, &storedData[CHUNK_LENGTH * i], CHUNK_LENGTH);
 
-		pcp_transmit(dev, chunk, CHUNK_LENGTH);
-	}
+	// 	// //rat
+	// 	// chunk[0]='R';
+	// 	// chunk[1]='A';
+	// 	// chunk[2]='T';
+
+	// 	crc_transmit(dev, packet, CHUNK_LENGTH + 1);
+	// }
 }
 
 //Send state to PFC
-void sendState(PCPDevice *dev) {
+void sendState(USART_TypeDef*dev) {
 	uint8_t state_chunk[CHUNK_LENGTH];
 	initEmptyChunk(state_chunk);
 
 	state_chunk[0] = current_state;
 
-	pcp_transmit(dev, state_chunk, CHUNK_LENGTH);
+	crc_transmit(dev, state_chunk, CHUNK_LENGTH);
 }
 
 //Transfer data to ground station
-void transferToGround(PCPDevice *dev, uint8_t chunk[]) {
+void transferToGround(USART_TypeDef *dev, uint8_t chunk[]) {
 	current_state = TXactive;
 
 	uint8_t n_chunks = chunk[1];
 
 	for (int i = 0; i < n_chunks; i++) {
-		int read_status = pcp_read(dev, chunk);
+		int read_status = crc_read(dev, chunk);
 		if (read_status != -1) {
 			// // ECHO
 			//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
@@ -93,6 +98,10 @@ void transferToGround(PCPDevice *dev, uint8_t chunk[]) {
 	}
 
 	current_state = Idle;
+}
+
+void killAll(USART_TypeDef *dev) {
+	// TODO: Here Be Dragons
 }
 
 //Utility to initialize a chunk to all zeros
