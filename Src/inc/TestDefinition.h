@@ -11,6 +11,8 @@ extern void testFunction_beacon();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_UART();
 extern void testFunction_LogDownlink();
+extern void testFunction_AES128_Round_Trip();
+extern void testFunction_FAE();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 //                           TEST REGISTRATION
@@ -26,6 +28,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_radiooooo;
 		case 2:
 			return testFunction_beacon;
+		case 3:
+      return testFunction_AES128_Round_Trip;
 		case 10:
 			return testFunction_UART;
 		case 18:
@@ -34,6 +38,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_Radio2PFCAPI;
 		case 30:
 			return testFunction_LogDownlink;
+		case 31:
+			return testFunction_FAE;
 		default:
 			return testFunction_Nothing;
 	}
