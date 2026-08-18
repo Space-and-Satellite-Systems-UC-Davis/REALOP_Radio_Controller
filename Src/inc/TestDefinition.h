@@ -10,6 +10,7 @@ extern void testFunction_Radio2PFCAPI();
 extern void testFunction_beacon();
 extern void testFunction_RTC_Alarm();
 extern void testFunction_UART();
+extern void testFunction_LogDownlink();
 extern void testFunction_AES128_Round_Trip();
 extern void testFunction_FAE();
 
@@ -35,6 +36,8 @@ void (*getTestFunction(int test_id))(void) {
 			return testFunction_RTC_Alarm;
 		case 21:
 			return testFunction_Radio2PFCAPI;
+		case 30:
+			return testFunction_LogDownlink;
 		case 31:
 			return testFunction_FAE;
 		default:

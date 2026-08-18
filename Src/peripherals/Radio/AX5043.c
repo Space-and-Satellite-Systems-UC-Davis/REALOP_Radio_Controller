@@ -5,7 +5,6 @@ void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
 
 }
@@ -519,7 +518,6 @@ void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef* spi) {
 
     int test = 33;
 }
-
 
 void ax5043_configInterrupt(){
 
