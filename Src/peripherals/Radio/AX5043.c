@@ -381,9 +381,9 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 		}
 		
 		char workpad[MAX_FAE_BLOCK_SIZE];
-		packetSize = FAEEncodeBlock(bytesToSend + bytesSent, coded, 0, packetSize, 0, workpad);
 
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
+		length = FAEEncodeBlock(bytesToSend + bytesSent, coded, 0, length, 0, workpad);
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
 		ax5043_write8(AX5043_FIFODATA, length--, spi);
 		uint8_t flags = 0;
