@@ -14,10 +14,13 @@ typedef enum {false, true} bool;
 
 #define TIMER_CALLBACK_ARRAY_SIZE 255
 
+#define FIVEMINUTES 5 * 60 * 1000//in ms
 
 typedef enum{
     RX_RECEIVED = 1U,
-    RADIO_RECEIVED = 1U << 1
+    RADIO_RECEIVED = 1U << 1,
+    RADIO_RX_ON = 1U << 2,
+    RADIO_COMMS_FINISHED = 1U << 3
 }Flag_Bits;
 
 extern volatile uint8_t interruptFlags;

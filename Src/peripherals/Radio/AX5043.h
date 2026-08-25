@@ -422,6 +422,9 @@ int radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
  */
 void ax5043_configInterrupt();
 
+void ax5043_receiverOn();
+void ax5043_receiverWOR();
+
 
 void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);

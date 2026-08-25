@@ -194,7 +194,7 @@ void uhf_init() {
   	nop(1000);
     ax5043_write8(AX5043_PWRMODE,  AX5043_PWRMODE_POWERDOWN | AX5043_PWRMODE_DEFAULTVALUES, UHF_SPI); //Turn off RST bit	
     uhf_programParametersFromRadioLab(UHF_SPI); //TODO: Get those parameters
-	// wor_config(WAKEUP_FREQUENCY, UHF_SPI);
+	wor_config(WAKEUP_FREQUENCY, UHF_SPI);
     int pwrmode = ax5043_read8(AX5043_PWRMODE, UHF_SPI);
 	autorange_registers(SPI1);
     int failCount = 0;
@@ -519,6 +519,16 @@ void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef* spi) {
 	}
 
     int test = 33;
+}
+
+void ax5043_receiverOn(){
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
+	gpio_high(GPIOC, 9);
+}
+
+void ax5043_receiverWOR(){
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX, UHF_SPI);
+	gpio_high(GPIOC, 9);
 }
 
 
