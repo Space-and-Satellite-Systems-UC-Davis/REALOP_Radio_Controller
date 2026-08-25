@@ -19,6 +19,7 @@
 #include <GPIO/gpio.h>
 #include <string.h>
 
+
 /*
  * Initializes the UART hardware to conduct UART communication with
  * 1 start bit, 8 data bits, 1 stop bits, No parity
@@ -83,5 +84,8 @@ void usart1_gpio_init();
 void usart2_gpio_init();
 
 void usart3_gpio_init();
+
+bool packet_available();
+
 
 #endif	// REALOP1_UART_H_

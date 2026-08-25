@@ -16,6 +16,9 @@
 #include "Radio/AX5043.h"
 #include "Radio/radio.h"
 #include "UART/crc.h"
+#include "globals.h"
+
+#define PFC_USART USART1
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
@@ -51,7 +54,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]);
 void downloadData(USART_TypeDef *dev, uint8_t chunk[]);
 
 //Transfer data to PFC
-void uploadData(USART_TypeDef *dev);
+void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint8_t size);
 
 //Send state to PFC
 void sendState(USART_TypeDef *dev);

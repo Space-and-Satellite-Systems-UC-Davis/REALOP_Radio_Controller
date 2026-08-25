@@ -1,5 +1,6 @@
 #include "Intercomm.h"
 
+
 uint8_t storedData[CHUNK_LENGTH * 4];
 State current_state = Idle;
 
@@ -8,7 +9,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 	//Command must be the first char
 	switch (chunk[0]) {
 		case DownloadData: downloadData(dev, chunk); break;
-		case UploadData: uploadData(dev); break;
+		case UploadData: uploadData(dev, chunk, sizeof storedData); break;
 		case SendState: sendState(dev); break;
 		case TransferToGround: transferToGround(dev, chunk); break;
 		case KillAll: killAll(dev); break;
@@ -35,17 +36,17 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 }
 
 //Transfer data to PFC
-void uploadData(USART_TypeDef *dev) {
+void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint8_t size) {
 	uint8_t first_chunk[CHUNK_LENGTH];
 	initEmptyChunk(first_chunk);
 
 	first_chunk[0] = UploadData; // Tell PFC this is an upload request
-	first_chunk[1] = (sizeof storedData - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
+	first_chunk[1] = size / CHUNK_LENGTH + 1; //How many more chunks it should expect
 	first_chunk[2] = Unflagged; //No actual upload flags were made yet
 
 	crc_transmit(dev, first_chunk, CHUNK_LENGTH);
 
-	crc_chunked_transmit(dev, &storedData[0], sizeof storedData, CHUNK_LENGTH);
+	crc_chunked_transmit(dev, &storedData[0], size, CHUNK_LENGTH);
 
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	nop(1000);

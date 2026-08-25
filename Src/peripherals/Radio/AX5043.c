@@ -1,5 +1,6 @@
 #include "AX5043.h"
 #include <print_scan.h>
+#include <globals.h>
 
 void radio_init() {
     spi_config(UHF_SPI);
@@ -551,36 +552,8 @@ void ax5043_configInterrupt(){
 }
 
 void EXTI2_IRQHandler(){
-	printMsg("INTERRUPT on UHF!\r\n");
-	NVIC_DisableIRQ(EXTI2_IRQn);
 	EXTI->PR1 |= EXTI_PR1_PIF2;
-	packet_t packet;
-	for(int i = 0; i<256; i++){
-		packet.pkt[i] = 0;
-	}
-	int size = 0;
-	char arr[1000];
-	for(int i = 0; i<1000; i++){
-		arr[i] = 0;
-	}
-	int count = 0;
-	do{
-		printMsg("Received: %d\r\n", count);
-		size = radio_receive(&packet, UHF_SPI);
-		// printMsg("size: %d\r\n", size);
-		for(int i = 0; i<size; i++){
-			arr[count + i] = packet.pkt[i];
-		}
-		if(size > 0)
-			count += size;
-	}while(count < 1000 && !packet.isPacketEnd);
-	for(int i = 0; i< 1000; i++){
-		printMsg("%c", arr[i]);
-	}
-	// printMsg("\r\n");
-	// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-	// printMsg("FINISH INTERRUPT\r\n");
-	NVIC_EnableIRQ(EXTI2_IRQn);
+	interruptFlags |= RADIO_RECEIVED;
 }
 
 void EXTI15_10_IRQHandler(){

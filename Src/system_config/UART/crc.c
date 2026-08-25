@@ -86,6 +86,9 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 }
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
+    if(!packet_available()){
+        return -1;
+    }
     uint8_t buffer[MAX_MESSAGE_BYTES];
     int size = usart_receiveBytes(bus, buffer, MAX_MESSAGE_BYTES);
     if (size <= 0) return -1;

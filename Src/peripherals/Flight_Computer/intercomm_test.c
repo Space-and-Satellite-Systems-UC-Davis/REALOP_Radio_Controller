@@ -3,7 +3,7 @@
 #include "UART/uart.h"
 #include "Timers/timers.h"
 
-#define PFC_USART USART1
+
 
 void testFunction_Radio2PFCAPI() {
     usart_init(PFC_USART, 9600);
