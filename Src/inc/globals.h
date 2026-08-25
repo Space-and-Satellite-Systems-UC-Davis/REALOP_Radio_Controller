@@ -14,6 +14,14 @@ typedef enum {false, true} bool;
 
 #define TIMER_CALLBACK_ARRAY_SIZE 255
 
+
+typedef enum{
+    RX_RECEIVED = 1U,
+    RADIO_RECEIVED = 1U << 1
+}Flag_Bits;
+
+extern volatile uint8_t interruptFlags;
+
 void delay_ms(uint64_t ms);
 void nop(long long nop_loops);
 uint64_t getSysTime();

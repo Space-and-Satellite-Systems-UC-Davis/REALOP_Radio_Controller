@@ -90,6 +90,9 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 }
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
+    if(!packet_available()){
+        return -1;
+    }
     uint8_t buffer[MAX_MESSAGE_BYTES];
     memset(buffer, 0, sizeof(buffer));
     uint8_t temp[1];

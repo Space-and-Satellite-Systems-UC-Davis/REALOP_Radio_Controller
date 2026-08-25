@@ -2,9 +2,14 @@
 #include "platform_init.h"
 #include "Radio/AX5043.h"
 #include <TestDefinition.h>
+#include <globals.h>
+#include "Sleep/sleep.h"
+#include <Flight_Computer/Intercomm.h>
 
 #define RUN_TEST	0	// 0 = run, 1 = run a very specific test
 #define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
+
+volatile uint8_t interruptFlags = 0;
 
 
 bool test_radio_reads_simple();
@@ -22,13 +27,40 @@ int main(void)
 
     #else
 
-	//TODO: use RTC first_time flag.
-	//if (first_time) {
-	//  init_first_time()
-	//}
-
 	while (1) {
-		continue;
+		while(interruptFlags){
+			if(interruptFlags & RX_RECEIVED){
+				NVIC_DisableIRQ(USART1_IRQn);
+				interruptFlags &= ~(RX_RECEIVED);
+				NVIC_EnableIRQ(USART1_IRQn);
+
+				uint8_t chunk[MAX_MESSAGE_BYTES];
+				int read_status = crc_read(PFC_USART, chunk);
+				if (read_status != -1) {
+					handleInput(PFC_USART, chunk);
+				}
+			}
+			if(interruptFlags & RADIO_RECEIVED){
+				NVIC_DisableIRQ(EXTI2_IRQn);
+				interruptFlags &= ~RADIO_RECEIVED;
+				NVIC_EnableIRQ(EXTI2_IRQn);
+
+				//get packet
+				packet_t packet;
+				int size = 0;
+				int failcount = 0;
+				do{
+					size = radio_receive(&packet, UHF_SPI);
+					if(size <= 0)
+						failcount++;
+				}while(failcount < 5 && !packet.isPacketEnd);
+
+				uploadData(PFC_USART, packet.pkt, packet.length);
+
+			}
+		}
+		
+		sleep_init();
 	}
 
 #endif

@@ -9,7 +9,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 	//Command must be the first char
 	switch (chunk[0]) {
 		case DownloadData: downloadData(dev, chunk); break;
-		case UploadData: uploadData(dev); break;
+		case UploadData: uploadData(dev, chunk, sizeof storedData); break;
 		case SendState: sendState(dev); break;
 		case TransferToGround: transferToGround(dev, chunk); break;
 		case KillAll: killAll(dev); break;
