@@ -1,5 +1,6 @@
 #include "AX5043.h"
 #include "EncFECAuth.h"
+#include "peripherals/Radio/secure_comm/aes128.h"
 #include <print_scan.h>
 
 void radio_init() {
@@ -383,7 +384,9 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 		char workpad[MAX_FAE_BLOCK_SIZE];
 
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
-		length = FAEEncodeBlock(bytesToSend + bytesSent, coded, 0, length, 0, workpad);
+		size_t input_block_size = length - FAE_ECC_SIZE;
+    	input_block_size = ((input_block_size / AES_BLOCKLEN) * AES_BLOCKLEN);
+		length = FAEEncodeBlock(bytesToSend + bytesSent, coded, 0, input_block_size, 0, workpad);
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
 		ax5043_write8(AX5043_FIFODATA, length--, spi);
 		uint8_t flags = 0;
