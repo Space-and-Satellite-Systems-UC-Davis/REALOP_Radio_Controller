@@ -26,13 +26,13 @@ int main(void)
     testFunc();
 
     #else
-
+	uint64_t lastUplinkTime = getSysTime();
 	while (1) {
 		while(interruptFlags){
 			if(interruptFlags & RX_RECEIVED){
-				NVIC_DisableIRQ(USART1_IRQn);
+				__disable_irq();
 				interruptFlags &= ~(RX_RECEIVED);
-				NVIC_EnableIRQ(USART1_IRQn);
+				__enable_irq();
 
 				uint8_t chunk[MAX_MESSAGE_BYTES];
 				int read_status = crc_read(PFC_USART, chunk);
@@ -40,10 +40,10 @@ int main(void)
 					handleInput(PFC_USART, chunk);
 				}
 			}
-			if(interruptFlags & RADIO_RECEIVED){
-				NVIC_DisableIRQ(EXTI2_IRQn);
+			else if(interruptFlags & RADIO_RECEIVED){
+				__disable_irq();
 				interruptFlags &= ~RADIO_RECEIVED;
-				NVIC_EnableIRQ(EXTI2_IRQn);
+				__enable_irq();
 
 				//get packet
 				packet_t packet;
@@ -55,8 +55,22 @@ int main(void)
 						failcount++;
 				}while(failcount < 5 && !packet.isPacketEnd);
 
+				interruptFlags |= RADIO_RX_ON;
+				lastUplinkTime = getSysTime();
+
 				uploadData(PFC_USART, packet.pkt, packet.length);
 
+			}else if(interruptFlags & RADIO_RX_ON){
+				if (getSysTime() > lastUplinkTime + FIVEMINUTES){ //timeout, go back to sleep
+					interruptFlags &= ~RADIO_RX_ON;
+					ax5043_receiverWOR();
+				}
+				ax5043_receiverOn();
+			} else if(interruptFlags & RADIO_COMMS_FINISHED){
+				__disable_irq();
+				interruptFlags &= ~(RADIO_RX_ON | RADIO_COMMS_FINISHED);
+				__enable_irq();
+				ax5043_receiverWOR();
 			}
 		}
 		
