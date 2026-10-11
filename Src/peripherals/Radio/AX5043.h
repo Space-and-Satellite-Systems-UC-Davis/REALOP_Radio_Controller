@@ -51,7 +51,7 @@
 
 #define AX5043_PKTMISCFLAGS_WORPKT 1<<4
 
-#define AX5043_CARRIER_HZ 435.775
+#define AX5043_CARRIER_HZ 437.4
 #define AX5043_XTAL_HZ 26
 #define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
@@ -66,7 +66,7 @@
 #define PACKAGE_END      3
 #define PACKAGE_MIDDLE   4
 
-#define WAKEUP_FREQUENCY 200 //in ms
+#define WAKEUP_FREQUENCY 100 //in ms
 
 #define AX5043_SILICONREVISION   0x0000 /* Silicon Revision */
 #define AX5043_SCRATCH           0x0001 /* Scratch */
@@ -390,7 +390,7 @@ void wor_config(int ms, SPI_TypeDef* spi);
 void tx_black_magic(SPI_TypeDef* spi, int packetSize);
 
 typedef struct PACKET_STRUCT {
-    int pkt[256];
+    uint8_t pkt[256];
     int length;
     int isPacketStart;
     int isPacketEnd;

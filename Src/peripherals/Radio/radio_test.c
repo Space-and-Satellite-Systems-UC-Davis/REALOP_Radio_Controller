@@ -5,7 +5,7 @@ void testFunction_radiooooo(){
     printMsg("START!\r\n");
 	
 
-	radio_init();
+	// radio_init();
 	// uint8_t arr[1000];
 	// for(int i = 0; i<1000; i++){
 	// 	// arr[i] = i * 17;
@@ -26,7 +26,7 @@ void testFunction_radiooooo(){
 	// 	// delay_ms(5000);
 	// }
 	ax5043_set_registers_rx(UHF_SPI);
-	// ax5043_calculate_rx_registers(UHF_SPI);
+	// ax5043_set_registers_rx(UHF_SPI);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, UHF_SPI);
 	gpio_high(GPIOC, 9);

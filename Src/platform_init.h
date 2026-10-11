@@ -41,7 +41,7 @@ void init_platform() {
 
 	rtc_config(LSI, 0);
 	radio_init();
-
+	usart_init(PFC_USART, 9600);
 	dma_init();
 }
 

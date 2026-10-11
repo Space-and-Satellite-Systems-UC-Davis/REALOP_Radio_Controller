@@ -46,24 +46,24 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 }
 
 //Transfer data to PFC
-void uploadData(USART_TypeDef *dev) {
+void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint8_t size) {
 	uint8_t first_chunk[4];
 
 	//temp transfer data and size
 	//i know how to spell, i just didn't include apostrophes bc that's extra work
-	uint8_t data[229] = "Hola hola, Ive come all this way, from radio all across the UART channels to talk to you, on Intellisat. You know, youre such a cool person, youre so good at debugging and not crying when bugs start popping up everywhere. cheers!";
-	uint8_t data_len = 229;
+	// uint8_t data[229] = "Hola hola, Ive come all this way, from radio all across the UART channels to talk to you, on Intellisat. You know, youre such a cool person, youre so good at debugging and not crying when bugs start popping up everywhere. cheers!";
+	// uint8_t data_len = 229;
 
 	first_chunk[0] = UploadData; // Tell PFC this is an upload request
-	first_chunk[1] = (data_len - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
-	first_chunk[2] = data_len % CHUNK_LENGTH;
+	first_chunk[1] = (size - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
+	first_chunk[2] = size % CHUNK_LENGTH;
 	if(first_chunk[2] == 0)
 		first_chunk[2] = CHUNK_LENGTH;
 	first_chunk[3] = Unflagged; //No actual upload flags were made yet
 
 	crc_transmit(dev, first_chunk, 4);
 
-	crc_chunked_transmit(dev, &data, data_len, CHUNK_LENGTH);
+	crc_chunked_transmit(dev, &chunk, size, CHUNK_LENGTH);
 
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	nop(1000);
@@ -90,7 +90,6 @@ void uploadData(USART_TypeDef *dev) {
 void sendState(USART_TypeDef*dev) {
 	uint8_t state_chunk[1];
 	state_chunk[0] = current_state;
-
 	crc_transmit(dev, state_chunk, 1);
 }
 

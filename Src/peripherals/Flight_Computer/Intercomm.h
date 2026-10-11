@@ -14,11 +14,9 @@
 #define PERIPHERALS_INTERCOMM_H_
 
 #include "Radio/AX5043.h"
-#include "Radio/radio.h"
 #include "UART/crc.h"
 #include "globals.h"
 
-#define PFC_USART USART1
 
 typedef enum {
     DownloadData = 'D', //Receive data from PFC
