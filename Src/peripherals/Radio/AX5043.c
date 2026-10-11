@@ -1,5 +1,6 @@
 #include "AX5043.h"
 #include <print_scan.h>
+#include <stdatomic.h>
 
 #define BUFFSIZE  2000
 char buffer[BUFFSIZE];
@@ -456,6 +457,10 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	return length;
 } 
 
+bool isFifoEmpty(SPI_TypeDef * spi){
+	return (ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8) == 0;
+}
+
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef* spi) {
     uint8_t addr[2];
     addr[0] = address >> 8;
@@ -553,46 +558,49 @@ void ax5043_configInterrupt(){
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI2);
 }
 
+atomic_int numInts = 0;
 void EXTI2_IRQHandler(){
-	printMsg("INTERRUPT on UHF!\r\n");
-	// ax5043_read8(AX5043_WAKEUPTIMER0, UHF_SPI);
-	NVIC_DisableIRQ(EXTI2_IRQn);
+	numInts = 1; //true
 	EXTI->PR1 |= EXTI_PR1_PIF2;
-	packet_t packet;
-	for(int i = 0; i<256; i++){
-		packet.pkt[i] = 0;
-	}
-	int size = 0;
-	int count = 0;
-	do{
-		size = radio_receive(&packet, UHF_SPI);
-		printMsg("Received:%d\r\n", size);
-		// printMsg("size: %d\r\n", size);
-		for(int i = 0; i<size; i++){
-			buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
-			if(BUFFINDEX + i == BUFFSIZE - 1){
-				printBuffer();
-			}
-			printMsg("%c", packet.pkt[i]);
-		}
-		// printMsg("\r\n");
-		if(size > 0)
-			BUFFINDEX += size;
-		count ++;
-	}while(!packet.isPacketEnd && count < 5);
+	// printMsg("INTERRUPT on UHF!\r\n");
+	// // ax5043_read8(AX5043_WAKEUPTIMER0, UHF_SPI);
+	// NVIC_DisableIRQ(EXTI2_IRQn);
+	// EXTI->PR1 |= EXTI_PR1_PIF2;
+	// packet_t packet;
+	// for(int i = 0; i<256; i++){
+	// 	packet.pkt[i] = 0;
+	// }
+	// int size = 0;
+	// int count = 0;
+	// do{
+	// 	size = radio_receive(&packet, UHF_SPI);
+	// 	printMsg("Received:%d\r\n", size);
+	// 	// printMsg("size: %d\r\n", size);
+	// 	for(int i = 0; i<size; i++){
+	// 		buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
+	// 		if(BUFFINDEX + i == BUFFSIZE - 1){
+	// 			printBuffer();
+	// 		}
+	// 		printMsg("%c", packet.pkt[i]);
+	// 	}
+	// 	// printMsg("\r\n");
+	// 	if(size > 0)
+	// 		BUFFINDEX += size;
+	// 	count ++;
+	// }while(!packet.isPacketEnd && count < 5);
 
-	printMsg("after the while loop: \r\n");
-	while(ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT1, UHF_SPI)){
-		printMsg("%c", ax5043_read8(AX5043_FIFODATA, UHF_SPI));
-	}
-	printMsg("\r\n");
-	// for(int i = 0; i< 1000; i++){
-	// 	printMsg("%c", arr[i]);
+	// printMsg("after the while loop: \r\n");
+	// while(ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT1, UHF_SPI)){
+	// 	printMsg("%c", ax5043_read8(AX5043_FIFODATA, UHF_SPI));
 	// }
 	// printMsg("\r\n");
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-	// printMsg("FINISH INTERRUPT\r\n");
-	NVIC_EnableIRQ(EXTI2_IRQn);
+	// // for(int i = 0; i< 1000; i++){
+	// // 	printMsg("%c", arr[i]);
+	// // }
+	// // printMsg("\r\n");
+	// ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
+	// // printMsg("FINISH INTERRUPT\r\n");
+	// NVIC_EnableIRQ(EXTI2_IRQn);
 }
 
 void EXTI15_10_IRQHandler(){
