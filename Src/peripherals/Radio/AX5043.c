@@ -1,18 +1,19 @@
 #include "AX5043.h"
 #include <print_scan.h>
-#include <globals.h>
-
+#include <stdatomic.h>
+#include "globals.h"
 
 #define BUFFSIZE  2000
 char buffer[BUFFSIZE];
 int BUFFINDEX;
 
+extern volatile atomic_int interruptFlags;
 
 void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	ax5043_configInterrupt(); //setup recieve interrupt
+	// vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
 	for(int i = 0; i<BUFFSIZE; i++){
 		buffer[i] = 0;
@@ -216,8 +217,6 @@ void uhf_init() {
         }
         failCount++;
     }
-	// ax5043_set_registers_rx(UHF_SPI);
-	// ax5043_set_registers_rxwor(UHF_SPI);
 	// wor_config(WAKEUP_FREQUENCY, UHF_SPI);
 }
 
@@ -253,24 +252,14 @@ void vhf_init() {
 
 void wor_config(int ms, SPI_TypeDef* spi){
 	//check frequency of low power oscillator
-	int oscillator = (ax5043_read8(AX5043_LPOSCCONFIG, spi) >> 1) & 1;
-	if(oscillator){
-		oscillator = 10240; //10.24kHz
-	}else{
-		oscillator = 640; //640Hz
-	}
-	//get value to put in wakeupfreq, which is # of oscillator cycles
-	//frequency * period = # cycles
-	uint16_t freq = ms * 1000 * oscillator; 
-	ax5043_write8(AX5043_WAKEUPFREQ0, freq & 0xFF, spi);
+	ax5043_write8(AX5043_LPOSCCONFIG, 0x01, spi);
+	int oscillator = 640; //640Hz
+	int freq = oscillator * ms / 1000;
+	ax5043_write8(AX5043_WAKEUP1, freq >> 8, spi);
+	ax5043_write8(AX5043_WAKEUP0, freq, spi);
 	ax5043_write8(AX5043_WAKEUPFREQ1, freq >> 8, spi);
-
-	//make sure receiver still on after waking up if packet received to read
-	ax5043_write8(AX5043_PKTMISCFLAGS, AX5043_PKTMISCFLAGS_WORPKT, spi);
-
-	//enable irq interrupt
-	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, spi);
-
+	ax5043_write8(AX5043_WAKEUPFREQ0, freq, spi);
+	
 }
 
 bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi) {
@@ -359,6 +348,67 @@ void tx_black_magic(SPI_TypeDef* spi, int packetSize) {
 
 }
 
+void radio_transmit_uplink(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
+    ax5043_set_registers_tx(spi);
+    int bytesSent = 0;
+    int pktCurrentIndex = 0;
+    int packetSize = 0; 
+    int spaceLeftInFIFO = 0;
+    
+	int irqmask = ax5043_read8(AX5043_IRQMASK0, spi);
+	ax5043_write8(AX5043_IRQMASK0, irqmask & ~AX5043_IRQM_FIFONOTEMPTY, spi); 
+
+	gpio_high(GPIOC, 9); //enable tcxo
+	nop(1000);
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLTX | AX5043_PWRMODE_DEFAULTVALUES, spi);
+	
+    while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
+	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
+	while(bytesSent < numBytes){
+		for(int i = 0; i< 10; i++){
+			ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
+			ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
+			ax5043_write8(AX5043_FIFODATA, 255, spi);
+			ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
+		}
+		
+
+		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
+		if (spaceLeftInFIFO > numBytes - bytesSent + 3) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
+			packetSize = numBytes + 3 - bytesSent;
+		} else {
+			packetSize = spaceLeftInFIFO;
+		}
+
+		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
+		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
+		ax5043_write8(AX5043_FIFODATA, length--, spi);
+		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND, spi);
+
+		int sent = 0;
+		while(sent < length){
+			ax5043_write8(AX5043_FIFODATA, bytesToSend[bytesSent + sent], spi);
+			sent++;
+		}
+
+		//check if crytal is running
+		while(!ax5043_read8(AX5043_XTALSTATUS, spi));
+
+		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
+		//Wait for transmitting to be active by making sure it changes from IDLE and that FIFO is being filled
+		while(!ax5043_read8(AX5043_RADIOSTATE, spi) && ((ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi) < 10));
+		
+		while(ax5043_read8(AX5043_RADIOSTATE, spi));
+
+		bytesSent += sent;
+		delay_ms(1000);
+	}	
+	
+	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdown
+	ax5043_write8(AX5043_IRQMASK0, irqmask | AX5043_IRQM_FIFONOTEMPTY, spi); 
+	gpio_low(GPIOC, 9); //disable txco
+}
+
 void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
     ax5043_set_registers_tx(spi);
     int bytesSent = 0;
@@ -375,46 +425,26 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 	
     while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
-
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
-	//if sending to fullrx, preamble doesn't need to be long:
-	// ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
-	// ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-	// ax5043_write8(AX5043_FIFODATA, 68, spi);
-	// ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	//if sending to wor, preamble needs to be long (this wouldn't be called from satellite)
-	//apprx how much preamble for 200ms wor
-	for(int i = 0; i< 10; i++){
-			ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
-			ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
-			ax5043_write8(AX5043_FIFODATA, 255, spi);
-			ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
-	}
+	while(bytesSent < numBytes){
+		
+		//preamble
+		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
+		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_UNENC | AX5043_TX_FLAGS_NOCRC | AX5043_TX_FLAGS_RAW, spi);
+		ax5043_write8(AX5043_FIFODATA, 68, spi);
+		ax5043_write8(AX5043_FIFODATA, 0xAA, spi);
 		
 
-	int count = 0;
-	while(bytesSent < numBytes){
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		while(spaceLeftInFIFO < 4){
-			spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		}
 		if (spaceLeftInFIFO > numBytes - bytesSent + 3) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
 			packetSize = numBytes + 3 - bytesSent;
 		} else {
 			packetSize = spaceLeftInFIFO;
 		}
-		
+
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
 		ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_DATA_COMMAND, spi); //Header byte indicating DATA command
 		ax5043_write8(AX5043_FIFODATA, length--, spi);
-		uint8_t flags = 0;
-		if(bytesSent == 0){
-			flags = AX5043_TX_FLAGS_PKTSTART;
-		}
-		if(bytesSent + length >= numBytes){
-			flags |= AX5043_TX_FLAGS_PKTEND;
-		}
-		ax5043_write8(AX5043_FIFODATA, flags, spi);
+		ax5043_write8(AX5043_FIFODATA, AX5043_TX_FLAGS_PKTSTART | AX5043_TX_FLAGS_PKTEND, spi);
 
 		int sent = 0;
 		while(sent < length){
@@ -427,19 +457,15 @@ void radio_transmit(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
 
 		ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_COMMIT, spi);
 		//Wait for transmitting to be active by making sure it changes from IDLE and that FIFO is being filled
-		// while(!ax5043_read8(AX5043_RADIOSTATE, spi) && ((ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi) < 10));
+		while(!ax5043_read8(AX5043_RADIOSTATE, spi) && ((ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi) < 10));
 		
+		while(ax5043_read8(AX5043_RADIOSTATE, spi));
 
 		bytesSent += sent;
-		printMsg("transmission %d, bytesSent = %d\r\n", count++, bytesSent);
-		// delay_ms(1000);
+		delay_ms(1000);
 	}	
-	while(ax5043_read8(AX5043_RADIOSTATE, spi));
 	
-	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);//set to powerdown
 	ax5043_write8(AX5043_IRQMASK0, irqmask | AX5043_IRQM_FIFONOTEMPTY, spi); 
-	gpio_low(GPIOC, 9); //disable txco
-
 }
  
  
@@ -450,37 +476,83 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_FULLRX, spi); //worrx for wor and fullrx for regular
 	// gpio_high(GPIOC, 9);
 	int received = 0;
-	int fifocount = ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8;
+	int fifocount = getFifoSize(spi);
 	// printMsg("FIFOCOUNT: %d\r\n", fifocount);
-	if(fifocount == 0){
-		return -1;
-	}
+		if(fifocount == 0){
+			printMsg("NO DATA");
+			return -1;
+		}
 		uint8_t header = ax5043_read8(AX5043_FIFODATA, spi);
-		if (header != AX5043_FIFODATA_DATA_COMMAND){
+
+		while(!isFifoEmpty(spi) && header != AX5043_FIFODATA_DATA_COMMAND){
+			header = ax5043_read8(AX5043_FIFODATA, spi);
+		}
+		if(isFifoEmpty(spi)){
+			printMsg("NO DATA");
 			return -1;
 		}
 		uint8_t length = ax5043_read8(AX5043_FIFODATA, spi);
-		uint8_t flags = ax5043_read8(AX5043_FIFODATA, spi);
+
+		int failcount = 0;
+		while (length == 0 || length > getFifoSize(spi)){
+			
+			if(failcount > 10 || length == 0){
+				printMsg("Not enough bytes");
+				ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, spi);
+				return -1;
+			}
+			failcount ++;
+			delay_ms(100);
+		}
+		
+
+		uint8_t flags = ax5043_read8(AX5043_FIFODATA, spi);		
+
+		if(flags != 0x03){
+			printMsg("INVALID FLAGS");
+			ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, spi);
+			return -1;
+		}
+		// printMsg("HEADER: %x\r\n", header);
+		// printMsg("LENGTH: %d\r\n", length);
+		// printMsg("FLAGS: %x\r\n", flags);
+		
 		received_packet->isPacketStart = flags & AX5043_TX_FLAGS_PKTSTART;
 		received_packet->isPacketEnd = flags & AX5043_TX_FLAGS_PKTEND;
-		received_packet->length = length - 1;
-		printMsg("HEADER: %x\r\n", header);
-		printMsg("LENGTH: %d\r\n", length-1);
-		printMsg("FLAGS: %x\r\n", flags);
-		for (int i = 0; i < length - 1; i++) {
-			// if (header == AX5043_FIFODATA_DATA_COMMAND) { //Only read it if its a data command
-				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA, spi);
-				printMsg("%c", (received_packet->pkt)[i]);
-			// }
+		length --;
+
+		int crc = 0;
+		if(length < 236){
+			crc = 4;
+		}else{
+			crc = (239 - length);
 		}
-		printMsg("\r\n");
+		length -=crc;
+
+
+
+		for (int i = 0; i < length; i++) {
+				(received_packet->pkt)[i] = ax5043_read8(AX5043_FIFODATA, spi);
+		}
+		for(int i = 0; i<crc; i++){
+			ax5043_read8(AX5043_FIFODATA, spi);//actually empty fifo
+		}
+		received_packet->length = length;
 	// }
 
 	// ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_POWERDOWN, spi);
 	// gpio_low(GPIOC, 9);
 
-	return length-1;
+	return length;
 } 
+
+int getFifoSize(SPI_TypeDef * spi){
+	return ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8;
+}
+
+bool isFifoEmpty(SPI_TypeDef * spi){
+	return (ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8) == 0;
+}
 
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef* spi) {
     uint8_t addr[2];
@@ -586,57 +658,26 @@ void ax5043_configInterrupt(){
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, SPI1);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, SPI2);
 
+	ax5043_write8(0x00, AX5043_IRQMASK1, SPI1);
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI1);
 	ax5043_write8(AX5043_IRQMASK0, AX5043_IRQM_FIFONOTEMPTY, SPI2);
 }
 
+atomic_int numInts = 0;
 void EXTI2_IRQHandler(){
-	// EXTI->PR1 |= EXTI_PR1_PIF2;
-	interruptFlags |= RADIO_RECEIVED;
-	printMsg("INTERRUPT on UHF!\r\n");
-	// ax5043_read8(AX5043_WAKEUPTIMER0, UHF_SPI);
-	NVIC_DisableIRQ(EXTI2_IRQn);
+	numInts = 1; //true
 	EXTI->PR1 |= EXTI_PR1_PIF2;
-	packet_t packet;
-	for(int i = 0; i<256; i++){
-		packet.pkt[i] = 0;
-	}
-	int size = 0;
-	int count = 0;
-	do{
-		size = radio_receive(&packet, UHF_SPI);
-		printMsg("Received:%d\r\n", size);
-		// printMsg("size: %d\r\n", size);
-		for(int i = 0; i<size; i++){
-			buffer[(i + BUFFINDEX) % BUFFSIZE] = packet.pkt[i];
-			if(BUFFINDEX + i == BUFFSIZE - 1){
-				printBuffer();
-			}
-			printMsg("%c", packet.pkt[i]);
-		}
-		// printMsg("\r\n");
-		if(size > 0)
-			BUFFINDEX += size;
-		count ++;
-	}while(!packet.isPacketEnd && count < 5);
-
-	printMsg("after the while loop: \r\n");
-	while(ax5043_read8(AX5043_FIFOCOUNT0, UHF_SPI) | ax5043_read8(AX5043_FIFOCOUNT1, UHF_SPI)){
-		printMsg("%c", ax5043_read8(AX5043_FIFODATA, UHF_SPI));
-	}
-	printMsg("\r\n");
-	// for(int i = 0; i< 1000; i++){
-	// 	printMsg("%c", arr[i]);
-	// }
-	// printMsg("\r\n");
-	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-	// printMsg("FINISH INTERRUPT\r\n");
-	NVIC_EnableIRQ(EXTI2_IRQn);
+	atomic_fetch_or(&interruptFlags, RADIO_RECEIVED);
 }
 
 void EXTI15_10_IRQHandler(){
 	printMsg("INTERRUPT on VHF!\r\n");
 	EXTI->PR1 |= EXTI_PR1_PIF11;
+}
+
+
+bool isBufFull(){
+	return BUFFINDEX >= BUFFSIZE * 0.75;
 }
 
 void printBuffer(){

@@ -5,6 +5,8 @@
 #include "stm32l431xx.h"
 #include <SPI/spi.h>
 
+
+
 #define UHF_SPI_CS SPI1_CS
 #define UHF_SPI SPI1
 
@@ -60,13 +62,14 @@
 #define XTALDIV 2
 
 #define AX5043_IRQM_FIFONOTEMPTY (1<<0)
+#define AX5043_IRQM1_WAKEUPTIMER (1 << 1)
 
 #define PACKAGE_FULL     1
 #define PACKAGE_START    2
 #define PACKAGE_END      3
 #define PACKAGE_MIDDLE   4
 
-#define WAKEUP_FREQUENCY 100 //in ms
+#define WAKEUP_FREQUENCY 200 //in ms
 
 #define AX5043_SILICONREVISION   0x0000 /* Silicon Revision */
 #define AX5043_SCRATCH           0x0001 /* Scratch */
@@ -402,6 +405,15 @@ typedef struct PACKET_STRUCT {
 bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi);
 
 /**
+ * transmits packets in radio (groundstation to satellite, has longer preamble for wor)
+ * @param numBytes # of bytes
+ * @param bytesToSend array of bytes to send
+ * @param spi spi bus that communicates with the chip, UHF_SPI or VHF_SPI
+ * 
+ */
+void radio_transmit_uplink(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
+
+/**
  * transmits packets in radio
  * @param numBytes # of bytes
  * @param bytesToSend array of bytes to send
@@ -429,6 +441,10 @@ void ax5043_receiverWOR();
 void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);
 
+int getFifoSize(SPI_TypeDef * spi);
+bool isFifoEmpty(SPI_TypeDef * spi);
 
+bool isBufFull();
+void printBuffer();
 
 #endif
