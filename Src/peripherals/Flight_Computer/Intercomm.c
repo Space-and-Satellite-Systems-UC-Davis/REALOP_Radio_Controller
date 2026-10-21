@@ -46,7 +46,7 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 }
 
 //Transfer data to PFC
-void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint8_t size) {
+void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint16_t size) {
 	uint8_t first_chunk[4];
 
 	//temp transfer data and size
@@ -63,7 +63,7 @@ void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint8_t size) {
 
 	crc_transmit(dev, first_chunk, 4);
 
-	crc_chunked_transmit(dev, &chunk, size, CHUNK_LENGTH);
+	crc_chunked_transmit(dev, chunk, size, CHUNK_LENGTH);
 
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	nop(1000);

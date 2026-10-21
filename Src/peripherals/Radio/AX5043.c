@@ -3,9 +3,9 @@
 #include <stdatomic.h>
 #include "globals.h"
 
-#define BUFFSIZE  2000
-char buffer[BUFFSIZE];
-int BUFFINDEX;
+// #define BUFFSIZE  2000
+// char buffer[BUFFSIZE];
+// int BUFFINDEX;
 
 extern volatile atomic_int interruptFlags;
 
@@ -13,12 +13,8 @@ void radio_init() {
     spi_config(UHF_SPI);
 	spi_config(VHF_SPI);
     uhf_init();
-	// vhf_init();
 	ax5043_configInterrupt(); //setup recieve interrupt
-	for(int i = 0; i<BUFFSIZE; i++){
-		buffer[i] = 0;
-	}
-	BUFFINDEX = 0;
+
 }
 
 void uhf_programParametersFromRadioLab(SPI_TypeDef* spi) {
@@ -478,7 +474,7 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 	int received = 0;
 	int fifocount = getFifoSize(spi);
 	// printMsg("FIFOCOUNT: %d\r\n", fifocount);
-		if(fifocount == 0){
+		if(fifocount < 7){
 			printMsg("NO DATA");
 			return -1;
 		}
@@ -487,9 +483,13 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		while(!isFifoEmpty(spi) && header != AX5043_FIFODATA_DATA_COMMAND){
 			header = ax5043_read8(AX5043_FIFODATA, spi);
 		}
+		
 		if(isFifoEmpty(spi)){
-			printMsg("NO DATA");
-			return -1;
+			delay_ms(100);
+			if(isFifoEmpty(spi)){
+				printMsg("NO DATA AFTER HEADER");
+				return -1;
+			}
 		}
 		uint8_t length = ax5043_read8(AX5043_FIFODATA, spi);
 
@@ -497,7 +497,7 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 		while (length == 0 || length > getFifoSize(spi)){
 			
 			if(failcount > 10 || length == 0){
-				printMsg("Not enough bytes");
+				printMsg("Not enough bytes %d vs %d", length, getFifoSize(spi));
 				ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, spi);
 				return -1;
 			}
@@ -676,13 +676,13 @@ void EXTI15_10_IRQHandler(){
 }
 
 
-bool isBufFull(){
-	return BUFFINDEX >= BUFFSIZE * 0.75;
-}
+// bool isBufFull(){
+// 	return BUFFINDEX >= BUFFSIZE * 0.75;
+// }
 
-void printBuffer(){
-	for(int i = 0; i<BUFFINDEX; i++){
-		printMsg("%c",buffer[i%BUFFSIZE]);
-	}
-	BUFFINDEX = 0;
-}
+// void printBuffer(){
+// 	for(int i = 0; i<BUFFINDEX; i++){
+// 		printMsg("%c",buffer[i%BUFFSIZE]);
+// 	}
+// 	BUFFINDEX = 0;
+// }

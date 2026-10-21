@@ -20,8 +20,7 @@ typedef enum {false, true} bool;
 typedef enum{
     RX_RECEIVED = 1U,
     RADIO_RECEIVED = 1U << 1,
-    RADIO_RX_ON = 1U << 2,
-    RADIO_COMMS_FINISHED = 1U << 3
+    WOR_RECEIVED = 1U << 2,
 }Flag_Bits;
 
 extern volatile atomic_int interruptFlags;

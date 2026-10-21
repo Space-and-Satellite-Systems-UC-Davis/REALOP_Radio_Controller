@@ -7,11 +7,14 @@
 #include <Flight_Computer/Intercomm.h>
 #include <stdatomic.h>
 
-#define RUN_TEST	1	// 0 = run, 1 = run a very specific test
-#define TEST_ID 	1	// ID of the test to run in case RUN_TEST = 1
+#define RUN_TEST	0	// 0 = run, 1 = run a very specific test
+#define TEST_ID 	0	// ID of the test to run in case RUN_TEST = 1
 
 volatile atomic_int interruptFlags = 0;
 
+#define BUFFSIZE  2000
+char buffer[BUFFSIZE];
+int BUFFINDEX;
 
 bool test_radio_reads_simple();
 
@@ -26,20 +29,18 @@ int main(void)
     testFunc();
 
     #else
+	for(int i = 0; i<BUFFSIZE; i++){
+		buffer[i] = 0;
+	}
 	ax5043_set_registers_rx(UHF_SPI);
 	ax5043_set_registers_rxwor(UHF_SPI);
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
 	ax5043_write8(AX5043_PWRMODE, AX5043_PWRMODE_WORRX, UHF_SPI);
 	gpio_high(GPIOC, 9);
-	delay_ms(1000);
-	printMsg("INITIAL RSSI: %d", ax5043_read8(AX5043_RSSI, UHF_SPI));
-	printMsg("INITIAL AGCCOUNTER: %d", ax5043_read8(AX5043_AGCCOUNTER, UHF_SPI));
-	delay_ms(1000);
-	// wor_config(200, UHF_SPI);
+	wor_config(200, UHF_SPI);
+	BUFFINDEX = 0;
 	uint64_t lastUplinkTime = getSysTime();
-	char buffer[1000];
 	while (1) {
-		// printMsg("LOOP %x\r\n", interruptFlags);
 		while(interruptFlags){
 			if(interruptFlags & RX_RECEIVED){
 				__disable_irq();
@@ -53,54 +54,37 @@ int main(void)
 				}
 			}
 			else if(interruptFlags & RADIO_RECEIVED){
-				printMsg("Radio received\r\n");
+
 				atomic_fetch_and(&interruptFlags, ~RADIO_RECEIVED);
+
 				//get packet
 				packet_t packet;
 				int size = 0;
 				int failcount = 0;
-				int index = 0;
 				do{
-					printMsg("b4\r\n");
 					size = radio_receive(&packet, UHF_SPI);
 					if(size <= 0)
 						failcount++;
 					else{
-						memcpy(buffer + index, packet.pkt, packet.length);
-						index += size;
+						memcpy(buffer + BUFFINDEX, packet.pkt, size);
+						BUFFINDEX += size;
 					}
-					printMsg("after");
-				}while(failcount < 5 && !packet.isPacketEnd);
-				for(int i = 0; i<index + 1; i++){
-					printMsg("%c", packet.pkt[i]);
+					if(failcount > 5){
+						break;
+					}
+				}while(!packet.isPacketEnd);
+				if(failcount > 5)
+					continue;
+			
+				atomic_fetch_or(&interruptFlags, WOR_RECEIVED);
+				lastUplinkTime = getSysTime();
+
+			}else if(interruptFlags & WOR_RECEIVED){
+				if (getSysTime() > lastUplinkTime + 1300){
+					uploadData(PFC_USART, buffer, BUFFINDEX);
+					BUFFINDEX = 0;
+					atomic_fetch_and(&interruptFlags, ~WOR_RECEIVED);
 				}
-				// interruptFlags |= RADIO_RX_ON;
-				// ax5043_receiverOn();
-				// lastUplinkTime = getSysTime();
-				// printMsg("TX DATA\r\n");
-				// NVIC_DisableIRQ(EXTI2_IRQn);
-				// uploadData(PFC_USART, buffer, index);
-				// NVIC_EnableIRQ(EXTI2_IRQn);
-				// printMsg("DONE TX");
-				// if(isFifoEmpty(UHF_SPI)){
-				// 	__disable_irq();
-				// 		interruptFlags &= ~RADIO_RECEIVED;
-				// 	__enable_irq();
-				// 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS, UHF_SPI);
-				// }
-			}else if(interruptFlags & RADIO_RX_ON){
-				if (getSysTime() > lastUplinkTime + 2000){//FIVEMINUTES){ //timeout, go back to sleep
-					interruptFlags &= ~RADIO_RX_ON;
-					// ax5043_receiverWOR();
-					printMsg("At %d", getSysTime() - lastUplinkTime);
-				}
-				
-			} else if(interruptFlags & RADIO_COMMS_FINISHED){
-				__disable_irq();
-				interruptFlags &= ~(RADIO_RX_ON | RADIO_COMMS_FINISHED);
-				__enable_irq();
-				ax5043_receiverWOR();
-				printMsg("radio done\r\n");
 			}
 		}
 		
