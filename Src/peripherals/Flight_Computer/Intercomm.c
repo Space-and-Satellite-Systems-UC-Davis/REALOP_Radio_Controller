@@ -1,7 +1,8 @@
 #include "Intercomm.h"
 #include <print_scan.h>
 
-uint8_t storedData[CHUNK_LENGTH * 30];
+static uint8_t storedData[CHUNK_LENGTH * 30];
+static uint16_t storedDataIndex = 0;
 State current_state = Idle;
 
 //Primary function from which everything else here is called
@@ -19,17 +20,20 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 //Receive data from PFC
 void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
-
-	crc_chunked_read(dev, &storedData[0], CHUNK_LENGTH, n_chunks);
 	uint8_t remainder = chunk[2];
 
-	int totalBytes = (n_chunks-1) * CHUNK_LENGTH + remainder;
+	if(n_chunks <= 0 || storedDataIndex + n_chunks * CHUNK_LENGTH >= CHUNK_LENGTH * 30)
+		return;
 
-	printMsg("GOT: ");
-	for(int i = 0; i<totalBytes; i++){
-		printMsg("%c", storedData[i]);
-	}
-	printMsg("\r\n");
+	crc_chunked_read(dev, storedData + storedDataIndex, CHUNK_LENGTH, n_chunks);
+
+	int totalBytes = (n_chunks-1) * CHUNK_LENGTH + remainder;
+	storedDataIndex += totalBytes;
+	// printMsg("GOT: ");
+	// for(int i = 0; i<totalBytes; i++){
+	// 	printMsg("%c", storedData[i]);
+	// }
+	// printMsg("\r\n");
 
 	// usart_transmitBytes(dev, storedData, CHUNK_LENGTH*4);
 	// for (int i = 0; i < n_chunks; i++) {
@@ -97,9 +101,8 @@ void sendState(USART_TypeDef*dev) {
 void transferToGround(USART_TypeDef *dev, uint8_t chunk[]) {
 	current_state = TXactive;
 
-	uint8_t n_chunks = chunk[1];
-	radio_transmit(n_chunks * CHUNK_LENGTH, storedData, UHF_SPI);
-
+	radio_transmit(storedDataIndex, storedData, UHF_SPI);
+	storedDataIndex = 0;
 	current_state = Idle;
 }
 
