@@ -16,6 +16,8 @@ volatile atomic_int interruptFlags = 0;
 char buffer[BUFFSIZE];
 int BUFFINDEX;
 
+#define RECEIVER_INTERVAL 1000 + 300 //1000 per receive plus ample buffer
+
 bool test_radio_reads_simple();
 
 int main(void)
@@ -43,9 +45,7 @@ int main(void)
 	while (1) {
 		while(interruptFlags){
 			if(interruptFlags & RX_RECEIVED){
-				__disable_irq();
-				interruptFlags &= ~(RX_RECEIVED);
-				__enable_irq();
+				atomic_fetch_and(&interruptFlags, ~RX_RECEIVED);
 				printMsg("Rx-received\r\n");
 				uint8_t chunk[MAX_MESSAGE_BYTES];
 				int read_status = crc_read(PFC_USART, chunk);
@@ -62,12 +62,15 @@ int main(void)
 				int size = 0;
 				int failcount = 0;
 				do{
-					size = radio_receive(&packet, UHF_SPI);
+					size = radio_receive_satellite(&packet, UHF_SPI);
 					if(size <= 0)
 						failcount++;
 					else{
 						memcpy(buffer + BUFFINDEX, packet.pkt, size);
 						BUFFINDEX += size;
+						// for(int i = 0; i<size; i++){
+						// 	printMsg("%c", packet.pkt[i]);
+						// }
 					}
 					if(failcount > 5){
 						break;
@@ -80,7 +83,7 @@ int main(void)
 				lastUplinkTime = getSysTime();
 
 			}else if(interruptFlags & WOR_RECEIVED){
-				if (getSysTime() > lastUplinkTime + 1300){
+				if (getSysTime() > lastUplinkTime + RECEIVER_INTERVAL){
 					uploadData(PFC_USART, buffer, BUFFINDEX);
 					BUFFINDEX = 0;
 					atomic_fetch_and(&interruptFlags, ~WOR_RECEIVED);
@@ -88,7 +91,7 @@ int main(void)
 			}
 		}
 		
-		// sleep_init();
+		sleep_init();
 	}
 
 #endif

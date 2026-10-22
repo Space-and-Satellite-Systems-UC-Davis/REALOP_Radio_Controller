@@ -2,74 +2,81 @@
 #include "Reed-Solomon/rs.h"
 #include "secure_comm/aes128.h"
 
-size_t FAEEncodeBlock(char *input, char *output, uint64_t index, size_t block_size, size_t end_size, char *workpad) {
-    if (end_size == 0) memcpy(workpad, input + block_size * index, block_size);
-    else {
-        memcpy(workpad, input + block_size * index, end_size);
-        memset(workpad + block_size * index + end_size, 0, block_size - end_size);
-    }
-    size_t length = block_size;
-    Encrypt_Array(workpad, &length);
-    // TODO if needed: separate authentication (e.g. append a shared private key to result in a workpad and hash, then appent hash to message)
-    ReedSolomon rs = {length, FAE_ECC_SIZE};
-    RSGF_construct_ReedSolomon(&rs, length, FAE_ECC_SIZE);
-    length += rs.ecc_length;
-    RSGF_encode_message(&rs, workpad, output + index*length);
-    return length;
+
+
+/* Encrypted bytes per block (multiple of 16); the rest of the block is parity. 0 = unusable size. */
+static size_t FAEEncSize(size_t x) {
+    if (x > 255 || x <= FAE_ECC_SIZE) return 0;
+    size_t p = ((x - FAE_ECC_SIZE) / AES_BLOCKLEN) * AES_BLOCKLEN;
+    if (p == 0 || p > MAX_BYTES_AES_MESSAGE || p > MAX_FAE_BLOCK_SIZE) return 0;
+    return p;
+}
+
+/* Message bytes carried by a full block. A block with fewer bytes is the last one. */
+size_t FAEPayloadSize(size_t x) {
+    size_t p = FAEEncSize(x);
+    return p ? p - 1 : 0;
 }
 
 /**
- * @param in                    input data
- * @param out                   buffer for output data, at least MAX_FAE_BLOCKS * MAX_FAE_BLOCK_SIZE in size
- * @param nbytes                number of bytes in the input data
- * @param output_block_size     number of bytes in each output block
- * @returns                     the number of bytes in the output stream
+ * @param in                 data to send
+ * @param out                must hold (nbytes / FAEPayloadSize(output_block_size) + 1) * output_block_size bytes
+ * @param nbytes             number of bytes in `in`
+ * @param output_block_size  size of every block on the wire (max 255)
+ * @returns                  block_size = output_block_size, nbytes = total bytes written to out
+ *                           (both 0 on error). Transmit out in block_size pieces.
  */
 FAEBlockData FAEEncodeStream(char *in, char *out, size_t nbytes, size_t output_block_size) {
-    FAEBlockData block_data;
-    char workpad[MAX_FAE_BLOCK_SIZE];
+    FAEBlockData bd = {0};
+    uint8_t w[256];
 
-    size_t input_block_size = output_block_size - FAE_ECC_SIZE;
-    input_block_size = ((input_block_size / AES_BLOCKLEN) * AES_BLOCKLEN);
-    uint64_t nblocks = (nbytes - 1) / input_block_size + 1;
-    for (int index = 0; index < nblocks - 1; index++) {
-        FAEEncodeBlock(in, out, index, input_block_size, 0, &workpad[0]);
+    size_t p = FAEEncSize(output_block_size);
+    if (p == 0) return bd;
+
+    size_t payload = p - 1;
+    size_t nblocks = nbytes / payload + 1;
+
+    for (size_t i = 0; i < nblocks; i++) {
+        size_t n = nbytes - i * payload;
+        if (n > payload) n = payload;
+
+        w[0] = (uint8_t)n;
+        memcpy(w + 1, in + i * payload, n);
+        memset(w + 1 + n, 0, payload - n);
+
+        if (AES_Encrypt_Blocks(w, p) != 0) return (FAEBlockData){0};
+
+        ReedSolomon rs = {p, output_block_size - p};                      /* fresh state per block */
+        RSGF_construct_ReedSolomon(&rs, p, output_block_size - p);
+        RSGF_encode_message(&rs, (char *)w, out + i * output_block_size);
     }
-    output_block_size = FAEEncodeBlock(in, out, nblocks - 1, input_block_size, nbytes % input_block_size, &workpad[0]);
-    block_data.block_size = output_block_size;
-    block_data.nbytes = output_block_size * nblocks;
-    return block_data;
-}
 
-size_t FAEDecodeBlock(char *input, char *output, uint64_t index, size_t block_size, char *workpad) {
-    size_t length;
-    length = block_size;
-    ReedSolomon rs = {length - FAE_ECC_SIZE, FAE_ECC_SIZE};
-    RSGF_construct_ReedSolomon(&rs, length - FAE_ECC_SIZE, FAE_ECC_SIZE);
-    RSGF_decode_message(&rs, output + index*length, workpad, NULL, 0);
-    length -= FAE_ECC_SIZE;
-    // TODO if needed: check authentication (e.g. append a shared private key to contents in workpad and hash, check that hash matches)
-    Decrypt_Array(workpad, &length);
-    memcpy(output, workpad, length);
-    return length;
+    bd.block_size = output_block_size;
+    bd.nbytes     = nblocks * output_block_size;
+    return bd;
 }
 
 /**
- * @param in                stream of bytes to be decoded
- * @param out               storage area for a stream of decoded bytes
- * @param nbytes            the number of bytes in the input stream
- * @param input_block_size  the size of the blocks in the input stream
+ * @param input   one received block (exactly `size` bytes, not modified)
+ * @param output  receives the decoded message bytes; must hold FAEPayloadSize(size) bytes
+ * @param size    size of the received block
+ * @returns       number of message bytes written to output,
+ *                or FAE_DECODE_ERROR if the block is uncorrectable or invalid
  */
-FAEBlockData FAEDecodeStream(char *in, char *out, size_t nbytes, size_t input_block_size) {
-    FAEBlockData block_data;
-    char workpad[MAX_FAE_BLOCK_SIZE];
-    size_t output_block_size;
+size_t FAEDecodeBlock(char *input, char *output, size_t size) {
+    uint8_t w[256];
 
-    uint64_t nblocks = (nbytes - 1) / input_block_size + 1;
-    for (int index = 0; index < nblocks; index++) {
-        output_block_size = FAEDecodeBlock(in, out, index, input_block_size, workpad);
-    }
-    block_data.block_size = output_block_size;
-    block_data.nbytes = output_block_size * nblocks;
-    return block_data;
+    size_t p = FAEEncSize(size);
+    if (p == 0) return FAE_DECODE_ERROR;
+
+    ReedSolomon rs = {p, size - p};
+    RSGF_construct_ReedSolomon(&rs, p, size - p);
+    if (RSGF_decode_message(&rs, input, (char *)w, NULL, 0) < 0) return FAE_DECODE_ERROR;
+
+    if (AES_Decrypt_Blocks(w, p) != 0) return FAE_DECODE_ERROR;
+
+    size_t n = w[0];
+    if (n > p - 1) return FAE_DECODE_ERROR;
+    memcpy(output, w + 1, n);
+    return n;
 }

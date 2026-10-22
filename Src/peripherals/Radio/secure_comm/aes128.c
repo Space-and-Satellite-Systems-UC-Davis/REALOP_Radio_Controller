@@ -87,6 +87,25 @@ void testFunction_AES128_Round_Trip(void) {
     printf("%s", finalMessage);
   }
 }
+
+/* Raw AES-128-CBC, in place, no padding. length must be a non-zero multiple of
+ * AES_BLOCKLEN and <= MAX_BYTES_AES_MESSAGE. Returns 0 on success, -1 on error. */
+int AES_Encrypt_Blocks(uint8_t *buf, size_t length) {
+    if (length == 0 || length % AES_BLOCKLEN != 0 || length > MAX_BYTES_AES_MESSAGE)
+        return -1;
+    AES_init_ctx_iv(&StructofAES, key, iv);
+    AES_CBC_encrypt_buffer(&StructofAES, buf, length);
+    return 0;
+}
+
+int AES_Decrypt_Blocks(uint8_t *buf, size_t length) {
+    if (length == 0 || length % AES_BLOCKLEN != 0 || length > MAX_BYTES_AES_MESSAGE)
+        return -1;
+    AES_init_ctx_iv(&StructofAES, key, iv);
+    AES_CBC_decrypt_buffer(&StructofAES, buf, length);
+    return 0;
+}
+
 /*
  * Test the full message of 256 bytes.
 */

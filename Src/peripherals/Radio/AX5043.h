@@ -429,6 +429,7 @@ void radio_transmit(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
  */
 int radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
 
+int radio_receive_satellite(packet_t* received_packet, SPI_TypeDef* spi);
 /**
  * configures the uhf and vhf interrupts when fifo filled
  */

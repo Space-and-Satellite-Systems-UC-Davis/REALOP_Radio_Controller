@@ -2,10 +2,11 @@
 #include <print_scan.h>
 #include <stdatomic.h>
 #include "globals.h"
+#include "EncFECAuth.h"
 
-// #define BUFFSIZE  2000
-// char buffer[BUFFSIZE];
-// int BUFFINDEX;
+
+#define TX_UPLINK_PKT_SIZE 200
+#define UPLINK_BUFF_SIZE 2048
 
 extern volatile atomic_int interruptFlags;
 
@@ -344,8 +345,12 @@ void tx_black_magic(SPI_TypeDef* spi, int packetSize) {
 
 }
 
+//don't uplink more than 1028 bytes at once, call function multiple times
 void radio_transmit_uplink(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi) {
     ax5043_set_registers_tx(spi);
+	uint8_t encryptedbytes[UPLINK_BUFF_SIZE];
+	FAEBlockData bd = FAEEncodeStream(bytesToSend, encryptedbytes, numBytes, TX_UPLINK_PKT_SIZE);
+	numBytes = bd.nbytes;
     int bytesSent = 0;
     int pktCurrentIndex = 0;
     int packetSize = 0; 
@@ -360,6 +365,7 @@ void radio_transmit_uplink(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi)
 	
     while(!(ax5043_read8(AX5043_POWSTAT, spi) & AX5043_POWSTAT_SVMODEM));//Waiting for Modem to be ready
 	ax5043_write8(AX5043_FIFOSTAT, AX5043_FIFOCMD_CLEAR_DATA_AND_FLAGS,spi);
+
 	while(bytesSent < numBytes){
 		for(int i = 0; i< 10; i++){
 			ax5043_write8(AX5043_FIFODATA, AX5043_FIFODATA_REPEAT_DATA_COMMAND, spi);
@@ -370,10 +376,12 @@ void radio_transmit_uplink(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi)
 		
 
 		spaceLeftInFIFO = (ax5043_read8(AX5043_FIFOFREE1, spi) << 8) | ax5043_read8(AX5043_FIFOFREE0, spi); 
-		if (spaceLeftInFIFO > numBytes - bytesSent + 3) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
+		if(spaceLeftInFIFO < TX_UPLINK_PKT_SIZE + 2){
+			continue;
+		}else if (spaceLeftInFIFO > numBytes - bytesSent + 3) { //Adding three bytes for Header Byte, Length Byte, and Flag Byte
 			packetSize = numBytes + 3 - bytesSent;
 		} else {
-			packetSize = spaceLeftInFIFO;
+			packetSize = TX_UPLINK_PKT_SIZE + 3;
 		}
 
 		uint8_t length = packetSize - 2; //Subtracting two to account for header and length byte
@@ -383,7 +391,7 @@ void radio_transmit_uplink(int numBytes, uint8_t* bytesToSend, SPI_TypeDef* spi)
 
 		int sent = 0;
 		while(sent < length){
-			ax5043_write8(AX5043_FIFODATA, bytesToSend[bytesSent + sent], spi);
+			ax5043_write8(AX5043_FIFODATA, encryptedbytes[bytesSent + sent], spi);
 			sent++;
 		}
 
@@ -545,6 +553,19 @@ int radio_receive(packet_t* received_packet, SPI_TypeDef* spi) {
 
 	return length;
 } 
+
+int radio_receive_satellite(packet_t* received_packet, SPI_TypeDef* spi) {
+	int length = radio_receive(received_packet, spi);
+	if(length <=0)
+		return-1;
+	int buffer[MAX_FAE_BLOCK_SIZE] = {0};
+	int finallength = FAEDecodeBlock(received_packet->pkt, buffer, length);
+	memcpy(received_packet->pkt, buffer, finallength);
+	received_packet->length = finallength;
+	return finallength;
+
+}
+
 
 int getFifoSize(SPI_TypeDef * spi){
 	return ax5043_read8(AX5043_FIFOCOUNT0, spi) | ax5043_read8(AX5043_FIFOCOUNT1, spi) << 8;
