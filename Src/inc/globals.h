@@ -2,6 +2,7 @@
 #define REALOP1_GLOBALS_H_
 
 #include "stm32l431xx.h"
+#include <stdatomic.h>
 
 #define UNUSED_GPIO             GPIOH, 1
 #define LOCK_UNUSED_GPIO_HIGH() GPIOH->PUPDR |= (1 << GPIO_PUPDR_PUPD1)
@@ -13,6 +14,16 @@ typedef enum {false, true} bool;
 #define DEFAULT_TIMEOUT_MS 1000
 
 #define TIMER_CALLBACK_ARRAY_SIZE 255
+
+#define FIVEMINUTES 5 * 60 * 1000//in ms
+
+typedef enum{
+    RX_RECEIVED = 1U,
+    RADIO_RECEIVED = 1U << 1,
+    WOR_RECEIVED = 1U << 2,
+}Flag_Bits;
+
+extern volatile atomic_int interruptFlags;
 
 void delay_ms(uint64_t ms);
 void nop(long long nop_loops);
