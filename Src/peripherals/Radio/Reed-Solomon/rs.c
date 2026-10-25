@@ -61,6 +61,7 @@ void RSGF_encode_block(ReedSolomon *rs, const void* src, void* dst) {
     /* Generator cache, it dosn't change for one template parameters */
     static uint8_t generator_cache[MAX_GENERATOR_CACHE_SIZE] = {0};
     static bool    generator_cached = false;
+    static uint8_t cached_ecc_length = 0;
 
     /* Allocating memory on stack for polynomials storage */
     uint8_t stack_memory[MAX_POLYNOMIAL_STACK_SIZE];
@@ -78,11 +79,12 @@ void RSGF_encode_block(ReedSolomon *rs, const void* src, void* dst) {
     RSGF_reset_polynomial(msg_out);
 
     // Using cached generator or generating new one
-    if(generator_cached) {
-        RSGF_set_polynomial(gen, generator_cache, sizeof(generator_cache), 0);
+    if(generator_cached && cached_ecc_length == rs->ecc_length) {
+        RSGF_set_polynomial(gen, generator_cache, rs->ecc_length + 1, 0);   /* generator has ecc_length+1 coefficients */
     } else {
         RSGF_find_generator_polynomial(rs);
         memcpy(generator_cache, RSGF_retreive_pointer(gen), gen->length);
+        cached_ecc_length = rs->ecc_length;
         generator_cached = true;
     }
 

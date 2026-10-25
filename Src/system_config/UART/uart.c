@@ -77,6 +77,8 @@ USART_ReceiverBuffer* uart_revisionBusDistinguisher(USART_TypeDef *bus) {
 #define enqueueBuffer(buff,usart) buff.buffer[buff.rear] = usart->RDR; \
 							      buff.rear = (buff.rear + 1) % ReceiveBufferLen;
 
+#define getLastFromBuffer(buff) buff.buffer[(buff.rear - 1 + ReceiveBufferLen) % ReceiveBufferLen]
+
 /************************ GPIO INITIALIZATION HELPERS ************************/
 
 void usart1_gpio_init() {
@@ -395,17 +397,27 @@ void usart_flushrx(USART_TypeDef* bus) {
 //}
 
 
+volatile bool gotFullPacket  = false;
+volatile bool escaped = false;
+
 void USART1_IRQHandler() {
 	if(USART1->ISR & USART_ISR_ORE){
 		USART1->ICR |= USART_ICR_ORECF;
 	}
 	if (USART1->ISR & USART_ISR_RXNE) {
 		enqueueBuffer(USART1_RxBuffer, USART1);
+		char currentChar = getLastFromBuffer(USART1_RxBuffer);
+		if(!escaped && currentChar == ';'){
+			gotFullPacket = true;
+			interruptFlags |= RX_RECEIVED;
+		}
+		escaped = !escaped && currentChar == '\\';
 	}
 	if (USART1->ISR & USART_ISR_RTOF) {
 		USART1->ISR &= ~USART_ISR_RTOF;
 		USART1_RxBuffer.timedout = true;
 	}
+	
 }
 
 void USART2_IRQHandler() {
@@ -437,4 +449,10 @@ void LPUART1_IRQHandler() {
 	if (LPUART1->ISR & USART_ISR_RTOF) {
 		LPUART1->ISR &= ~USART_ISR_RTOF;
 	}
+}
+
+
+
+bool packet_available(){
+    return gotFullPacket;
 }

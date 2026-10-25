@@ -82,6 +82,7 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
     buffer[nbytes + breaks + 1] = ';';
     int ack = 0;
     for (int attempts = 0; attempts < 5; attempts++) {
+        // usart_transmitBytes(USART3, buffer, nbytes + breaks + 2);
         usart_transmitBytes(bus, buffer, nbytes+breaks+2);
         ack = crc_wait(bus);
         if (ack != -1) break;
@@ -90,6 +91,9 @@ bool crc_transmit(USART_TypeDef *bus, uint8_t *payload, int nbytes) {
 }
 
 int crc_read(USART_TypeDef *bus, uint8_t* buf) {
+    if(!packet_available()){
+        return -1;
+    }
     uint8_t buffer[MAX_MESSAGE_BYTES];
     memset(buffer, 0, sizeof(buffer));
     uint8_t temp[1];
