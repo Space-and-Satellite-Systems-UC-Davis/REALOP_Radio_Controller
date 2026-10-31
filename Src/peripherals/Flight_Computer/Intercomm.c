@@ -1,6 +1,8 @@
 #include "Intercomm.h"
+#include <print_scan.h>
 
-uint8_t storedData[CHUNK_LENGTH * 4];
+static uint8_t storedData[CHUNK_LENGTH * 30];
+static uint16_t storedDataIndex = 0;
 State current_state = Idle;
 
 //Primary function from which everything else here is called
@@ -8,7 +10,7 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 	//Command must be the first char
 	switch (chunk[0]) {
 		case DownloadData: downloadData(dev, chunk); break;
-		case UploadData: uploadData(dev); break;
+		case UploadData: uploadData(dev, chunk, sizeof storedData); break;
 		case SendState: sendState(dev); break;
 		case TransferToGround: transferToGround(dev, chunk); break;
 		case KillAll: killAll(dev); break;
@@ -18,8 +20,21 @@ void handleInput(USART_TypeDef *dev, uint8_t chunk[]) {
 //Receive data from PFC
 void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 	uint8_t n_chunks = chunk[1];
+	uint8_t remainder = chunk[2];
 
-	crc_chunked_read(dev, &storedData[0], CHUNK_LENGTH, n_chunks);
+	if(n_chunks <= 0 || storedDataIndex + n_chunks * CHUNK_LENGTH >= CHUNK_LENGTH * 30)
+		return;
+
+	crc_chunked_read(dev, storedData + storedDataIndex, CHUNK_LENGTH, n_chunks);
+
+	int totalBytes = (n_chunks-1) * CHUNK_LENGTH + remainder;
+	storedDataIndex += totalBytes;
+	// printMsg("GOT: ");
+	// for(int i = 0; i<totalBytes; i++){
+	// 	printMsg("%c", storedData[i]);
+	// }
+	// printMsg("\r\n");
+
 	// usart_transmitBytes(dev, storedData, CHUNK_LENGTH*4);
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	int read_status = crc_read(dev, chunk);
@@ -35,17 +50,24 @@ void downloadData(USART_TypeDef *dev, uint8_t chunk[]) {
 }
 
 //Transfer data to PFC
-void uploadData(USART_TypeDef *dev) {
-	uint8_t first_chunk[CHUNK_LENGTH];
-	initEmptyChunk(first_chunk);
+void uploadData(USART_TypeDef *dev, uint8_t chunk[], uint16_t size) {
+	uint8_t first_chunk[4];
+
+	//temp transfer data and size
+	//i know how to spell, i just didn't include apostrophes bc that's extra work
+	// uint8_t data[229] = "Hola hola, Ive come all this way, from radio all across the UART channels to talk to you, on Intellisat. You know, youre such a cool person, youre so good at debugging and not crying when bugs start popping up everywhere. cheers!";
+	// uint8_t data_len = 229;
 
 	first_chunk[0] = UploadData; // Tell PFC this is an upload request
-	first_chunk[1] = (sizeof storedData - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
-	first_chunk[2] = Unflagged; //No actual upload flags were made yet
+	first_chunk[1] = (size - 1) / CHUNK_LENGTH + 1; //How many more chunks it should expect
+	first_chunk[2] = size % CHUNK_LENGTH;
+	if(first_chunk[2] == 0)
+		first_chunk[2] = CHUNK_LENGTH;
+	first_chunk[3] = Unflagged; //No actual upload flags were made yet
 
-	crc_transmit(dev, first_chunk, CHUNK_LENGTH);
+	crc_transmit(dev, first_chunk, 4);
 
-	crc_chunked_transmit(dev, &storedData[0], sizeof storedData, CHUNK_LENGTH);
+	crc_chunked_transmit(dev, chunk, size, CHUNK_LENGTH);
 
 	// for (int i = 0; i < n_chunks; i++) {
 	// 	nop(1000);
@@ -70,33 +92,17 @@ void uploadData(USART_TypeDef *dev) {
 
 //Send state to PFC
 void sendState(USART_TypeDef*dev) {
-	uint8_t state_chunk[CHUNK_LENGTH];
-	initEmptyChunk(state_chunk);
-
+	uint8_t state_chunk[1];
 	state_chunk[0] = current_state;
-
-	crc_transmit(dev, state_chunk, CHUNK_LENGTH);
+	crc_transmit(dev, state_chunk, 1);
 }
 
 //Transfer data to ground station
 void transferToGround(USART_TypeDef *dev, uint8_t chunk[]) {
 	current_state = TXactive;
 
-	uint8_t n_chunks = chunk[1];
-
-	for (int i = 0; i < n_chunks; i++) {
-		int read_status = crc_read(dev, chunk);
-		if (read_status != -1) {
-			// // ECHO
-			//usart_transmitBytes(USART1, chunk, CHUNK_LENGTH);
-
-			//HERE BE DRAGONS
-			//Whenever ground communication is written it will go here
-				//Send n_chunks of radio memory to ground
-				//May change based on ground comm interface
-		}
-	}
-
+	radio_transmit(storedDataIndex, storedData, UHF_SPI);
+	storedDataIndex = 0;
 	current_state = Idle;
 }
 

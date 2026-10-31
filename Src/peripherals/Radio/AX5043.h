@@ -5,6 +5,8 @@
 #include "stm32l431xx.h"
 #include <SPI/spi.h>
 
+
+
 #define UHF_SPI_CS SPI1_CS
 #define UHF_SPI SPI1
 
@@ -51,7 +53,7 @@
 
 #define AX5043_PKTMISCFLAGS_WORPKT 1<<4
 
-#define AX5043_CARRIER_HZ 435.775
+#define AX5043_CARRIER_HZ 437.4
 #define AX5043_XTAL_HZ 26
 #define AX5043_PLLRANGINGA_VCORA 8 //TODO: Get this value
 #define AX5043_PLLRANGINGA_RNGSTART (1 << 4)
@@ -60,6 +62,7 @@
 #define XTALDIV 2
 
 #define AX5043_IRQM_FIFONOTEMPTY (1<<0)
+#define AX5043_IRQM1_WAKEUPTIMER (1 << 1)
 
 #define PACKAGE_FULL     1
 #define PACKAGE_START    2
@@ -390,7 +393,7 @@ void wor_config(int ms, SPI_TypeDef* spi);
 void tx_black_magic(SPI_TypeDef* spi, int packetSize);
 
 typedef struct PACKET_STRUCT {
-    int pkt[256];
+    uint8_t pkt[256];
     int length;
     int isPacketStart;
     int isPacketEnd;
@@ -400,6 +403,15 @@ typedef struct PACKET_STRUCT {
  * Performs autoranging in the radio
  */
 bool radio_autorange(float carrierHz, int xtalHz, SPI_TypeDef* spi);
+
+/**
+ * transmits packets in radio (groundstation to satellite, has longer preamble for wor)
+ * @param numBytes # of bytes
+ * @param bytesToSend array of bytes to send
+ * @param spi spi bus that communicates with the chip, UHF_SPI or VHF_SPI
+ * 
+ */
+void radio_transmit_uplink(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
 
 /**
  * transmits packets in radio
@@ -417,15 +429,23 @@ void radio_transmit(int numBytes, uint8_t *bytesToSend, SPI_TypeDef* spi);
  */
 int radio_receive(packet_t *received_packet, SPI_TypeDef* spi);
 
+int radio_receive_satellite(packet_t* received_packet, SPI_TypeDef* spi);
 /**
  * configures the uhf and vhf interrupts when fifo filled
  */
 void ax5043_configInterrupt();
 
+void ax5043_receiverOn();
+void ax5043_receiverWOR();
+
 
 void ax5043_write8(uint16_t address, uint8_t data, SPI_TypeDef * spi);
 uint8_t ax5043_read8(uint16_t address, SPI_TypeDef * spi);
 
+int getFifoSize(SPI_TypeDef * spi);
+bool isFifoEmpty(SPI_TypeDef * spi);
 
+bool isBufFull();
+void printBuffer();
 
 #endif
