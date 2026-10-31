@@ -8,7 +8,7 @@
 #include <stdatomic.h>
 
 #define RUN_TEST	1	// 0 = run, 1 = run a very specific test
-#define TEST_ID 	29	// ID of the test to run in case RUN_TEST = 1
+#define TEST_ID 	21	// ID of the test to run in case RUN_TEST = 1
 
 volatile atomic_int interruptFlags = 0;
 

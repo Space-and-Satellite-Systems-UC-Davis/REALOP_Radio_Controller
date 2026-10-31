@@ -13,17 +13,17 @@ void testFunction_Radio2PFCAPI() {
 
 	uint8_t chunk[MAX_MESSAGE_BYTES];
     
-    // while(1){
-    //     printMsg("UPLOAD DATA:");
-    //     uploadData(PFC_USART, chunk, 100);
-    //     delay_ms(5000);
-    // }
+     while(1){
+         printMsg("UPLOAD DATA:");
+         uploadData(PFC_USART, chunk, 100);
+         delay_ms(5000);
+     }
 
-    while(1) {
-		int read_status = crc_read(USART1, chunk);
-        // printMsg("Read %d, %c\r\n", read_status, chunk[0]);
-    	if (read_status != -1) {
-    		handleInput(USART1, chunk);
-    	}
-    }
+//    while(1) {
+//		int read_status = crc_read(USART1, chunk);
+//        // printMsg("Read %d, %c\r\n", read_status, chunk[0]);
+//    	if (read_status != -1) {
+//    		handleInput(USART1, chunk);
+//    	}
+//    }
 }

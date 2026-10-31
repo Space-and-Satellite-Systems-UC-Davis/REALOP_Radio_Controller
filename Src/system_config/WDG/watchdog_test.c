@@ -23,6 +23,6 @@ void testFunction_watchdog() {
         }
         printMsg("uh-oh!\r\n");
         int x = zero();
-        printMsg("voltage: %s\r\n", x);
+        printMsg("something: %s\r\n", x);
     }
 }
