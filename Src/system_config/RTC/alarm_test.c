@@ -37,20 +37,27 @@ void testFunction_RTC_Alarm() {
 	uint32_t id2 = rtc_scheduleCallback(20, 0, 0, true, do_something7);
 
 	// Check if entry is there
-	printMsg("Is entry active: %d\n\r", rtc_isEntryActive(id));
-	printMsg("When entry is going to be called: %d\n\r", rtc_getEntry(id).unix_time);
+	uint32_t res1 = rtc_isEntryActive(id);
+	printMsg("Is entry active: %d\n\r", res1);
+	uint32_t res2 = rtc_getEntry(id).unix_time;
+	printMsg("When entry is going to be called: %d\n\r", res2);
 
-	printMsg("Deleting of one shot entry response: %d\n\r", rtc_deleteEntry(id));
+	uint32_t res3 = rtc_deleteEntry(id);
+	printMsg("Deleting of one shot entry response: %d\n\r", res3);
 
 	// Check if entry is there after deleting it
-	printMsg("Is deleted one shot entry active: %d\n\r", rtc_isEntryActive(id));
+	uint32_t res4 = rtc_isEntryActive(id);
+	printMsg("Is deleted one shot entry active: %d\n\r", res4);
 	// Expect 134232923
-	printMsg("When entry is going to be called: %d\n\r", rtc_getEntry(id).unix_time);
+	uint32_t res5 = rtc_getEntry(id).unix_time;
+	printMsg("When entry is going to be called: %d\n\r", res5);
 
 	// // Make sure continuous entry stops
-	printMsg("Deleting of continous entry response: %d\n\r", rtc_deleteEntry(id2));
+	uint32_t res6 = rtc_deleteEntry(id2);
+	printMsg("Deleting of continous entry response: %d\n\r", res6);
 	// Check if continuous entry is there
-	printMsg("Is deleted continous entry active: %d\n\r", rtc_isEntryActive(id2));
+	uint32_t res7 = rtc_isEntryActive(id2);
+	printMsg("Is deleted continous entry active: %d\n\r", res7);
 
 
 	// Kill everything
@@ -60,10 +67,10 @@ void testFunction_RTC_Alarm() {
 	/*
 	 * 	Starting RTC alarm test
 	 * 	Is entry active: 1
-	 * 	When entry is going to be called: 35
+	 * 	When entry is going to be called: 40 //(or 41. Somewhere around that)
 	 * 	Deleting of entry response: 1
 	 * 	Is deleted one shot entry active: 0
-	 * 	When entry is going to be called: 134232923
+	 * 	When entry is going to be called: 4294967295
 	 *  Deleting of continous entry: 1
 	 *	Is deleted continous entry active: 0
 	 * 	Do something 1

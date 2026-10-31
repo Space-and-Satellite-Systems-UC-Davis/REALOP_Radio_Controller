@@ -24,6 +24,7 @@ void init_callbacks() {
 	for (int i = 0; i < TIMER_CALLBACK_ARRAY_SIZE; i++) {
 		CallbackEntry dummy_entry;
 		dummy_entry.id = NULL_ID;
+		dummy_entry.unix_time = NULL_UNIX_TIME;
 		callbacks[i] = dummy_entry;
 	}
 }
@@ -579,6 +580,8 @@ CallbackEntry rtc_getEntry(uint32_t id) {
 
 	CallbackEntry dummy_entry;
 	dummy_entry.id = NULL_ID;
+	dummy_entry.unix_time = NULL_UNIX_TIME;
+
 	return dummy_entry;
 }
 bool rtc_isEntryActive(uint32_t id) {
